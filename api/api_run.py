@@ -9,16 +9,23 @@ def home():
     if (request.method == "GET"):
         return render_template("index.html")
     else:
-        final_str = request.form["Date"]
-        final_str = final_str + "," + request.form["Sum"]
-        final_str = final_str + "," + request.form["Category"]
-        final_str = final_str + "," + request.form["Sub-category"]
-        if (request.form["Comment"] == None):
-            final_str = final_str + ", ,"
+        date = request.form.get("Date", "")
+        sum_ = request.form.get("Sum", "")
+        category = request.form.get("Category", "")
+        sub_category = request.form.get("Sub-category", "")
+        comment = request.form.get("Comment", "")
+        person_bank = request.form.get("Person-Bank", "")
+        currency = request.form.get("Currency", "")
+
+        final_str = f"{date},{sum_},{category},{sub_category},"
+        if not comment:
+            final_str += ", ,"
         else:
-            final_str = final_str + "," + request.form["Person-Bank"]
-        final_str = final_str + "," + request.form["Currency"]
+            final_str += f"{comment},{person_bank}"
+        final_str += f",{currency}"
+
         Add(final_str)
+        return render_template("index.html")
         
 def api_start():
     app.run(debug=True)
