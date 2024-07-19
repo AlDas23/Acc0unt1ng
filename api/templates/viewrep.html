@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block body %}
+<form action="/viewrep" method="post" class="dropdown-report">
+    <label for="viewrep">Choose which report to view:</label>
+    <select name="View Report" id="viewrep">
+        <option value="allm" {% if selected_option == 'allm' %}selected{% endif %}>Main reports</option>
+        <option value="alltran" {% if selected_option == 'alltran' %}selected{% endif %}>Transfer reports</option>
+        <option value="allacc" {% if selected_option == 'allacc' %}selected{% endif %}>Account reports</option>
+    </select>
+    <input type="submit" value="View">
+</form>
+
+{% if columns and data %}
+<table class="reptable">
+    <thead>
+        <tr>
+            {% for column in columns %}
+            <th class="rep">{{ column }}</th>
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in data %}
+        <tr>
+            {% for cell in row %}
+            <td class="rep">{{ cell }}</td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+{% endblock %}

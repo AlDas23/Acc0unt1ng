@@ -19,7 +19,7 @@ def Terminal():
         elif (inp == '2'):
             print(' allm - all main records\n allacc - all pb accounts\n alltran - all transfer records')
             mode = input()
-            Read(mode)
+            print(Read(mode))
         elif (inp == '3'):
             print("Id of record to delete: ")
             dele = input()

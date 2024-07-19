@@ -89,13 +89,13 @@ def Read(x):
     
     if (x == 'allm'):
         c.execute("SELECT * FROM main")
-        print(c.fetchall())
+        return c.fetchall()
     elif (x == 'allacc'):
         c.execute("SELECT * FROM PB_account")
-        print(c.fetchall())
+        return c.fetchall()
     elif (x == 'alltran'):
         c.execute("SELECT * FROM transfer")
-        print(c.fetchall())
+        return c.fetchall()
         
     conn.commit()
     conn.close()
@@ -104,7 +104,12 @@ def Del(del_id):
     conn = sqlite3.connect(dbPath)
     c = conn.cursor()
     
-    c.execute("DELETE FROM main WHERE id = ?", (del_id,))
+    c.execute("SELECT 1 FROM main WHERE id = ?", (del_id,))
+    exists = c.fetchone()
+    if (exists != None):
+        c.execute("DELETE FROM main WHERE id = ?", (del_id,))
+    else:
+        print("Record with id ", del_id, " does not exist.\n")
     
     conn.commit()
     conn.close()

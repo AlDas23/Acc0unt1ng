@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block body %}
+<h2>Transfer record</h2>
+    <form action="/transfer" method="post">
+        <table>
+            <tr>
+                <th>Date</th>
+                <th>Sender</th>
+                <th>Receiver</th>
+                <th>Comment</th>
+                <th>Sum</th>
+                <th>Currency</th>
+            </tr>
+            <tr>
+                <td><input type="text" id="Date" name="Date" required></td>
+                <td><input type="text" id="Sender" name="Sender" required></td>
+                <td><input type="text" id="Receiver" name="Receiver" required></td>
+                <td><input type="text" id="Comment" name="Comment"></td>
+                <td><input type="text" id="Sum" name="Sum" required></td>
+                <td><input type="text" id="Currency" name="Currency" required></td>
+            </tr>
+        </table><br>
+        <input type="submit" value="Submit"  class="submitrec">
+    </form>
+{% endblock %}
