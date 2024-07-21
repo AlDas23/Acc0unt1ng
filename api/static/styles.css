@@ -54,3 +54,15 @@ nav {
   width: 62px;
   height: 30px;
 }
+
+.fields {
+  width: 165px;
+}
+
+.select {
+  width: 165px;
+}
+
+.select_curr {
+  width: 80px;
+}

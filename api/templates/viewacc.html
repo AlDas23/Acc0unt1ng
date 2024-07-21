@@ -1,16 +1,9 @@
 {% extends 'base.html' %}
 
 {% block body %}
-<form action="/view/rep" method="post" class="dropdown-report">
-    <label for="viewrep">Choose which report to view:</label>
-    <select name="View Report" id="viewrep">
-        <option value="allm" {% if selected_option == 'allm' %}selected{% endif %}>Main records</option>
-        <option value="alltran" {% if selected_option == 'alltran' %}selected{% endif %}>Transfer records</option>
-    </select>
-    <input type="submit" value="View">
-</form>
-
 {% if columns and data %}
+<br>
+<br>
 <table class="reptable">
     <thead>
         <tr>

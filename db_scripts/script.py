@@ -1,4 +1,5 @@
 import os.path
+import csv
 import sqlite3
 from db_scripts.consts import *
 
@@ -25,6 +26,11 @@ def NewDBase():
                 person_bank_from text,
                 person_bank_to text,
                 comment text,
+                sum real,
+                currency text
+            )""")
+    c.execute("""CREATE TABLE Init_PB (
+                person_bank text,
                 sum real,
                 currency text
             )""")
@@ -58,7 +64,7 @@ def Add(input_field, mode):
         conn.commit()
         conn.close()
         
-        Re_calculate(max_id, 'M') 
+        Re_calculate() 
         
     elif (mode == 'transfer'):
         c.execute("SELECT MAX(id) FROM transfer")
@@ -81,7 +87,7 @@ def Add(input_field, mode):
         conn.commit()
         conn.close()
         
-        Re_calculate(max_id, 'T')
+        Re_calculate()
 
 def Read(x):
     conn = sqlite3.connect(dbPath)
@@ -91,11 +97,15 @@ def Read(x):
         c.execute("SELECT * FROM main")
         return c.fetchall()
     elif (x == 'allacc'):
-        c.execute("SELECT * FROM PB_account")
+        c.execute("SELECT * FROM PB_account ORDER BY person_bank ASC")
         return c.fetchall()
     elif (x == 'alltran'):
         c.execute("SELECT * FROM transfer")
         return c.fetchall()
+    elif (x == 'retacc'):
+        c.execute("SELECT DISTINCT person_bank FROM PB_account")
+        result = [row[0] for row in c.fetchall()]
+        return result
         
     conn.commit()
     conn.close()
@@ -110,58 +120,141 @@ def Del(del_id):
         c.execute("DELETE FROM main WHERE id = ?", (del_id,))
     else:
         print("Record with id ", del_id, " does not exist.\n")
+        
+    Re_calculate()
     
     conn.commit()
     conn.close()
     
-def Re_calculate(id, mode):
+def Re_calculate():
     conn = sqlite3.connect(dbPath)
     c = conn.cursor()
-    if (mode == 'M'): # Re-caculate called from Add-main
-        c.execute("SELECT person_bank, sum, currency FROM main WHERE id = ?", (id,))
-        x = c.fetchone()
-        pb = x[0]
-        sum = x[1]
-        curr = x[2]
-        
-        c.execute("SELECT 1 FROM PB_account WHERE person_bank = ? AND currency = ?", (pb, curr))
-        exists = c.fetchone()
-        if (exists != None):
-            c.execute("SELECT sum FROM PB_account WHERE person_bank = ?", (pb,))
-            temp = c.fetchone()
-            sum += temp[0]
-            c.execute("UPDATE PB_account SET sum = ? WHERE person_bank = ?", (sum, pb))
+    
+    # Calculate sums for each person_bank and currency pair
+    c.execute('''
+        SELECT person_bank, currency, SUM(sum) 
+        FROM (
+            SELECT person_bank, currency, sum FROM main
+            UNION ALL
+            SELECT person_bank, currency, sum FROM Init_PB
+            UNION ALL
+            SELECT person_bank_from AS person_bank, currency, -sum FROM transfer
+            UNION ALL
+            SELECT person_bank_to AS person_bank, currency, sum FROM transfer
+        )
+        GROUP BY person_bank, currency
+    ''')
+    sums = c.fetchall()
+
+    for person_bank, currency, total_sum in sums:
+        c.execute('SELECT COUNT(*) FROM PB_account WHERE person_bank = ? AND currency = ?', (person_bank, currency))
+        row_exists = c.fetchone()[0]
+
+        if row_exists:
+            c.execute('UPDATE PB_account SET sum = ? WHERE person_bank = ? AND currency = ?', (total_sum, person_bank, currency))
         else:
-            c.execute("INSERT INTO PB_account (person_bank, sum, currency) VALUES (?, ?, ?)", (pb, sum, curr))
-        
-    elif (mode == 'T'): # Re-caculate called from Add-transfer
-        c.execute("SELECT person_bank_from, person_bank_to, sum, currency FROM transfer WHERE id = ?", (id,))
-        x = c.fetchone()
-        pb_out = x[0]
-        pb_in = x[1]
-        sum = x[2]
-        curr = x[3]
-        
-        c.execute("SELECT 1 FROM PB_account WHERE person_bank = ? AND currency = ?", (pb_out, curr))
-        exists = c.fetchone()
-        if (exists == None):
-            c.execute("DELETE FROM transfer WHERE id = ?", (id,))
-            print("Impossible to send tranfer from non-existent account!\n")
-        else:
-            c.execute("SELECT sum FROM PB_account WHERE person_bank = ?", (pb_out,))
-            temp = c.fetchone()
-            sum1 = temp[0] - sum
-            c.execute("UPDATE PB_account SET sum = ? WHERE person_bank = ?", (sum1, pb_out))
-                
-            c.execute("SELECT 1 FROM PB_account WHERE person_bank = ? AND currency = ?", (pb_in, curr))
-            exists = c.fetchone()
-            if (exists != None):
-                c.execute("SELECT sum FROM PB_account WHERE person_bank = ?", (pb_in,))
-                temp = c.fetchone()
-                sum2 = sum + temp[0]
-                c.execute("UPDATE PB_account SET sum = ? WHERE person_bank = ?", (sum2, pb_in))
-            else:
-                c.execute("INSERT INTO PB_account (person_bank, sum, currency) VALUES (?, ?, ?)", (pb_in, sum, curr))
+            c.execute('INSERT INTO PB_account (person_bank, sum, currency) VALUES (?, ?, ?)', (person_bank, total_sum, currency))
+
+    # Check for any person_bank and currency pairs that are missing in the main and transfer tables
+    c.execute('SELECT person_bank, currency FROM PB_account')
+    existing_pairs = c.fetchall()
+    for person_bank, currency in existing_pairs:
+        c.execute('''
+            SELECT SUM(sum) 
+            FROM (
+                SELECT sum FROM main WHERE person_bank = ? AND currency = ?
+                UNION ALL
+                SELECT sum FROM Init_PB WHERE person_bank = ? AND currency = ?
+                UNION ALL
+                SELECT -sum FROM transfer WHERE person_bank_from = ? AND currency = ?
+                UNION ALL
+                SELECT sum FROM transfer WHERE person_bank_to = ? AND currency = ?
+            )
+        ''', (person_bank, currency, person_bank, currency, person_bank, currency, person_bank, currency))
+        total_sum = c.fetchone()[0]
+        if total_sum is None:
+            c.execute('UPDATE PB_account SET sum = 0 WHERE person_bank = ? AND currency = ?', (person_bank, currency))
                 
     conn.commit()
     conn.close()
+    
+def SPVconf(x):
+    if (x == 'cat'):
+        path = SPVcatPath
+    elif (x == 'subcat'):
+        path = SPVsubcatPath
+    elif (x == 'curr'):
+        path = SPVcurrPath
+    
+    if os.path.exists(path):
+        with open(path, mode='r') as file:
+            csvFile = csv.reader(file)
+            print("Exisitng values:\n")
+            for lines in csvFile:
+                print(lines)
+    else:
+        print("No values found.\n")
+    print("Input new values in format: str1,str2,...\n")
+    new_SPV = input()
+    new_SPV = new_SPV.split(',')
+            
+    print(" A - Append\n R - Replace\n")
+    choice = input()
+    if (choice == 'A' or choice == 'a'):
+        new_SPV = ',' + new_SPV
+        with open(path, mode='a', newline='') as file:
+            csvWriter = csv.writer(file)
+            for i in new_SPV:
+                csvWriter.writerow([i])
+        print("Success!\n\n")
+             
+    elif (choice == 'R' or choice == 'r'):
+        with open(path, mode='w', newline='') as file:
+            csvWriter = csv.writer(file)
+            for i in new_SPV:
+                csvWriter.writerow([i])
+        print("Success!\n\n")
+             
+    else:
+        print("Unknown command!\n\n")
+
+def InitPB():
+    conn = sqlite3.connect(dbPath)
+    c = conn.cursor()
+    
+    print("Input new person_bank record in format: person_bank,sum,currency\n")
+    new_pb = input()
+    new_pb = new_pb.split(',')
+    
+    c.execute("SELECT 1 FROM PB_account WHERE person_bank = ? AND currency = ?", (new_pb[0], new_pb[2]))
+    exists = c.fetchone()
+    if (exists != None):
+        print("Record already exists!\n\n")
+        return
+    else:
+        c.execute("INSERT INTO Init_PB (person_bank, sum, currency) VALUES (?, ?, ?)", (new_pb[0], new_pb[1], new_pb[2]))
+        print("Success!\n\n")
+    
+    conn.commit()
+    conn.close()
+    
+    Re_calculate()
+    
+def DelPB():
+    conn = sqlite3.connect(dbPath)
+    c = conn.cursor()
+    
+    print("Delete person_bank record in format: person_bank,currency\n")
+    new_pb = input()
+    new_pb = new_pb.split(',')
+    
+    try:
+        c.execute("DELETE FROM PB_account WHERE person_bank = ? AND currency = ?", (new_pb))
+    except:
+        print("Failure!\n\n")
+    print("Success!\n\n")
+    
+    conn.commit()
+    conn.close()
+    
+    Re_calculate()

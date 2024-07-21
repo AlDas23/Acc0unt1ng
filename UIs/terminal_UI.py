@@ -2,7 +2,7 @@ from db_scripts.script import *
 
 def Terminal():
     while (True):
-        print("TERMINAL UI\n\n1. Add field\n2. Read\n3. Delete field\nNdb. New DataBase\n")
+        print("TERMINAL UI\n\n1. Add field\n2. Read\n3. Delete field\nConf. Configure special field values\nNdb. New DataBase\n")
         inp = input()
         if (inp == '1'):
             print('Mode?\n m - main\n t - transfer\n')
@@ -24,6 +24,8 @@ def Terminal():
             print("Id of record to delete: ")
             dele = input()
             Del(dele)
+        elif (inp == 'conf' or inp == 'Conf'):
+            SpecialValues()
         elif (inp == 'Ndb' or inp == 'ndb'):
             print('WARNING! Might replace existing base! Y?\n')
             conf = input()
@@ -31,3 +33,19 @@ def Terminal():
                 NewDBase()
         else:
             print('Unexpected input\n')
+            
+def SpecialValues():
+    print("What field values to edit?\n cat - category\n subcat - sub-category\n curr - currency\n initpb - person_bank\n ")
+    inp = input()
+    if (inp == 'cat'):
+        SPVconf(inp)
+    elif (inp == 'subcat'):
+        SPVconf(inp)
+    elif (inp == 'curr'):
+        SPVconf(inp)
+    elif (inp == 'initpb'):
+        InitPB()
+    elif (inp == 'delpb'):
+        DelPB()
+    else:
+        print("Unknown command!\n\n")
