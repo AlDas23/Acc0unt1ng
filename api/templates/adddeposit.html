@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block body %}
+<h2>Deposit record</h2>
+<form action="/add/deposit" method="post">
+    <table>
+        <tr>
+            <th>Date in</th>
+            <th>Name</th>
+            <th>Comment</th>
+            <th>Sum</th>
+            <th>Currency</th>
+            <th>Months</th>
+            <th>Date out</th>
+            <th>Percent</th>
+            <th>Currency rate</th>
+        </tr>
+        <tr>
+            <td><input type="date" id="DateIn" name="DateIn" class="date" required></td>
+            <td class="fields"><input type="text" id="Name" name="Name" required></td>
+            <td class="fields"><input type="text" id="Comment" name="Comment"></td>
+            <td class="fields"><input type="text" id="Sum" name="Sum" required></td>
+            <td>
+                <select id="Currency" name="Currency" class="select_curr" required>
+                    <option value="" disabled selected> </option>
+                    {% for currency in options.currencies %}
+                    <option value="{{ currency }}">{{ currency }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td class="fields"><input type="text" id="Months" name="Months"></td>
+            <td><input type="date" id="DateOut" name="DateOut" class="date"></td>
+            <td><input type="text" id="Percent" name="Percent" class="percent" required>%</td>
+            <td class="fields"><input type="text" id="CurrencyRate" name="Currency rate"></td>
+        </tr>
+    </table><br>
+    <input type="submit" value="Submit" class="submitrec">
+</form>
+{% endblock %}

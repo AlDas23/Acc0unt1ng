@@ -59,6 +59,14 @@ nav {
   width: 165px;
 }
 
+.percent {
+  width: 90px;
+}
+
+.date {
+  width: 130px;
+}
+
 .select {
   width: 165px;
 }

@@ -21,7 +21,7 @@ def main():
 @app.route("/add/expense", methods = ["POST", "GET"])
 def Expense():
     if (request.method == "GET"):
-        categories = read_csv(SPVcatPath)
+        categories = read_csv(SPVcatExpPath)
         sub_categories = read_csv(SPVsubcatPath)
         person_banks = Read('retacc')
         currencies = read_csv(SPVcurrPath)
@@ -42,11 +42,11 @@ def Expense():
         comment = request.form.get("Comment", "")
         sum = request.form.get("Sum", "")
         currency = request.form.get("Currency", "")
-
+        
         # Check if comment is empty and assign a whitespace if it is
         if not comment:
             comment = " "
-        
+    
         # Insert minus to expense sum
         sum = '-' + sum
 
@@ -61,7 +61,7 @@ def Expense():
 @app.route("/add/income", methods = ["POST", "GET"])
 def Income():
     if (request.method == "GET"):
-        categories = read_csv(SPVcatPath)
+        categories = read_csv(SPVcatIncPath)
         currencies = read_csv(SPVcurrPath)
         person_banks = Read('retacc')
         
@@ -79,7 +79,7 @@ def Income():
         comment = request.form.get("Comment", "")
         sum = request.form.get("Sum", "")
         currency = request.form.get("Currency", "")
-
+        
         # Check if comment is empty and assign a whitespace if it is
         if not comment:
             comment = " "
@@ -110,7 +110,8 @@ def Transfer():
         comment = request.form.get("Comment", "")
         sum = request.form.get("Sum", "")
         currency = request.form.get("Currency", "")
-
+        
+        # Check if comment is empty and assign a whitespace if it is
         if not comment:
             comment = " "
             
@@ -121,6 +122,45 @@ def Transfer():
         except:
             return 'Failed to add record!'
         return redirect(url_for("Transfer"))
+    
+@app.route("/add/deposit", methods = ["POST", "GET"])
+def AddDeposit():
+    if (request.method == "GET"):
+        currencies = read_csv(SPVcurrPath)
+        
+        options = {
+        'currencies': currencies
+    }
+        return render_template("adddeposit.html", options=options)
+    else:
+        dateIn = request.form.get("DateIn", "")
+        name = request.form.get("Name", "")
+        comment = request.form.get("Comment", "")
+        sum = request.form.get("Sum", "")
+        currency = request.form.get("Currency", "")
+        months = request.form.get("Months", "")
+        dateOut = request.form.get("DateOut", "")
+        percent = request.form.get("Percent", "")
+        currRate = request.form.get("Currency rate", "")
+        
+        # Check fields if empty and assign a whitespace if they are
+        if not comment:
+            comment = " "
+        if not months:
+            months = " "
+        if not dateOut:
+            dateOut = " "
+        if not currRate:
+            currRate = " "
+        
+        final_str = f"{dateIn},{name},{comment},{sum},{currency},{months},{dateOut},{percent},{currRate}"
+
+        try:
+            Add(final_str, 'deposit')
+        except:
+            return 'Failed to add record!'
+        return redirect(url_for("AddDeposit"))
+        
         
 @app.route("/view/rep", methods = ["POST", "GET"])
 def ViewReports():
@@ -134,8 +174,30 @@ def ViewReports():
         elif report_type == 'alltran':
             data = Read(report_type)
             columns = ["ID", "Date", "Sender", "Receiver", "Comment" ,"Sum", "Currency"]
+        elif report_type == 'alldep':
+            data = Read(report_type)
+            columns = ["Date in", "Name", "Comment", "Sum", "Currency", "Months" ,"Date out", "Percent", "Currency rate", "Expected amount"]
+        elif report_type == 'allcurr':
+            data = Read(report_type)
+            columns = ["Currency", "Sum"]
+        elif report_type == 'catrep':
+            data = Read(report_type)
+            columns = ["Currency", "Category", "Sum"]
         
         return render_template('viewrep.html', columns=columns, data=data, selected_option=report_type)
+    
+@app.route("/view/advrep", methods = ["POST", "GET"])
+def ViewAdvReports():
+    if (request.method == "GET"):
+        return render_template('viewrepadv.html', columns=[], data=[])
+    else:
+        report_type = request.form['View Report']
+        month = request.form['Month']
+        if report_type == 'catpbrep':
+            data = ReadAdv(report_type, month)
+            columns = ["Currency", "Category", "Person bank", "Sum"]
+        
+        return render_template('viewrepadv.html', columns=columns, data=data, selected_option=report_type)
     
 @app.route("/view/acc", methods = ["GET"])
 def ViewAcc():

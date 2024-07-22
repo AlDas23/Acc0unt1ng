@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block body %}
+<form action="/view/advrep" method="post" class="dropdown-report">
+    <label for="viewrep">Choose which report to view:</label>
+    <select name="View Report" id="viewrep" required>
+        <option value="catpbrep" {% if selected_option=='catpbrep' %}selected{% endif %}>Category per person_bank report
+        </option>
+    </select>
+    <label for="bymonth">By month:</label>
+    <select name="Month" id="bymonth" required>
+        <option value="" disabled selected> </option>
+        <option value="01" {% if selected_option=='01' %}selectedm{% endif %}>1</option>
+        <option value="02" {% if selected_option=='02' %}selectedm{% endif %}>2</option>
+        <option value="03" {% if selected_option=='03' %}selectedm{% endif %}>3</option>
+        <option value="04" {% if selected_option=='04' %}selectedm{% endif %}>4</option>
+        <option value="05" {% if selected_option=='05' %}selectedm{% endif %}>5</option>
+        <option value="06" {% if selected_option=='06' %}selectedm{% endif %}>6</option>
+        <option value="07" {% if selected_option=='07' %}selectedm{% endif %}>7</option>
+        <option value="08" {% if selected_option=='08' %}selectedm{% endif %}>8</option>
+        <option value="09" {% if selected_option=='09' %}selectedm{% endif %}>9</option>
+        <option value="10" {% if selected_option=='10' %}selectedm{% endif %}>10</option>
+        <option value="11" {% if selected_option=='11' %}selectedm{% endif %}>11</option>
+        <option value="12" {% if selected_option=='12' %}selectedm{% endif %}>12</option>
+    </select>
+    <input type="submit" value="View">
+</form>
+
+{% if columns and data %}
+<table class="reptable">
+    <thead>
+        <tr>
+            {% for column in columns %}
+            <th class="rep">{{ column }}</th>
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in data %}
+        <tr>
+            {% for cell in row %}
+            <td class="rep">{{ cell }}</td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+{% endblock %}

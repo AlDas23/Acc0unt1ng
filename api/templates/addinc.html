@@ -2,52 +2,46 @@
 
 {% block body %}
 <h2>Main record</h2>
-    <form action="/add/income" method="post">
-        <table>
-            <tr>
-                <th>Date</th>
-                <th>Category</th>
-                <th>Person-Bank</th>
-                <th>Comment</th>
-                <th>Sum</th>
-                <th>Currency</th>
-            </tr>
-            <tr>
-                <td><input type="text" id="Date" name="Date" required></td> 
-                <td class="fields">
-                    <select id="Category" name="Category" class="select" required>
-                        <option value="" disabled selected> </option>
-                        {% for category in options.categories %}
-                            <option value="{{ category }}">{{ category }}</option>
-                        {% endfor %}
-                    </select>
-                </td>
-                <td class="fields">
-                    <select id="Person-Bank" name="Person-Bank" class="select" required>
-                        <option value="" disabled selected> </option>
-                        {% for person_bank in options.person_banks %}
-                            <option value="{{ person_bank }}">{{ person_bank }}</option>
-                        {% endfor %}
-                    </select>
-                </td>
-                <td class="fields"><input type="text" id="Comment" name="Comment"></td>
-                <td class="fields"><input type="text" id="Sum" name="Sum" required></td>
-                <td>
-                    <select id="Currency" name="Currency" class="select_curr" required>
-                        <option value="" disabled selected> </option>
-                        {% for currency in options.currencies %}
-                            <option value="{{ currency }}">{{ currency }}</option>
-                        {% endfor %}
-                    </select>
-                </td>
-            </tr>
-        </table><br>
-        <input type="submit" value="Submit" class="submitrec">
-    </form>
-
-<!--
-    {% if confirm == True %}
-        <h4>Record added successfully!</h4>
-    {% endif %}
--->
+<form action="/add/income" method="post">
+    <table>
+        <tr>
+            <th>Date</th>
+            <th>Category</th>
+            <th>Person-Bank</th>
+            <th>Comment</th>
+            <th>Sum</th>
+            <th>Currency</th>
+        </tr>
+        <tr>
+            <td><input type="date" id="Date" name="Date" class="date" required></td>
+            <td class="fields">
+                <select id="Category" name="Category" class="select" required>
+                    <option value="" disabled selected> </option>
+                    {% for category in options.categories %}
+                    <option value="{{ category }}">{{ category }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td class="fields">
+                <select id="Person-Bank" name="Person-Bank" class="select" required>
+                    <option value="" disabled selected> </option>
+                    {% for person_bank in options.person_banks %}
+                    <option value="{{ person_bank }}">{{ person_bank }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td class="fields"><input type="text" id="Comment" name="Comment"></td>
+            <td class="fields"><input type="text" id="Sum" name="Sum" required></td>
+            <td>
+                <select id="Currency" name="Currency" class="select_curr" required>
+                    <option value="" disabled selected> </option>
+                    {% for currency in options.currencies %}
+                    <option value="{{ currency }}">{{ currency }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+        </tr>
+    </table><br>
+    <input type="submit" value="Submit" class="submitrec">
+</form>
 {% endblock %}

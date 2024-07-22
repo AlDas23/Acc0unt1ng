@@ -20,6 +20,18 @@ def NewDBase():
                 sum real,
                 currency text
             )""")
+    c.execute("""CREATE TABLE deposit (
+                date_in text,
+                name text,
+                comment text,
+                sum real,
+                currency text,
+                months real,
+                date_out text,
+                percent real,
+                currency_rate real,
+                expect real
+            )""")
     c.execute("""CREATE TABLE transfer (
                 id integer,
                 date text,
@@ -61,11 +73,6 @@ def Add(input_field, mode):
         c.execute("INSERT INTO main VALUES (:id, :date, :category, :sub_category, :person_bank, :comment, :sum, :currency)",
                 records)
         
-        conn.commit()
-        conn.close()
-        
-        Re_calculate() 
-        
     elif (mode == 'transfer'):
         c.execute("SELECT MAX(id) FROM transfer")
         max_id = c.fetchone()
@@ -84,10 +91,32 @@ def Add(input_field, mode):
         c.execute("INSERT INTO transfer VALUES (:id, :date, :person_bank_from, :person_bank_to, :comment, :sum, :currency)",
                 records)
         
-        conn.commit()
-        conn.close()
+    elif (mode == 'deposit'):
+        values = input_field.split(",")
+        values[3] = float(values[3])
+        if (values[5] == " "):
+            values[5] = 0
+        else:
+            values[5] = float(values[5])
+        values[7] = float(values[7])
+        values[8] = float(values[8])
         
-        Re_calculate()
+        if (values[5] == 0 or values[6] == " "):
+            values.insert(9, 0)
+        else:
+            percent = values[7] / 100
+            expSum = values[3] + (values[3] * (percent / 12) * values[5])
+            values.insert(10, expSum)
+        
+        records = {dp_keys[i]: values[i] for i in range(len (dp_keys))}
+        
+        c.execute("INSERT INTO deposit VALUES (:date_in, :name, :comment, :sum, :currency, :months, :date_out, :percent, :currency_rate, :expect)",
+                records)
+    
+    conn.commit()
+    conn.close()    
+        
+    Re_calculate()
 
 def Read(x):
     conn = sqlite3.connect(dbPath)
@@ -102,6 +131,15 @@ def Read(x):
     elif (x == 'alltran'):
         c.execute("SELECT * FROM transfer")
         return c.fetchall()
+    elif (x == 'alldep'):
+        c.execute("SELECT * FROM deposit")
+        return c.fetchall()
+    elif (x == 'allcurr'):
+        c.execute("SELECT currency, SUM(sum) FROM PB_account GROUP BY currency")
+        return c.fetchall()
+    elif (x == 'catrep'):
+        c.execute("SELECT currency, category, SUM(sum) FROM main GROUP BY category, currency")
+        return c.fetchall()
     elif (x == 'retacc'):
         c.execute("SELECT DISTINCT person_bank FROM PB_account")
         result = [row[0] for row in c.fetchall()]
@@ -109,17 +147,51 @@ def Read(x):
         
     conn.commit()
     conn.close()
-
-def Del(del_id):
+    
+def ReadAdv(type, month):
     conn = sqlite3.connect(dbPath)
     c = conn.cursor()
     
-    c.execute("SELECT 1 FROM main WHERE id = ?", (del_id,))
-    exists = c.fetchone()
-    if (exists != None):
-        c.execute("DELETE FROM main WHERE id = ?", (del_id,))
-    else:
-        print("Record with id ", del_id, " does not exist.\n")
+    if (type == 'catpbrep'):
+        c.execute("""
+            SELECT 
+                currency,
+                category,
+                person_bank, 
+                SUM(sum)
+            FROM 
+                main
+            WHERE 
+                strftime('%m', date) = ?
+            GROUP BY 
+                person_bank, 
+                category, 
+                currency
+            """, (month,))
+        return c.fetchall()
+    
+    conn.commit()
+    conn.close()
+
+def Del(del_id, type):
+    conn = sqlite3.connect(dbPath)
+    c = conn.cursor()
+    
+    if (type == 'main'):
+        c.execute("SELECT 1 FROM main WHERE id = ?", (del_id,))
+        exists = c.fetchone()
+        if (exists != None):
+            c.execute("DELETE FROM main WHERE id = ?", (del_id,))
+        else:
+            print("Record with id ", del_id, " does not exist.\n")
+            
+    elif (type == 'transfer'):
+        c.execute("SELECT 1 FROM transfer WHERE id = ?", (del_id,))
+        exists = c.fetchone()
+        if (exists != None):
+            c.execute("DELETE FROM transfer WHERE id = ?", (del_id,))
+        else:
+            print("Record with id ", del_id, " does not exist.\n")
         
     Re_calculate()
     
@@ -179,8 +251,10 @@ def Re_calculate():
     conn.close()
     
 def SPVconf(x):
-    if (x == 'cat'):
-        path = SPVcatPath
+    if (x == 'catinc'):
+        path = SPVcatIncPath
+    elif (x == 'catexp'):
+        path = SPVcatExpPath
     elif (x == 'subcat'):
         path = SPVsubcatPath
     elif (x == 'curr'):

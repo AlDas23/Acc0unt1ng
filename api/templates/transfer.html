@@ -13,7 +13,7 @@
             <th>Currency</th>
         </tr>
         <tr>
-            <td class="fields"><input type="text" id="Date" name="Date" required></td>
+            <td><input type="date" id="Date" name="Date" class="date" required></td>
             <td class="fields">
                 <select id="Sender" name="Sender" class="select" required>
                     <option value="" disabled selected> </option>
@@ -36,7 +36,7 @@
                 <select id="Currency" name="Currency" class="select_curr" required>
                     <option value="" disabled selected> </option>
                     {% for currency in options.currencies %}
-                        <option value="{{ currency }}">{{ currency }}</option>
+                    <option value="{{ currency }}">{{ currency }}</option>
                     {% endfor %}
                 </select>
             </td>
