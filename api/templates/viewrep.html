@@ -4,11 +4,8 @@
 <form action="/view/rep" method="post" class="dropdown-report">
     <label for="viewrep">Choose which report to view:</label>
     <select name="View Report" id="viewrep">
-        <option value="allm" {% if selected_option=='allm' %}selected{% endif %}>Main records</option>
-        <option value="alltran" {% if selected_option=='alltran' %}selected{% endif %}>Transfer records</option>
-        <option value="alldep" {% if selected_option=='alldep' %}selected{% endif %}>Deposit records</option>
-        <option value="allcurr" {% if selected_option=='allcurr' %}selected{% endif %}>Sum by currency</option>
-        <option value="catrep" {% if selected_option=='catrep' %}selected{% endif %}>Category report</option>
+        <option value="catincrep" {% if selected_option=='catincrep' %}selected{% endif %}>Income categories report</option>
+        <option value="catexprep" {% if selected_option=='catexprep' %}selected{% endif %}>Expense categories report</option>
     </select>
     <input type="submit" value="View">
 </form>

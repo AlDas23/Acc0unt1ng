@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block body %}
-<h2>Main record</h2>
+<h2>Expense records</h2>
 <form action="/add/expense" method="post">
     <table>
         <tr>
@@ -39,8 +39,8 @@
                     {% endfor %}
                 </select>
             </td>
-            <td class="fields"><input type="text" id="Comment" name="Comment"></td>
-            <td class="fields"><input type="text" id="Sum" name="Sum" required></td>
+            <td class="fields"><input type="text" id="Comment" name="Comment" autocomplete="off"></td>
+            <td class="fields"><input type="text" id="Sum" name="Sum" autocomplete="off" required></td>
             <td>
                 <select id="Currency" name="Currency" class="select_curr" required>
                     <option value="" disabled selected> </option>
@@ -51,30 +51,28 @@
             </td>
         </tr>
     </table><br>
-    <input type="submit" value="Submit" class="submitrec">
+    <input type="submit" value="Add" class="submitrec">
 </form>
-
-<!-- {% if last_record %}
-<h2>Last Added Record</h2>
-<table>
-    <tr>
-        <th>Date</th>
-        <th>Category</th>
-        <th>Sub-category</th>
-        <th>Person-Bank</th>
-        <th>Comment</th>
-        <th>Sum</th>
-        <th>Currency</th>
-    </tr>
-    <tr>
-        <td>{{ last_record.Date }}</td>
-        <td>{{ last_record.Category }}</td>
-        <td>{{ last_record.Sub-category }}</td>
-        <td>{{ last_record.Person-Bank }}</td>
-        <td>{{ last_record.Comment }}</td>
-        <td>{{ last_record.Sum }}</td>
-        <td>{{ last_record.Currency }}</td>
-    </tr>
+<br>
+<br>
+{% if columns and data %}
+<table class="reptable">
+    <thead>
+        <tr>
+            {% for column in columns %}
+            <th class="rep">{{ column }}</th>
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in data %}
+        <tr>
+            {% for cell in row %}
+            <td class="rep">{{ cell }}</td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </tbody>
 </table>
-{% endif %} -->
+{% endif %}
 {% endblock %}

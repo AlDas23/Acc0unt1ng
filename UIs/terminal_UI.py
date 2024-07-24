@@ -47,8 +47,7 @@ def Terminal():
             
 def SpecialValues():
     print("""What field values to edit?\n catinc - income category\n catexp - expense category
-          \n subcat - sub-category\n curr - currency\n initpb - person_bank
-           delpb - delete person_bank account\n""")
+          \n subcat - sub-category\n curr - currency\n initpb - person_bank\n delpb - delete person_bank account\n""")
     inp = input()
     if (inp == 'catinc'):
         SPVconf(inp)

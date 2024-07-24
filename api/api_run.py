@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, redirect, url_for
+from flask import Flask, request, render_template, redirect, url_for, render_template_string
 from db_scripts.script import *
 from db_scripts.consts import *
 
@@ -31,8 +31,12 @@ def Expense():
         'sub_categories': sub_categories,
         'person_banks': person_banks,
         'currencies': currencies
-    }
-        return render_template("addexp.html", options=options)
+        }
+        
+        data = Read("m-")
+        columns = ["ID", "Date", "Category", "Sub-category", "Person bank", "Comment", "Sum", "Currency"]
+        
+        return render_template("addexp.html", options=options, columns=columns, data=data)
     
     else:
         date = request.form.get("Date", "")
@@ -54,8 +58,12 @@ def Expense():
 
         try:
             Add(final_str,'main')
-        except:
-            return 'Failed to add record!'
+        except Exception as e:
+            # Capture the exception message
+            error_message = str(e)
+            # Return the error message in the response
+            return render_template_string('<h1>Failed to add record!</h1><p>{{ error_message }}</p>', error_message=error_message)
+
         return redirect(url_for("Expense"))
     
 @app.route("/add/income", methods = ["POST", "GET"])
@@ -69,8 +77,12 @@ def Income():
         'categories': categories,
         'person_banks': person_banks,
         'currencies': currencies
-    }
-        return render_template("addinc.html", options=options)
+        }
+        
+        data = Read("m+")
+        columns = ["ID", "Date", "Category", "Person bank", "Comment", "Sum", "Currency"]
+        
+        return render_template("addinc.html", options=options, columns=columns, data=data)
     else:
         date = request.form.get("Date", "")
         category = request.form.get("Category", "")
@@ -88,8 +100,12 @@ def Income():
 
         try:
             Add(final_str,'main')
-        except:
-            return 'Failed to add record!'
+        except Exception as e:
+            # Capture the exception message
+            error_message = str(e)
+            # Return the error message in the response
+            return render_template_string('<h1>Failed to add record!</h1><p>{{ error_message }}</p>', error_message=error_message)
+
         return redirect(url_for("Income"))
     
 @app.route("/transfer", methods = ["POST", "GET"])
@@ -101,8 +117,12 @@ def Transfer():
         options = {
         'person_banks': person_banks,
         'currencies': currencies
-    }
-        return render_template("transfer.html", options=options)
+        }
+        
+        data = Read('alltran')
+        columns = ["ID", "Date", "Sender", "Receiver", "Comment" ,"Sum", "Currency"]
+        
+        return render_template("transfer.html", options=options, columns=columns, data=data)
     else:
         date = request.form.get("Date", "")
         sender = request.form.get("Sender", "")
@@ -119,22 +139,37 @@ def Transfer():
 
         try:
             Add(final_str, 'transfer')
-        except:
-            return 'Failed to add record!'
+        except Exception as e:
+            # Capture the exception message
+            error_message = str(e)
+            # Return the error message in the response
+            return render_template_string('<h1>Failed to add record!</h1><p>{{ error_message }}</p>', error_message=error_message)
+
         return redirect(url_for("Transfer"))
     
 @app.route("/add/deposit", methods = ["POST", "GET"])
 def AddDeposit():
     if (request.method == "GET"):
         currencies = read_csv(SPVcurrPath)
+        person_banks = Read('retacc')
         
         options = {
+        'person_banks': person_banks,
         'currencies': currencies
-    }
-        return render_template("adddeposit.html", options=options)
+        }
+        
+        data = Read('alldepacc')
+        columns = ["Name", "Owner", "Sum", "Currency"]
+        
+        data2 = Read('alldep')
+        columns2 = ["Date in", "Name", "Owner", "Comment", "Sum", "Currency", "Months" ,"Date out", "Percent", "Currency rate", "Expected amount"]
+        
+        
+        return render_template("adddeposit.html", options=options, columns=columns, data=data, columns2=columns2, data2=data2)
     else:
         dateIn = request.form.get("DateIn", "")
         name = request.form.get("Name", "")
+        owner = request.form.get("Owner", "")
         comment = request.form.get("Comment", "")
         sum = request.form.get("Sum", "")
         currency = request.form.get("Currency", "")
@@ -153,12 +188,17 @@ def AddDeposit():
         if not currRate:
             currRate = " "
         
-        final_str = f"{dateIn},{name},{comment},{sum},{currency},{months},{dateOut},{percent},{currRate}"
+        final_str = f"{dateIn},{name},{owner},{comment},{sum},{currency},{months},{dateOut},{percent},{currRate}"
 
         try:
             Add(final_str, 'deposit')
-        except:
-            return 'Failed to add record!'
+        except Exception as e:
+            # Capture the exception message
+            error_message = str(e)
+            # Return the error message in the response
+            return render_template_string('<h1>Failed to add record!</h1><p>{{ error_message }}</p>', error_message=error_message)
+
+
         return redirect(url_for("AddDeposit"))
         
         
@@ -168,21 +208,12 @@ def ViewReports():
         return render_template('viewrep.html', columns=[], data=[])
     else:
         report_type = request.form['View Report']
-        if report_type == 'allm':
+        if report_type == 'catincrep':
             data = Read(report_type)
-            columns = ["ID", "Date", "Category", "Sub-category", "Person bank", "Comment", "Sum", "Currency"]
-        elif report_type == 'alltran':
+            columns = ["Category", "Currency", "Sum"]
+        elif report_type == 'catexprep':
             data = Read(report_type)
-            columns = ["ID", "Date", "Sender", "Receiver", "Comment" ,"Sum", "Currency"]
-        elif report_type == 'alldep':
-            data = Read(report_type)
-            columns = ["Date in", "Name", "Comment", "Sum", "Currency", "Months" ,"Date out", "Percent", "Currency rate", "Expected amount"]
-        elif report_type == 'allcurr':
-            data = Read(report_type)
-            columns = ["Currency", "Sum"]
-        elif report_type == 'catrep':
-            data = Read(report_type)
-            columns = ["Currency", "Category", "Sum"]
+            columns = ["Category", "Currency", "Sum"]
         
         return render_template('viewrep.html', columns=columns, data=data, selected_option=report_type)
     
@@ -195,7 +226,7 @@ def ViewAdvReports():
         month = request.form['Month']
         if report_type == 'catpbrep':
             data = ReadAdv(report_type, month)
-            columns = ["Currency", "Category", "Person bank", "Sum"]
+            columns = ["Category", "Person bank", "Currency", "Sum"]
         
         return render_template('viewrepadv.html', columns=columns, data=data, selected_option=report_type)
     
@@ -203,7 +234,9 @@ def ViewAdvReports():
 def ViewAcc():
     if (request.method == "GET"):
         data = Read('allacc')
-        return render_template('viewacc.html', columns=["Person bank", "Sum", "Currency"], data=data)    
+        data_curr = Read('allcurr')
+        columns_curr = ["Currency", "Sum"]
+        return render_template('viewacc.html', columns=["Person bank", "Sum", "Currency"], data=data, data_curr=data_curr, columns_curr=columns_curr)    
     
 def api_start():
     app.run(debug=True)
