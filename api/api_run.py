@@ -121,35 +121,67 @@ def Transfer():
         
         data = Read('alltran')
         columns = ["ID", "Date", "Sender", "Receiver", "Comment" ,"Sum", "Currency"]
+        dataA = Read('alladvtran')
+        columnsA = ["ID", "Date", "Sender", "Sum", "Currency", "Receiver", "Sum", "Currency", "Comment"]
         
-        return render_template("transfer.html", options=options, columns=columns, data=data)
+        return render_template("transfer.html", options=options, columns=columns, data=data, dataA=dataA, columnsA=columnsA)
     else:
-        date = request.form.get("Date", "")
-        sender = request.form.get("Sender", "")
-        receiver = request.form.get("Receiver", "")
-        comment = request.form.get("Comment", "")
-        sum = request.form.get("Sum", "")
-        currency = request.form.get("Currency", "")
-        
-        # Check if comment is empty and assign a whitespace if it is
-        if not comment:
-            comment = " "
+        form_id = request.form.get('form_type')
+        if (form_id == 'transfer'):
+            date = request.form.get("Date", "")
+            sender = request.form.get("Sender", "")
+            receiver = request.form.get("Receiver", "")
+            comment = request.form.get("Comment", "")
+            sum = request.form.get("Sum", "")
+            currency = request.form.get("Currency", "")
             
-        final_str = f"{date},{sender},{receiver},{comment},{sum},{currency}"
+            # Check if comment is empty and assign a whitespace if it is
+            if not comment:
+                comment = " "
+                
+            final_str = f"{date},{sender},{receiver},{comment},{sum},{currency}"
 
-        try:
-            Add(final_str, 'transfer')
-        except Exception as e:
-            # Capture the exception message
-            error_message = str(e)
-            # Return the error message in the response
-            return render_template_string('<h1>Failed to add record!</h1><p>{{ error_message }}</p>', error_message=error_message)
+            try:
+                Add(final_str, 'transfer')
+            except Exception as e:
+                # Capture the exception message
+                error_message = str(e)
+                # Return the error message in the response
+                return render_template_string('<h1>Failed to add record!</h1><p>{{ error_message }}</p>', error_message=error_message)
 
-        return redirect(url_for("Transfer"))
+            return redirect(url_for("Transfer"))
+        
+        elif (form_id == 'advtransfer'):
+            date = request.form.get("Date", "")
+            sender = request.form.get("Sender", "")
+            ssum = request.form.get("SSum", "")
+            scurr = request.form.get("SCurrency", "")
+            receiver = request.form.get("Receiver", "")
+            rsum = request.form.get("RSum", "")
+            rcurr = request.form.get("RCurrency", "")
+            comment = request.form.get("Comment", "")
+            
+            # Check if comment is empty and assign a whitespace if it is
+            if not comment:
+                comment = " "
+                
+            final_str = f"{date},{sender},{ssum},{scurr},{receiver},{rsum},{rcurr},{comment}"
+
+            try:
+                Add(final_str, 'advtransfer')
+            except Exception as e:
+                # Capture the exception message
+                error_message = str(e)
+                # Return the error message in the response
+                return render_template_string('<h1>Failed to add record!</h1><p>{{ error_message }}</p>', error_message=error_message)
+
+            return redirect(url_for("Transfer"))
     
 @app.route("/add/deposit", methods = ["POST", "GET"])
 def AddDeposit():
     if (request.method == "GET"):
+        Re_calculate()
+        
         currencies = read_csv(SPVcurrPath)
         person_banks = Read('retacc')
         
@@ -161,11 +193,11 @@ def AddDeposit():
         data = Read('alldepacc')
         columns = ["Name", "Owner", "Sum", "Currency"]
         
-        data2 = Read('alldep')
-        columns2 = ["Date in", "Name", "Owner", "Comment", "Sum", "Currency", "Months" ,"Date out", "Percent", "Currency rate", "Expected amount"]
-        
-        
-        return render_template("adddeposit.html", options=options, columns=columns, data=data, columns2=columns2, data2=data2)
+        dataA = Read('opendep')
+        columnsH = ["Date in", "Name", "Owner", "Comment", "Sum", "Currency", "Months" ,"Date out", "Percent", "Currency rate", "Expected amount"]
+        dataC = Read('closeddep')
+
+        return render_template("adddeposit.html", options=options, columns=columns, data=data, columnsA=columnsH, dataA=dataA, columnsC=columnsH, dataC=dataC)
     else:
         dateIn = request.form.get("DateIn", "")
         name = request.form.get("Name", "")

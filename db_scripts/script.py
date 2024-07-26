@@ -2,6 +2,7 @@ import os.path
 import csv
 import sqlite3
 import pandas as pd
+from datetime import datetime
 from db_scripts.consts import *
 
 
@@ -48,6 +49,17 @@ def NewDBase():
                 comment text,
                 sum real,
                 currency text
+            )""")
+    c.execute("""CREATE TABLE advtransfer (
+                id integer,
+                date text,
+                person_bank_from text,
+                sum_from real,
+                currency_from text,
+                person_bank_to text,
+                sum_to real,
+                currency_to text,
+                comment text
             )""")
     c.execute("""CREATE TABLE Init_PB (
                 person_bank text,
@@ -111,6 +123,38 @@ def Add(input_field, mode):
         c.execute("INSERT INTO transfer VALUES (:id, :date, :person_bank_from, :person_bank_to, :comment, :sum, :currency)",
                 records)
         
+    elif (mode == 'advtransfer'):
+        values = input_field.split(",")
+        values[2] = round(float(values[2]), 2) 
+        values[5] = round(float(values[5]), 2) 
+        c.execute("SELECT 1 FROM PB_account WHERE person_bank = ? AND currency = ? AND sum >= ?", (values[1], values[3], values[2]))
+        exists = c.fetchone()
+        if (exists == None):
+            raise Exception("Person_bank-currency pair does not exist or insufficient funds!")
+        c.execute("SELECT 1 FROM PB_account WHERE person_bank = ? AND currency = ?", (values[4], values[6]))
+        exists = c.fetchone()
+        if (exists == None):
+            raise Exception("Person_bank-currency pair does not exist!")
+        
+        c.execute("SELECT MAX(id) FROM advtransfer")
+        max_id = c.fetchone()
+        max_id = max_id[0]
+        if (max_id == None): # Check if it is exist and change to 0 if not
+            max_id = 0
+        max_id = max_id + 1 # Change so that inserted number is +1 from biggest existing id in DB
+        
+        values.insert(0, max_id)
+        
+        if (values[3] < 0): # Make sum positive if not
+            values[3] = values[3] * -1
+        if (values[6] < 0):
+            values[6] = values[6] * -1
+            
+        records = {advtr_keys[i]: values[i] for i in range(len (advtr_keys))}
+        
+        c.execute("INSERT INTO advtransfer VALUES (:id, :date, :person_bank_from, :sum_from, :currency_from, :person_bank_to, :sum_to, :currency_to, :comment)",
+                records)
+        
     elif (mode == 'deposit'):
         values = input_field.split(",")
         values[4] = round(float(values[4]), 2) 
@@ -160,8 +204,19 @@ def Read(x):
     elif (x == 'alldepacc'):
         c.execute("SELECT * FROM PB_account_deposit ORDER BY person_bank ASC")
         return c.fetchall()
+    elif (x == 'opendep'):
+        current_date = datetime.now().strftime('%Y-%m-%d')
+        c.execute("SELECT * FROM deposit WHERE date_out > ? OR date_out == ' ' ORDER BY date_out DESC", (current_date,))
+        return c.fetchall()
+    elif (x == 'closeddep'):
+        current_date = datetime.now().strftime('%Y-%m-%d')
+        c.execute("SELECT * FROM deposit WHERE date_out <= ? AND date_out != ' ' ORDER BY date_out DESC", (current_date,))
+        return c.fetchall()
     elif (x == 'alltran'):
         c.execute("SELECT * FROM transfer ORDER BY date DESC")
+        return c.fetchall()
+    elif (x == 'alladvtran'):
+        c.execute("SELECT * FROM advtransfer ORDER BY date DESC")
         return c.fetchall()
     elif (x == 'alldep'):
         c.execute("SELECT * FROM deposit ORDER BY date_out DESC")
@@ -258,6 +313,10 @@ def Re_calculate():
             UNION ALL
             SELECT person_bank_from AS person_bank, currency, -sum FROM transfer
             UNION ALL
+            SELECT person_bank_from AS person_bank, currency_from AS currency, -sum_from AS sum FROM advtransfer
+            UNION ALL
+            SELECT person_bank_to AS person_bank, currency_to AS currency, sum_to AS sum FROM advtransfer
+            UNION ALL
             SELECT person_bank_to AS person_bank, currency, sum FROM transfer
             UNION ALL
             SELECT owner AS person_bank, currency, -sum FROM deposit
@@ -313,7 +372,37 @@ def Re_calculate():
     #     total_sum = c.fetchone()[0]
     #     if total_sum is None:
     #         c.execute('UPDATE PB_account SET sum = 0 WHERE person_bank = ? AND currency = ?', (person_bank, currency))
-                
+    
+    # Check active deposits and create income/expense if due
+    c.execute("SELECT name, person_bank, sum, currency FROM PB_account_deposit WHERE sum != 0")
+    openD = c.fetchall()
+    current_date = datetime.now().strftime('%Y-%m-%d')
+
+    for deposit in openD:
+        name, owner, sum, currency = deposit
+        c.execute("SELECT name, owner, sum, currency FROM deposit WHERE name = ? AND date_out < ? AND date_out != ' '", (name, current_date))
+        expired = c.fetchone()
+        
+        if expired:
+            c.execute("UPDATE PB_account_deposit SET sum = 0 WHERE name = ? AND person_bank = ? AND currency = ?", (expired[0], expired[1], expired[3]))
+            
+            c.execute("SELECT MAX(id) FROM main")
+            max_id = c.fetchone()[0]
+            max_id = 0 if max_id is None else max_id + 1
+
+            c.execute("""
+                INSERT INTO main (
+                    id,
+                    date,
+                    category,
+                    sub_category,
+                    person_bank,
+                    comment,
+                    sum,
+                    currency
+                ) VALUES (?, ?, ' ', ' ', ?, 'Deposit retrieve', ?, ?)
+            """, (max_id, current_date, expired[1], expired[2], expired[3]))
+    
     conn.commit()
     conn.close()
     

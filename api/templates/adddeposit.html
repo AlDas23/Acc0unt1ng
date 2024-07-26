@@ -46,9 +46,9 @@
     <input type="submit" value="Add" class="submitrec">
 </form>
 <br>
+{% if columnsA and dataA %}
 <h2>Deposit account details</h2>
 <br>
-{% if columns and data %}
 <table class="reptable">
     <thead>
         <tr>
@@ -69,19 +69,43 @@
 </table>
 {% endif %}
 <br>
-{% if columns2 and data2 %}
 <br>
 <h2>Deposit history</h2>
+{% if columnsA and dataA %}
+<br>
+<h3>Active deposits</h3>
 <table class="reptable">
     <thead>
         <tr>
-            {% for column in columns2 %}
+            {% for column in columnsA %}
             <th class="rep">{{ column }}</th>
             {% endfor %}
         </tr>
     </thead>
     <tbody>
-        {% for row in data2 %}
+        {% for row in dataA %}
+        <tr>
+            {% for cell in row %}
+            <td class="rep">{{ cell }}</td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+{% if columnsC and dataC %}
+<br>
+<h3>Closed deposits</h3>
+<table class="reptable">
+    <thead>
+        <tr>
+            {% for column in columnsC %}
+            <th class="rep">{{ column }}</th>
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in dataC %}
         <tr>
             {% for cell in row %}
             <td class="rep">{{ cell }}</td>

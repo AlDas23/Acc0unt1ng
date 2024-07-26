@@ -23,7 +23,19 @@ def Terminal():
             Add(field, mode)
             
         elif (inp == '2'):
-            print(' allm - all main records\n allacc - all pb accounts\n alltran - all transfer records\n alldep - all deposit records')
+            print(""" 
+                 allm - all main records
+                 allacc - all pb accounts
+                 m+ - positive main records
+                 m- - negative main records
+                 allcurr - all currencies
+                 alltran - all transfer records
+                 alladvtran - all advanced transfer records
+                 alldep - all deposit records
+                 alldepacc - deposit accounts
+                 opendep - open deposits
+                 closeddep - closed deposits
+                 """)
             mode = input()
             print(Read(mode))
             

@@ -1,8 +1,9 @@
 {% extends 'base.html' %}
 
 {% block body %}
-<h2>Transfer records</h2>
+<h2>Transfer</h2>
 <form action="/transfer" method="post">
+    <input type="hidden" name="form_type" value="transfer">
     <table>
         <tr>
             <th>Date</th>
@@ -45,8 +46,64 @@
     <input type="submit" value="Add" class="submitrec">
 </form>
 <br>
+<h2>Advanced transfer</h2>
+<form action="/transfer" method="post">
+    <input type="hidden" name="form_type" value="advtransfer">
+    <table>
+        <tr>
+            <th>Date</th>
+            <th>Sender</th>
+            <th>Sum</th>
+            <th>Currency</th>
+            <th>Receiver</th>
+            <th>Sum</th>
+            <th>Currency</th>
+            <th>Comment</th>      
+        </tr>
+        <tr>
+            <td><input type="date" id="Date" name="Date" class="date" required></td>
+            <td class="fields">
+                <select id="Sender" name="Sender" class="select" required>
+                    <option value="" disabled selected> </option>
+                    {% for person_bank in options.person_banks %}
+                    <option value="{{ person_bank }}">{{ person_bank }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td class="fields"><input type="text" id="SSum" name="SSum" autocomplete="off" required></td>
+            <td>
+                <select id="SCurrency" name="SCurrency" class="select_curr" required>
+                    <option value="" disabled selected> </option>
+                    {% for currency in options.currencies %}
+                    <option value="{{ currency }}">{{ currency }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td class="fields">
+                <select id="Receiver" name="Receiver" class="select" required>
+                    <option value="" disabled selected> </option>
+                    {% for person_bank in options.person_banks %}
+                    <option value="{{ person_bank }}">{{ person_bank }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td class="fields"><input type="text" id="RSum" name="RSum" autocomplete="off" required></td>
+            <td>
+                <select id="RCurrency" name="RCurrency" class="select_curr" required>
+                    <option value="" disabled selected> </option>
+                    {% for currency in options.currencies %}
+                    <option value="{{ currency }}">{{ currency }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td class="fields"><input type="text" id="Comment" name="Comment" autocomplete="off"></td>
+        </tr>
+    </table><br>
+    <input type="submit" value="Add" class="submitrec">
+</form>
 <br>
 {% if columns and data %}
+<h3>Transfer records</h3>
 <table class="reptable">
     <thead>
         <tr>
@@ -57,6 +114,28 @@
     </thead>
     <tbody>
         {% for row in data %}
+        <tr>
+            {% for cell in row %}
+            <td class="rep">{{ cell }}</td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+<br>
+{% if columnsA and dataA %}
+<h3>Advanced transfer records</h3>
+<table class="reptable">
+    <thead>
+        <tr>
+            {% for column in columnsA %}
+            <th class="rep">{{ column }}</th>
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in dataA %}
         <tr>
             {% for cell in row %}
             <td class="rep">{{ cell }}</td>
