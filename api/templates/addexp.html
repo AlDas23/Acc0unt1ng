@@ -9,9 +9,9 @@
             <th>Category</th>
             <th>Sub-category</th>
             <th>Person-Bank</th>
-            <th>Comment</th>
             <th>Sum</th>
             <th>Currency</th>
+            <th>Comment</th>
         </tr>
         <tr>
             <td><input type="date" id="Date" name="Date" class="date" required></td>
@@ -39,7 +39,6 @@
                     {% endfor %}
                 </select>
             </td>
-            <td class="fields"><input type="text" id="Comment" name="Comment" autocomplete="off"></td>
             <td class="fields"><input type="text" id="Sum" name="Sum" autocomplete="off" required></td>
             <td>
                 <select id="Currency" name="Currency" class="select_curr" required>
@@ -49,6 +48,7 @@
                     {% endfor %}
                 </select>
             </td>
+            <td class="fields"><input type="text" id="Comment" name="Comment" autocomplete="off"></td>
         </tr>
     </table><br>
     <input type="submit" value="Add" class="submitrec">

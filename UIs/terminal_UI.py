@@ -47,7 +47,12 @@ def Terminal():
             Del(dele, type)
             
         elif (inp == 'conf' or inp == 'Conf'):
-            SpecialValues()
+            print(" spv - special values\n mark - markers\n")
+            inp = input()
+            if (inp == 'spv'):
+                SpecialValues()
+            elif (inp == 'mark'):
+                PreMark()
             
         elif (inp == 'Ndb' or inp == 'ndb'):
             print('WARNING! Might replace existing base! Y?\n')
@@ -57,9 +62,31 @@ def Terminal():
         else:
             print('Unexpected input\n')
             
+def PreMark():
+    print("Existing type markers:\n", Read('extype'), "\n")
+    print("Existing owner markers:\n", Read('exowner'), "\n\n")
+    print("owner or type marker?: ")
+    select = input()
+    if (select == 'type'):
+        print("Input new marker (person_bank,type)\n")
+        input_field = input()
+        Mark(input_field, select)
+        
+    elif (select == 'owner'):
+        print("Input new marker (person_bank,owner)\n")
+        input_field = input()
+        Mark(input_field, select)
+            
 def SpecialValues():
-    print("""What field values to edit?\n catinc - income category\n catexp - expense category
-          \n subcat - sub-category\n curr - currency\n initpb - person_bank\n delpb - delete person_bank account\n""")
+    print("""
+        What field values to edit?
+         catinc - income category
+         catexp - expense category
+         subcat - sub-category
+         curr - currency
+         initpb - person_bank
+         delpb - delete person_bank account
+        """)
     inp = input()
     if (inp == 'catinc'):
         SPVconf(inp)

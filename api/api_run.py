@@ -34,7 +34,7 @@ def Expense():
         }
         
         data = Read("m-")
-        columns = ["ID", "Date", "Category", "Sub-category", "Person bank", "Comment", "Sum", "Currency"]
+        columns = ["ID", "Date", "Category", "Sub-category", "Person bank", "Sum", "Currency", "Comment"]
         
         return render_template("addexp.html", options=options, columns=columns, data=data)
     
@@ -54,7 +54,7 @@ def Expense():
         # Insert minus to expense sum
         sum = '-' + sum
 
-        final_str = f"{date},{category},{sub_category},{person_bank},{comment},{sum},{currency}"
+        final_str = f"{date},{category},{sub_category},{person_bank},{sum},{currency},{comment}"
 
         try:
             Add(final_str,'main')
@@ -80,7 +80,7 @@ def Income():
         }
         
         data = Read("m+")
-        columns = ["ID", "Date", "Category", "Person bank", "Comment", "Sum", "Currency"]
+        columns = ["ID", "Date", "Category", "Person bank", "Sum", "Currency", "Comment"]
         
         return render_template("addinc.html", options=options, columns=columns, data=data)
     else:
@@ -96,7 +96,7 @@ def Income():
         if not comment:
             comment = " "
 
-        final_str = f"{date},{category},{sub_category},{person_bank},{comment},{sum},{currency}"
+        final_str = f"{date},{category},{sub_category},{person_bank},{sum},{currency},{comment}"
 
         try:
             Add(final_str,'main')
@@ -120,7 +120,7 @@ def Transfer():
         }
         
         data = Read('alltran')
-        columns = ["ID", "Date", "Sender", "Receiver", "Comment" ,"Sum", "Currency"]
+        columns = ["ID", "Date", "Sender", "Receiver", "Sum", "Currency", "Comment"]
         dataA = Read('alladvtran')
         columnsA = ["ID", "Date", "Sender", "Sum", "Currency", "Receiver", "Sum", "Currency", "Comment"]
         
@@ -139,7 +139,7 @@ def Transfer():
             if not comment:
                 comment = " "
                 
-            final_str = f"{date},{sender},{receiver},{comment},{sum},{currency}"
+            final_str = f"{date},{sender},{receiver},{sum},{currency},{comment}"
 
             try:
                 Add(final_str, 'transfer')
@@ -194,7 +194,7 @@ def AddDeposit():
         columns = ["Name", "Owner", "Sum", "Currency"]
         
         dataA = Read('opendep')
-        columnsH = ["Date in", "Name", "Owner", "Comment", "Sum", "Currency", "Months" ,"Date out", "Percent", "Currency rate", "Expected amount"]
+        columnsH = ["Date in", "Name", "Owner", "Sum", "Currency", "Months" ,"Date out", "Percent", "Currency rate", "Expected amount", "Comment"]
         dataC = Read('closeddep')
 
         return render_template("adddeposit.html", options=options, columns=columns, data=data, columnsA=columnsH, dataA=dataA, columnsC=columnsH, dataC=dataC)
@@ -220,7 +220,7 @@ def AddDeposit():
         if not currRate:
             currRate = " "
         
-        final_str = f"{dateIn},{name},{owner},{comment},{sum},{currency},{months},{dateOut},{percent},{currRate}"
+        final_str = f"{dateIn},{name},{owner},{sum},{currency},{months},{dateOut},{percent},{currRate},{comment}"
 
         try:
             Add(final_str, 'deposit')
@@ -259,8 +259,14 @@ def ViewAdvReports():
         if report_type == 'catpbrep':
             data = ReadAdv(report_type, month)
             columns = ["Category", "Person bank", "Currency", "Sum"]
+        if report_type == 'catincrep':
+            data = ReadAdv(report_type, month)
+            columns = ["Category", "Currency", "Sum"]
+        if report_type == 'catexprep':
+            data = ReadAdv(report_type, month)
+            columns = ["Category", "Currency", "Sum"]
         
-        return render_template('viewrepadv.html', columns=columns, data=data, selected_option=report_type)
+        return render_template('viewrepadv.html', columns=columns, data=data, selected_option=report_type, selected_month=month)
     
 @app.route("/view/acc", methods = ["GET"])
 def ViewAcc():

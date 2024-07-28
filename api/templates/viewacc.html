@@ -1,32 +1,34 @@
 {% extends 'base.html' %}
 
 {% block body %}
-<div class="viewacc">
-{% if columns_curr and data_curr %}
-<br>
-<h2>Group by currency</h2>
-<br>
-<table class="reptable">
-    <thead>
-        <tr>
-            {% for column in columns_curr %}
-            <th class="rep">{{ column }}</th>
-            {% endfor %}
-        </tr>
-    </thead>
-    <tbody>
-        {% for row in data_curr %}
-        <tr>
-            {% for cell in row %}
-            <td class="rep">{{ cell }}</td>
-            {% endfor %}
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-{% endif %}
-<br>
-<h2>Accounts list and remainder</h2>
+<div class="container">
+    <br>
+    {% if columns_curr and data_curr %}
+    <div class="curr_container">
+        <h2>Group by currency</h2>
+        <br>
+        <table class="reptable">
+            <thead>
+                <tr>
+                    {% for column in columns_curr %}
+                    <th class="rep">{{ column }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in data_curr %}
+                <tr>
+                    {% for cell in row %}
+                    <td class="rep">{{ cell }}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+    <br>
+    <!-- <h2>Accounts list and remainder</h2>
 <br>
 {% if columns and data %}
 <table class="reptable">
@@ -47,6 +49,6 @@
         {% endfor %}
     </tbody>
 </table>
-{% endif %}
+{% endif %} -->
 </div>
 {% endblock %}

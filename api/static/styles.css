@@ -22,6 +22,11 @@ h1 {
     text-align: left;
     border-bottom: 2px solid black;
   }
+
+h3 {
+  margin-left: 16px;
+}
+
 nav {
   width: auto;
   background-color: grey;
@@ -53,6 +58,21 @@ nav {
   padding-top: 1px;
   padding-bottom: 1px;
   border: 1px solid;
+}
+
+.container {
+  display: flex;
+  flex-direction: row;
+}
+
+.curr_container{
+  width: 40%;
+  float: left;
+}
+
+.table-container {
+  flex: 1;
+  margin: 10px;
 }
 
 .viewacc {

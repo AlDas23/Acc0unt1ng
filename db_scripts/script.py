@@ -18,22 +18,22 @@ def NewDBase():
                 category text,
                 sub_category text,
                 person_bank text,
-                comment text,
                 sum real,
-                currency text
+                currency text,
+                comment text
             )""")
     c.execute("""CREATE TABLE deposit (
                 date_in text,
                 name text,
                 owner text,
-                comment text,
                 sum real,
                 currency text,
                 months real,
                 date_out text,
                 percent real,
                 currency_rate real,
-                expect real
+                expect real,
+                comment text
             )""")
     c.execute("""CREATE TABLE PB_account_deposit (
                 name text,
@@ -46,9 +46,9 @@ def NewDBase():
                 date text,
                 person_bank_from text,
                 person_bank_to text,
-                comment text,
                 sum real,
-                currency text
+                currency text,
+                comment text
             )""")
     c.execute("""CREATE TABLE advtransfer (
                 id integer,
@@ -71,6 +71,14 @@ def NewDBase():
                 sum real,
                 currency text
             )""")
+    c.execute("""CREATE TABLE Marker_owner (
+                person_bank text,
+                owner text
+            )""")
+    c.execute("""CREATE TABLE Marker_type (
+                person_bank text,
+                type text
+            )""")
     conn.commit()
     conn.close()
 
@@ -80,10 +88,17 @@ def Add(input_field, mode):
     
     if (mode == 'main'):
         values = input_field.split(",")
-        c.execute("SELECT 1 FROM PB_account WHERE person_bank = ? AND currency = ?", (values[3], values[6]))
+        values[4] = round(float(values[4]), 2)
+        c.execute("SELECT 1 FROM PB_account WHERE person_bank = ? AND currency = ?", (values[3], values[5]))
         exists = c.fetchone()
         if (exists == None):
             raise Exception("Person_bank-currency pair does not exist!")
+        if (values[5] > 0):
+            c.execute("SELECT 1 FROM PB_account WHERE person_bank = ? AND currency = ? AND sum > ?", (values[3], values[5], values[4]))
+            exists = c.fetchone()
+            if (exists == None):
+                raise Exception("Insufficient funds!")
+        
         
         c.execute("SELECT MAX(id) FROM main")
         max_id = c.fetchone()
@@ -93,18 +108,20 @@ def Add(input_field, mode):
         max_id = max_id + 1 # Change so that inserted number is +1 from biggest existing id in DB
         values.insert(0, max_id)
         
-        values[6] = round(float(values[6]), 2)
         records = {keys[i]: values[i] for i in range(len (keys))}
         
-        c.execute("INSERT INTO main VALUES (:id, :date, :category, :sub_category, :person_bank, :comment, :sum, :currency)",
+        c.execute("INSERT INTO main VALUES (:id, :date, :category, :sub_category, :person_bank, :sum, :currency, :comment)",
                 records)
         
     elif (mode == 'transfer'):
         values = input_field.split(",")
-        c.execute("SELECT 1 FROM PB_account WHERE person_bank = ? AND currency = ?", (values[2], values[5]))
+        values[3] = round(float(values[3]), 2) 
+        if (values[3] < 0): # Make sum positive if not
+            values[3] = values[3] * -1
+        c.execute("SELECT 1 FROM PB_account WHERE person_bank = ? AND currency = ? AND sum > ?", (values[2], values[4], values[3]))
         exists = c.fetchone()
         if (exists == None):
-            raise Exception("Person_bank-currency pair does not exist!")
+            raise Exception("Person_bank-currency pair does not exist or insufficient funds!")
         
         c.execute("SELECT MAX(id) FROM transfer")
         max_id = c.fetchone()
@@ -112,21 +129,23 @@ def Add(input_field, mode):
         if (max_id == None): # Check if it is exist and change to 0 if not
             max_id = 0
         max_id = max_id + 1 # Change so that inserted number is +1 from biggest existing id in DB
-        
         values.insert(0, max_id)
         
-        values[5] = round(float(values[5]), 2) 
-        if (values[5] < 0): # Make sum positive if not
-            values[5] = values[5] * -1
         records = {tr_keys[i]: values[i] for i in range(len (tr_keys))}
         
-        c.execute("INSERT INTO transfer VALUES (:id, :date, :person_bank_from, :person_bank_to, :comment, :sum, :currency)",
+        c.execute("INSERT INTO transfer VALUES (:id, :date, :person_bank_from, :person_bank_to, :sum, :currency, :comment)",
                 records)
         
     elif (mode == 'advtransfer'):
         values = input_field.split(",")
         values[2] = round(float(values[2]), 2) 
         values[5] = round(float(values[5]), 2) 
+         
+        if (values[2] < 0): # Make sum positive if not
+            values[2] = values[2] * -1
+        if (values[5] < 0):
+            values[5] = values[5] * -1
+            
         c.execute("SELECT 1 FROM PB_account WHERE person_bank = ? AND currency = ? AND sum >= ?", (values[1], values[3], values[2]))
         exists = c.fetchone()
         if (exists == None):
@@ -142,13 +161,7 @@ def Add(input_field, mode):
         if (max_id == None): # Check if it is exist and change to 0 if not
             max_id = 0
         max_id = max_id + 1 # Change so that inserted number is +1 from biggest existing id in DB
-        
         values.insert(0, max_id)
-        
-        if (values[3] < 0): # Make sum positive if not
-            values[3] = values[3] * -1
-        if (values[6] < 0):
-            values[6] = values[6] * -1
             
         records = {advtr_keys[i]: values[i] for i in range(len (advtr_keys))}
         
@@ -157,27 +170,27 @@ def Add(input_field, mode):
         
     elif (mode == 'deposit'):
         values = input_field.split(",")
-        values[4] = round(float(values[4]), 2) 
-        if (values[6] == " "):
-            values[6] = 0
+        values[3] = round(float(values[3]), 2) 
+        if (values[5] == " "):
+            values[5] = 0
         else:
-            values[6] = float(values[6])
-        values[8] = float(values[8])
-        if (values[9] == " "):
-            values[9] = 0
+            values[5] = float(values[5])
+        values[7] = float(values[7])
+        if (values[8] == " "):
+            values[8] = 0
         else:
-            values[9] = float(values[9])
+            values[8] = float(values[8])
         
-        if (values[6] == 0 or values[7] == " "):
-            values.insert(10, 0)
+        if (values[5] == 0 or values[6] == " "):
+            values.insert(9, 0)
         else:
-            percent = values[8] / 100
-            expSum = values[4] + (values[4] * (percent / 12) * values[6])
-            values.insert(11, round(expSum, 2))
+            percent = values[7] / 100
+            expSum = values[3] + (values[3] * (percent / 12) * values[5])
+            values.insert(10, round(expSum, 2))
         
         records = {dp_keys[i]: values[i] for i in range(len (dp_keys))}
         
-        c.execute("INSERT INTO deposit VALUES (:date_in, :name, :owner, :comment, :sum, :currency, :months, :date_out, :percent, :currency_rate, :expect)",
+        c.execute("INSERT INTO deposit VALUES (:date_in, :name, :owner, :sum, :currency, :months, :date_out, :percent, :currency_rate, :expect, :comment)",
                 records)
     
     conn.commit()
@@ -193,24 +206,24 @@ def Read(x):
         c.execute("SELECT * FROM main")
         return c.fetchall()
     elif (x == 'm+'):
-        c.execute("SELECT id, date, category, person_bank, comment, sum, currency FROM main WHERE sum > 0 ORDER BY date DESC")
+        c.execute("SELECT id, date, category, person_bank, sum, currency, comment FROM main WHERE sum > 0 ORDER BY datet DESC, id DESC")
         return c.fetchall()
     elif (x == 'm-'):
-        c.execute("SELECT * FROM main WHERE sum < 0 ORDER BY date DESC")
+        c.execute("SELECT * FROM main WHERE sum < 0 ORDER BY date DESC, id DESC")
         return c.fetchall()
     elif (x == 'allacc'):
         c.execute("SELECT * FROM PB_account ORDER BY person_bank ASC")
         return c.fetchall()
     elif (x == 'alldepacc'):
-        c.execute("SELECT * FROM PB_account_deposit ORDER BY person_bank ASC")
+        c.execute("SELECT * FROM PB_account_deposit WHERE sum != 0 ORDER BY person_bank ASC")
         return c.fetchall()
     elif (x == 'opendep'):
         current_date = datetime.now().strftime('%Y-%m-%d')
-        c.execute("SELECT * FROM deposit WHERE date_out > ? OR date_out == ' ' ORDER BY date_out DESC", (current_date,))
+        c.execute("SELECT * FROM deposit WHERE date_out > ? OR date_out == ' ' ORDER BY date_out DESC, id DESC", (current_date,))
         return c.fetchall()
     elif (x == 'closeddep'):
         current_date = datetime.now().strftime('%Y-%m-%d')
-        c.execute("SELECT * FROM deposit WHERE date_out <= ? AND date_out != ' ' ORDER BY date_out DESC", (current_date,))
+        c.execute("SELECT * FROM deposit WHERE date_out <= ? AND date_out != ' ' ORDER BY date_out DESC, id DESC", (current_date,))
         return c.fetchall()
     elif (x == 'alltran'):
         c.execute("SELECT * FROM transfer ORDER BY date DESC")
@@ -224,19 +237,26 @@ def Read(x):
     elif (x == 'allcurr'):
         c.execute("SELECT currency, SUM(sum) FROM PB_account GROUP BY currency")
         return c.fetchall()
-    elif (x == 'catincrep'):
-        categories_df = pd.read_csv(SPVcatIncPath, header=None)
-        categories_list = categories_df[0].tolist()
+    # elif (x == 'catincrep'):
+    #     categories_df = pd.read_csv(SPVcatIncPath, header=None)
+    #     categories_list = categories_df[0].tolist()
         
-        query = 'SELECT category, currency, sum FROM main WHERE category IN ({}) ORDER BY category DESC'.format(','.join('?' for _ in categories_list))
-        c.execute(query, categories_list)
+    #     query = 'SELECT category, currency, sum FROM main WHERE category IN ({}) ORDER BY category DESC'.format(','.join('?' for _ in categories_list))
+    #     c.execute(query, categories_list)
+    #     return c.fetchall()
+    # elif (x == 'catexprep'):
+    #     categories_df = pd.read_csv(SPVcatExpPath, header=None)
+    #     categories_list = categories_df[0].tolist()
+        
+    #     query = 'SELECT category, currency, sum FROM main WHERE category IN ({}) ORDER BY category DESC'.format(','.join('?' for _ in categories_list))
+    #     c.execute(query, categories_list)
+    #     return c.fetchall()
+    
+    elif (x == 'extype'):
+        c.execute("SELECT type FROM Marker_type")
         return c.fetchall()
-    elif (x == 'catexprep'):
-        categories_df = pd.read_csv(SPVcatExpPath, header=None)
-        categories_list = categories_df[0].tolist()
-        
-        query = 'SELECT category, currency, sum FROM main DESC WHERE category IN ({}) ORDER BY category DESC'.format(','.join('?' for _ in categories_list))
-        c.execute(query, categories_list)
+    elif (x == 'exowner'):
+        c.execute("SELECT owner FROM Marker_owner")
         return c.fetchall()
     
     elif (x == 'retacc'): # Return list of all accounts
@@ -269,6 +289,22 @@ def ReadAdv(type, month):
             ORDER BY 
                 category DESC
             """, (month,))
+        return c.fetchall()
+    
+    if (type == 'catincrep'):
+        categories_df = pd.read_csv(SPVcatIncPath, header=None)
+        categories_list = categories_df[0].tolist()
+        
+        query = 'SELECT category, currency, sum FROM main category IN ({}) WHERE strftime("%m", date) = ? ORDER BY category DESC'.format(','.join('?' for _ in categories_list))
+        c.execute(query, month, categories_list)
+        return c.fetchall()
+    
+    if (type == 'catexprep'):
+        categories_df = pd.read_csv(SPVcatExpPath, header=None)
+        categories_list = categories_df[0].tolist()
+        
+        query = 'SELECT category, currency, sum FROM main category IN ({}) WHERE strftime("%m", date) = ? ORDER BY category DESC'.format(','.join('?' for _ in categories_list))
+        c.execute(query, month, categories_list)
         return c.fetchall()
     
     conn.commit()
@@ -400,7 +436,7 @@ def Re_calculate():
                     comment,
                     sum,
                     currency
-                ) VALUES (?, ?, ' ', ' ', ?, 'Deposit retrieve', ?, ?)
+                ) VALUES (?, ?, ' ', ' ', ?, 'Deposit return', ?, ?)
             """, (max_id, current_date, expired[1], expired[2], expired[3]))
     
     conn.commit()
@@ -469,6 +505,41 @@ def InitPB():
     conn.close()
     
     Re_calculate()
+    
+def Mark(marker, mode):
+    conn = sqlite3.connect(dbPath)
+    c = conn.cursor()
+    
+    marker = marker.split(',')
+    
+    c.execute("SELECT 1 FROM (PB_account, PB_account_deposit) WHERE person_bank = ?", (marker[0],))
+    exists = c.fetchone()
+    if (exists != None):
+        print("Person_bank does not exist!\n\n")
+        return
+    
+    if (mode == 'type'):
+        c.execute("SELECT 1 FROM Marker_owner WHERE person_bank = ? AND owner = ?", (marker[0], marker[1]))
+        exists = c.fetchone()
+        if (exists != None):
+            print("Marker already exists!\n\n")
+            return
+        else:
+            c.execute("INSERT INTO Marker_type (person_bank, type) VALUES (?, ?)", (marker[0], marker[1]))
+            print("Success!\n\n")
+    
+    elif (mode == 'owner'):
+        c.execute("SELECT 1 FROM Marker_owner WHERE person_bank = ? AND owner = ?", (marker[0], marker[1]))
+        exists = c.fetchone()
+        if (exists != None):
+            print("Marker already exists!\n\n")
+            return
+        else:
+            c.execute("INSERT INTO Marker_owner (person_bank, owner) VALUES (?, ?)", (marker[0], marker[1]))
+            print("Success!\n\n")
+                
+    conn.commit()
+    conn.close()
     
 def DelPB():
     conn = sqlite3.connect(dbPath)

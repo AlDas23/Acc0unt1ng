@@ -9,9 +9,9 @@
             <th>Date</th>
             <th>Sender</th>
             <th>Receiver</th>
-            <th>Comment</th>
             <th>Sum</th>
             <th>Currency</th>
+            <th>Comment</th>
         </tr>
         <tr>
             <td><input type="date" id="Date" name="Date" class="date" required></td>
@@ -31,7 +31,6 @@
                     {% endfor %}
                 </select>
             </td>
-            <td class="fields"><input type="text" id="Comment" name="Comment" autocomplete="off"></td>
             <td class="fields"><input type="text" id="Sum" name="Sum" autocomplete="off" required></td>
             <td>
                 <select id="Currency" name="Currency" class="select_curr" required>
@@ -41,6 +40,7 @@
                     {% endfor %}
                 </select>
             </td>
+            <td class="fields"><input type="text" id="Comment" name="Comment" autocomplete="off"></td>
         </tr>
     </table><br>
     <input type="submit" value="Add" class="submitrec">
@@ -58,7 +58,7 @@
             <th>Receiver</th>
             <th>Sum</th>
             <th>Currency</th>
-            <th>Comment</th>      
+            <th>Comment</th>
         </tr>
         <tr>
             <td><input type="date" id="Date" name="Date" class="date" required></td>
@@ -103,46 +103,52 @@
 </form>
 <br>
 {% if columns and data %}
-<h3>Transfer records</h3>
-<table class="reptable">
-    <thead>
-        <tr>
-            {% for column in columns %}
-            <th class="rep">{{ column }}</th>
-            {% endfor %}
-        </tr>
-    </thead>
-    <tbody>
-        {% for row in data %}
-        <tr>
-            {% for cell in row %}
-            <td class="rep">{{ cell }}</td>
-            {% endfor %}
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-{% endif %}
-<br>
-{% if columnsA and dataA %}
-<h3>Advanced transfer records</h3>
-<table class="reptable">
-    <thead>
-        <tr>
-            {% for column in columnsA %}
-            <th class="rep">{{ column }}</th>
-            {% endfor %}
-        </tr>
-    </thead>
-    <tbody>
-        {% for row in dataA %}
-        <tr>
-            {% for cell in row %}
-            <td class="rep">{{ cell }}</td>
-            {% endfor %}
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+<div class="container">
+    <div class="table-container">
+        <h3>Transfer records</h3>
+        <table class="reptable">
+            <thead>
+                <tr>
+                    {% for column in columns %}
+                    <th class="rep">{{ column }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in data %}
+                <tr>
+                    {% for cell in row %}
+                    <td class="rep">{{ cell }}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+    <br>
+    {% if columnsA and dataA %}
+    <div class="table-container">
+        <h3>Advanced transfer records</h3>
+        <table class="reptable">
+            <thead>
+                <tr>
+                    {% for column in columnsA %}
+                    <th class="rep">{{ column }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in dataA %}
+                <tr>
+                    {% for cell in row %}
+                    <td class="rep">{{ cell }}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
 {% endif %}
 {% endblock %}
