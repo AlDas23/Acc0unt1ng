@@ -65,8 +65,14 @@ nav {
   flex-direction: row;
 }
 
-.curr_container{
+.leftacc_container{
   width: 40%;
+  float: left;
+  margin-right: 16px;
+}
+
+.leftacc_container{
+  width: 45%;
   float: left;
 }
 

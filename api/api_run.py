@@ -271,10 +271,34 @@ def ViewAdvReports():
 @app.route("/view/acc", methods = ["GET"])
 def ViewAcc():
     if (request.method == "GET"):
-        data = Read('allacc')
         data_curr = Read('allcurr')
         columns_curr = ["Currency", "Sum"]
-        return render_template('viewacc.html', columns=["Person bank", "Sum", "Currency"], data=data, data_curr=data_curr, columns_curr=columns_curr)    
+        
+        data_owner = Read('allmowner')
+        columns_owner = ["Owner", "Sum", "Currency"]
+        
+        data_type = Read('allmtype')
+        columns_type = ["Type", "Sum", "Currency"]
+        
+        owners = Read('retmowner')
+        types = Read('retmtype')
+        options = {
+        'owners': owners,
+        'types': types
+        }
+        
+        return render_template(
+                                'viewacc.html',
+                                data_curr=data_curr,
+                                columns_curr=columns_curr,
+                                data_owner=data_owner,
+                                columns_owner=columns_owner,
+                                data_type=data_type,
+                                columns_type=columns_type,
+                                options=options
+                                )    
+    else:
+        pass
     
 def api_start():
     app.run(debug=True)

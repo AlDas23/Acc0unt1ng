@@ -206,7 +206,7 @@ def Read(x):
         c.execute("SELECT * FROM main")
         return c.fetchall()
     elif (x == 'm+'):
-        c.execute("SELECT id, date, category, person_bank, sum, currency, comment FROM main WHERE sum > 0 ORDER BY datet DESC, id DESC")
+        c.execute("SELECT id, date, category, person_bank, sum, currency, comment FROM main WHERE sum > 0 ORDER BY date DESC, id DESC")
         return c.fetchall()
     elif (x == 'm-'):
         c.execute("SELECT * FROM main WHERE sum < 0 ORDER BY date DESC, id DESC")
@@ -219,11 +219,11 @@ def Read(x):
         return c.fetchall()
     elif (x == 'opendep'):
         current_date = datetime.now().strftime('%Y-%m-%d')
-        c.execute("SELECT * FROM deposit WHERE date_out > ? OR date_out == ' ' ORDER BY date_out DESC, id DESC", (current_date,))
+        c.execute("SELECT * FROM deposit WHERE date_out > ? OR date_out == ' ' ORDER BY date_out DESC", (current_date,))
         return c.fetchall()
     elif (x == 'closeddep'):
         current_date = datetime.now().strftime('%Y-%m-%d')
-        c.execute("SELECT * FROM deposit WHERE date_out <= ? AND date_out != ' ' ORDER BY date_out DESC, id DESC", (current_date,))
+        c.execute("SELECT * FROM deposit WHERE date_out <= ? AND date_out != ' ' ORDER BY date_out DESC", (current_date,))
         return c.fetchall()
     elif (x == 'alltran'):
         c.execute("SELECT * FROM transfer ORDER BY date DESC")
@@ -237,6 +237,38 @@ def Read(x):
     elif (x == 'allcurr'):
         c.execute("SELECT currency, SUM(sum) FROM PB_account GROUP BY currency")
         return c.fetchall()
+    
+    elif (x == 'allmtype'):
+        c.execute("""
+                SELECT 
+                    m.type,
+                    COALESCE(SUM(pb.sum), 0) + COALESCE(SUM(pbd.sum), 0) as total_balance,
+                    pb.currency as pb_currency
+                FROM 
+                    Marker_type m
+                LEFT JOIN PB_account pb ON m.person_bank = pb.person_bank
+                LEFT JOIN PB_account_deposit pbd ON m.person_bank = pbd.person_bank
+                GROUP BY 
+                    m.type, 
+                    pb.currency
+                """)
+        return c.fetchall()
+    elif (x == 'allmowner'):
+        c.execute("""
+                SELECT 
+                    m.owner,
+                    COALESCE(SUM(pb.sum), 0) + COALESCE(SUM(pbd.sum), 0) as total_balance,
+                    pb.currency as pb_currency
+                FROM 
+                    Marker_owner m
+                LEFT JOIN PB_account pb ON m.person_bank = pb.person_bank
+                LEFT JOIN PB_account_deposit pbd ON m.person_bank = pbd.person_bank
+                GROUP BY 
+                    m.owner, 
+                    pb.currency
+                """)
+        return c.fetchall()
+    
     # elif (x == 'catincrep'):
     #     categories_df = pd.read_csv(SPVcatIncPath, header=None)
     #     categories_list = categories_df[0].tolist()
@@ -253,14 +285,24 @@ def Read(x):
     #     return c.fetchall()
     
     elif (x == 'extype'):
-        c.execute("SELECT type FROM Marker_type")
+        c.execute("SELECT DISTINCT type FROM Marker_type")
         return c.fetchall()
     elif (x == 'exowner'):
-        c.execute("SELECT owner FROM Marker_owner")
+        c.execute("SELECT DISTINCT owner FROM Marker_owner")
         return c.fetchall()
     
     elif (x == 'retacc'): # Return list of all accounts
         c.execute("SELECT DISTINCT person_bank FROM PB_account")
+        result = [row[0] for row in c.fetchall()]
+        return result
+    
+    elif (x == 'retmowner'): # Return list of all owners
+        c.execute("SELECT DISTINCT owner FROM Marker_owner")
+        result = [row[0] for row in c.fetchall()]
+        return result
+    
+    elif (x == 'retmtype'): # Return list of all types
+        c.execute("SELECT DISTINCT type FROM Marker_type")
         result = [row[0] for row in c.fetchall()]
         return result
         
@@ -512,7 +554,7 @@ def Mark(marker, mode):
     
     marker = marker.split(',')
     
-    c.execute("SELECT 1 FROM (PB_account, PB_account_deposit) WHERE person_bank = ?", (marker[0],))
+    c.execute("SELECT 1 FROM (PB_account pb, PB_account_deposit pbd) WHERE pb.person_bank = ? OR pbd.person_bank = ?", (marker[0], marker[0]))
     exists = c.fetchone()
     if (exists != None):
         print("Person_bank does not exist!\n\n")

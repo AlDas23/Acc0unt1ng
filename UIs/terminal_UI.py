@@ -24,17 +24,17 @@ def Terminal():
             
         elif (inp == '2'):
             print(""" 
-                 allm - all main records
-                 allacc - all pb accounts
-                 m+ - positive main records
-                 m- - negative main records
-                 allcurr - all currencies
-                 alltran - all transfer records
-                 alladvtran - all advanced transfer records
-                 alldep - all deposit records
-                 alldepacc - deposit accounts
-                 opendep - open deposits
-                 closeddep - closed deposits
+ allm - all main records
+ allacc - all pb accounts
+ m+ - positive main records
+ m- - negative main records
+ allcurr - all currencies
+ alltran - all transfer records
+ alladvtran - all advanced transfer records
+ alldep - all deposit records
+ alldepacc - deposit accounts
+ opendep - open deposits
+ closeddep - closed deposits
                  """)
             mode = input()
             print(Read(mode))
@@ -79,13 +79,13 @@ def PreMark():
             
 def SpecialValues():
     print("""
-        What field values to edit?
-         catinc - income category
-         catexp - expense category
-         subcat - sub-category
-         curr - currency
-         initpb - person_bank
-         delpb - delete person_bank account
+What field values to edit?
+ catinc - income category
+ catexp - expense category
+ subcat - sub-category
+ curr - currency
+ initpb - person_bank
+ delpb - delete person_bank account
         """)
     inp = input()
     if (inp == 'catinc'):

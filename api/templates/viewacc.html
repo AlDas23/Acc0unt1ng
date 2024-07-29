@@ -2,9 +2,9 @@
 
 {% block body %}
 <div class="container">
-    <br>
-    {% if columns_curr and data_curr %}
-    <div class="curr_container">
+    <div class="leftacc_container">
+        <br>
+        {% if columns_curr and data_curr %}
         <h2>Group by currency</h2>
         <br>
         <table class="reptable">
@@ -25,30 +25,93 @@
                 {% endfor %}
             </tbody>
         </table>
+        {% endif %}
+        <br>
+        {% if columns_owner and data_owner %}
+        <h2>Group by owner</h2>
+        <br>
+        <table class="reptable">
+            <thead>
+                <tr>
+                    {% for column in columns_owner %}
+                    <th class="rep">{{ column }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in data_owner %}
+                <tr>
+                    {% for cell in row %}
+                    <td class="rep">{{ cell }}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+        <br>
+        {% if columns_type and data_type %}
+        <h2>Group by type</h2>
+        <br>
+        <table class="reptable">
+            <thead>
+                <tr>
+                    {% for column in columns_type %}
+                    <th class="rep">{{ column }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in data_type %}
+                <tr>
+                    {% for cell in row %}
+                    <td class="rep">{{ cell }}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
     </div>
-    {% endif %}
-    <br>
-    <!-- <h2>Accounts list and remainder</h2>
-<br>
-{% if columns and data %}
-<table class="reptable">
-    <thead>
-        <tr>
-            {% for column in columns %}
-            <th class="rep">{{ column }}</th>
-            {% endfor %}
-        </tr>
-    </thead>
-    <tbody>
-        {% for row in data %}
-        <tr>
-            {% for cell in row %}
-            <td class="rep">{{ cell }}</td>
-            {% endfor %}
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-{% endif %} -->
+    <div class="rightacc_container">
+        <form action="/view/acc" method="post">
+            <label for="accowner">Choose owner to view:</label>
+            <select name="Acc owner" id="accowner">
+                <option value=" " selected>None</option>
+                {% for owner in options.owners %}
+                <option value="{{ owner }}">{{ owner }}</option>
+                {% endfor %}
+            </select>
+            <label for="acctype">Choose type to view:</label>
+            <select name="Acc type" id="acctype">
+                <option value=" " selected>None</option>
+                {% for type in options.types %}
+                <option value="{{ type }}">{{ type }}</option>
+                {% endfor %}
+            </select>
+            <input type="submit" value="View">
+        </form>
+        <br>
+        {% if columns and data %}
+        <table class="reptable">
+            <thead>
+                <tr>
+                    {% for column in columns %}
+                    <th class="rep">{{ column }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in data %}
+                <tr>
+                    {% for cell in row %}
+                    <td class="rep">{{ cell }}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+    </div>
 </div>
 {% endblock %}
