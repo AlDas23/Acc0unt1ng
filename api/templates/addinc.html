@@ -1,69 +1,75 @@
 {% extends 'base.html' %}
 
 {% block body %}
-<h2>Income records</h2>
-<form action="/add/income" method="post">
+  <h2>Income records</h2>
+  <form action="/add/income" method="post">
     <table>
+      <tr>
+        <th>Date</th>
+        <th>Category</th>
+        <th>Person-Bank</th>
+        <th>Sum</th>
+        <th>Currency</th>
+        <th>Comment</th>
+      </tr>
+      <tr>
+        <td>
+          <input type="date" id="Date" name="Date" class="date" required />
+        </td>
+        <td class="fields">
+          <select id="Category" name="Category" class="select" required>
+            <option value="" disabled selected></option>
+            {% for category in options.categories %}
+              <option value="{{ category }}">{{ category }}</option>
+            {% endfor %}
+          </select>
+        </td>
+        <td class="fields">
+          <select id="Person-Bank" name="Person-Bank" class="select" required>
+            <option value="" disabled selected></option>
+            {% for person_bank in options.person_banks %}
+              <option value="{{ person_bank }}">{{ person_bank }}</option>
+            {% endfor %}
+          </select>
+        </td>
+        <td class="fields">
+          <input type="text" id="Sum" name="Sum" autocomplete="off" required />
+        </td>
+        <td>
+          <select id="Currency" name="Currency" class="select_curr" required>
+            <option value="" disabled selected></option>
+            {% for currency in options.currencies %}
+              <option value="{{ currency }}">{{ currency }}</option>
+            {% endfor %}
+          </select>
+        </td>
+        <td class="fields">
+          <input type="text" id="Comment" name="Comment" autocomplete="off" />
+        </td>
+      </tr>
+    </table><br />
+    <input type="submit" value="Add" class="submitrec" />
+  </form>
+  <br />
+  <br />
+  {% if columns and data %}
+    <table class="reptable">
+      <thead>
         <tr>
-            <th>Date</th>
-            <th>Category</th>
-            <th>Person-Bank</th>
-            <th>Sum</th>
-            <th>Currency</th>
-            <th>Comment</th>
-        </tr>
-        <tr>
-            <td><input type="date" id="Date" name="Date" class="date" required></td>
-            <td class="fields">
-                <select id="Category" name="Category" class="select" required>
-                    <option value="" disabled selected> </option>
-                    {% for category in options.categories %}
-                    <option value="{{ category }}">{{ category }}</option>
-                    {% endfor %}
-                </select>
-            </td>
-            <td class="fields">
-                <select id="Person-Bank" name="Person-Bank" class="select" required>
-                    <option value="" disabled selected> </option>
-                    {% for person_bank in options.person_banks %}
-                    <option value="{{ person_bank }}">{{ person_bank }}</option>
-                    {% endfor %}
-                </select>
-            </td>
-            <td class="fields"><input type="text" id="Sum" name="Sum" autocomplete="off" required></td>
-            <td>
-                <select id="Currency" name="Currency" class="select_curr" required>
-                    <option value="" disabled selected> </option>
-                    {% for currency in options.currencies %}
-                    <option value="{{ currency }}">{{ currency }}</option>
-                    {% endfor %}
-                </select>
-            </td>
-            <td class="fields"><input type="text" id="Comment" name="Comment" autocomplete="off"></td>
-        </tr>
-    </table><br>
-    <input type="submit" value="Add" class="submitrec">
-</form>
-<br>
-<br>
-{% if columns and data %}
-<table class="reptable">
-    <thead>
-        <tr>
-            {% for column in columns %}
+          {% for column in columns %}
             <th class="rep">{{ column }}</th>
-            {% endfor %}
+          {% endfor %}
         </tr>
-    </thead>
-    <tbody>
+      </thead>
+      <tbody>
         {% for row in data %}
-        <tr>
+          <tr>
             {% for cell in row %}
-            <td class="rep">{{ cell }}</td>
+              <td class="rep">{{ cell }}</td>
             {% endfor %}
-        </tr>
+          </tr>
         {% endfor %}
-    </tbody>
-</table>
-{% endif %}
+      </tbody>
+    </table>
+  {% endif %}
 {% endblock %}

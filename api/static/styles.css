@@ -68,12 +68,12 @@ nav {
 .leftacc_container{
   width: 40%;
   float: left;
-  margin-right: 16px;
+  margin-right: 48px;
 }
 
-.leftacc_container{
-  width: 45%;
-  float: left;
+.rightacc_container{
+  width: 50%;
+  float: right;
 }
 
 .table-container {
@@ -113,4 +113,8 @@ nav {
 
 .select_curr {
   width: 80px;
+}
+
+label {
+  margin-left: 16px;
 }
