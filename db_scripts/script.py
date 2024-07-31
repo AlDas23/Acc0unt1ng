@@ -25,6 +25,19 @@ def NewDBase():
             )"""
     )
     c.execute(
+        """CREATE TABLE exc_rate (
+                date text,
+                RON real,
+                UAH real,
+                EUR real,
+                USD real,
+                GBP real,
+                CHF real,
+                HUF real,
+                AUR real
+            )"""
+    )
+    c.execute(
         """CREATE TABLE deposit (
                 date_in text,
                 name text,
@@ -244,6 +257,20 @@ def Add(input_field, mode):
             records,
         )
 
+    elif mode == "currrate":
+        values = input_field.split(",")
+        for n in range(1, 7):
+            values[n] = round(float(values[n]), 2)
+
+        values.insert(2, round(1 / values[1], 2))
+
+        records = {curr_keys[i]: values[i] for i in range(len(curr_keys))}
+
+        c.execute(
+            "INSERT INTO exc_rate VALUES (:date, :RON, :UAH, :EUR, :USD, :GBP, :CHF, :HUF, :AUR)",
+            records,
+        )
+
     conn.commit()
     conn.close()
 
@@ -298,6 +325,9 @@ def Read(x):
         return c.fetchall()
     elif x == "allcurr":
         c.execute("SELECT currency, SUM(sum) FROM PB_account GROUP BY currency")
+        return c.fetchall()
+    elif x == "allcurrrate":
+        c.execute("SELECT * FROM exc_rate ORDER BY date DESC")
         return c.fetchall()
 
     elif x == "allmtype":
@@ -538,7 +568,7 @@ def MarkerRead(markers, mode):
         return results
 
     elif mode == "byall":
-        values = markers.split(',')
+        values = markers.split(",")
         c.execute(
             """
                 SELECT

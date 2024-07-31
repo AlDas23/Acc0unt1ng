@@ -47,3 +47,4 @@ dp_keys = [
     "expect",
     "comment",
 ]
+curr_keys = ["date", "RON", "UAH", "EUR", "USD", "GBP", "CHF", "HUF", "AUR"]

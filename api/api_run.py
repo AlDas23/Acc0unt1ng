@@ -377,19 +377,6 @@ def ViewAcc():
     options = {"owners": owners, "types": types}
 
     if request.method == "GET":
-        # data_curr = Read("allcurr")
-        # columns_curr = ["Currency", "Sum"]
-
-        # data_owner = Read("allmowner")
-        # columns_owner = ["Owner", "Sum", "Currency"]
-
-        # data_type = Read("allmtype")
-        # columns_type = ["Type", "Sum", "Currency"]
-
-        # owners = Read("retmowner")
-        # types = Read("retmtype")
-        # options = {"owners": owners, "types": types}
-
         return render_template(
             "viewacc.html",
             data_curr=data_curr,
@@ -430,6 +417,40 @@ def ViewAcc():
             selected_owner=owner,
             selected_type=type,
         )
+
+
+@app.route("/currency", methods=["GET", "POST"])
+def Currencies():
+    if request.method == "GET":
+        data = Read("allcurrrate")
+        columns = ["Date", "RON", "UAH", "EUR", "USD", "GBP", "CHF", "HUF", "AUR"]
+        
+        return render_template("currencies.html", columns=columns, data=data)
+
+    else:
+        date = request.form["Date"]
+        ron = request.form["RON"]
+        eur = request.form["EUR"]
+        usd = request.form["USD"]
+        gbp = request.form["GBP"]
+        chf = request.form["CHF"]
+        huf = request.form["HUF"]
+        aur = request.form["AUR"]
+
+        final_str = f"{date},{ron},{eur},{usd},{gbp},{chf},{huf},{aur}"
+
+        try:
+            Add(final_str, "currrate")
+        except Exception as e:
+            # Capture the exception message
+            error_message = str(e)
+            # Return the error message in the response
+            return render_template_string(
+                "<h1>Failed to currency rate!</h1><p>{{ error_message }}</p>",
+                error_message=error_message,
+            )
+
+        return redirect(url_for("Currencies"))
 
 
 def api_start():
