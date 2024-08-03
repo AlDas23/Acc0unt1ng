@@ -731,26 +731,6 @@ def Re_calculate():
                 (name, person_bank, round(total_sum, 2), currency),
             )
 
-    # Check for any person_bank and currency pairs that are missing in the main and transfer tables
-    # c.execute('SELECT person_bank, currency FROM PB_account')
-    # existing_pairs = c.fetchall()
-    # for person_bank, currency in existing_pairs:
-    #     c.execute('''
-    #         SELECT SUM(sum)
-    #         FROM (
-    #             SELECT sum FROM main WHERE person_bank = ? AND currency = ?
-    #             UNION ALL
-    #             SELECT sum FROM Init_PB WHERE person_bank = ? AND currency = ?
-    #             UNION ALL
-    #             SELECT -sum FROM transfer WHERE person_bank_from = ? AND currency = ?
-    #             UNION ALL
-    #             SELECT sum FROM transfer WHERE person_bank_to = ? AND currency = ?
-    #         )
-    #     ''', (person_bank, currency, person_bank, currency, person_bank, currency, person_bank, currency))
-    #     total_sum = c.fetchone()[0]
-    #     if total_sum is None:
-    #         c.execute('UPDATE PB_account SET sum = 0 WHERE person_bank = ? AND currency = ?', (person_bank, currency))
-
     # Check active deposits and create income/expense if due
     c.execute(
         "SELECT name, person_bank, sum, currency FROM PB_account_deposit WHERE sum != 0"
