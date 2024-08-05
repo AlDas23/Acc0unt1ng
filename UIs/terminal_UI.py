@@ -73,9 +73,9 @@ def Terminal():
 
 
 def PreMark():
-    print("Existing type markers:\n", Read("extype"), "\n")
     print("Existing owner markers:\n", Read("exowner"), "\n\n")
-    print("owner or type marker?: ")
+    print("Existing type markers:\n", Read("extype"), "\n")
+    print("'owner' or 'type' marker?: ")
     select = input()
     if select == "type":
         print("Input new marker (person_bank,type)\n")

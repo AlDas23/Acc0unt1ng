@@ -171,6 +171,7 @@ def Transfer():
             "Receiver",
             "Sum",
             "Currency",
+            "Currency rate",
             "Comment",
         ]
 
@@ -219,15 +220,14 @@ def Transfer():
             receiver = request.form.get("Receiver", "")
             rsum = request.form.get("RSum", "")
             rcurr = request.form.get("RCurrency", "")
+            curr_rate = request.form.get("Currency rate", "")
             comment = request.form.get("Comment", "")
 
             # Check if comment is empty and assign a whitespace if it is
             if not comment:
                 comment = " "
 
-            final_str = (
-                f"{date},{sender},{ssum},{scurr},{receiver},{rsum},{rcurr},{comment}"
-            )
+            final_str = f"{date},{sender},{ssum},{scurr},{receiver},{rsum},{rcurr},{curr_rate},{comment}"
 
             try:
                 Add(final_str, "advtransfer")
@@ -424,7 +424,7 @@ def Currencies():
     if request.method == "GET":
         data = Read("allcurrrate")
         columns = ["Date", "RON", "UAH", "EUR", "USD", "GBP", "CHF", "HUF", "AUR"]
-        
+
         return render_template("currencies.html", columns=columns, data=data)
 
     else:

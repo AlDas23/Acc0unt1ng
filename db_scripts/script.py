@@ -44,7 +44,7 @@ def NewDBase():
                 owner text,
                 sum real,
                 currency text,
-                months real,
+                months integer,
                 date_out text,
                 percent real,
                 currency_rate real,
@@ -81,6 +81,7 @@ def NewDBase():
                 person_bank_to text,
                 sum_to real,
                 currency_to text,
+                currency_rate real,
                 comment text
             )"""
     )
@@ -128,7 +129,7 @@ def Add(input_field, mode):
         exists = c.fetchone()
         if exists == None:
             raise Exception("Person_bank-currency pair does not exist!")
-        if values[5] > 0:
+        if values[4] < 0:
             c.execute(
                 "SELECT 1 FROM PB_account WHERE person_bank = ? AND currency = ? AND sum > ?",
                 (values[3], values[5], values[4]),
@@ -226,7 +227,7 @@ def Add(input_field, mode):
         records = {advtr_keys[i]: values[i] for i in range(len(advtr_keys))}
 
         c.execute(
-            "INSERT INTO advtransfer VALUES (:id, :date, :person_bank_from, :sum_from, :currency_from, :person_bank_to, :sum_to, :currency_to, :comment)",
+            "INSERT INTO advtransfer VALUES (:id, :date, :person_bank_from, :sum_from, :currency_from, :person_bank_to, :sum_to, :currency_to, :currency_rate :comment)",
             records,
         )
 
@@ -236,7 +237,7 @@ def Add(input_field, mode):
         if values[5] == " ":
             values[5] = 0
         else:
-            values[5] = float(values[5])
+            values[5] = int(values[5])
         values[7] = float(values[7])
         if values[8] == " ":
             values[8] = 0
@@ -440,7 +441,7 @@ def ReadAdv(type, month):
         query = 'SELECT category, currency, sum FROM main category IN ({}) WHERE strftime("%m", date) = ? ORDER BY category DESC'.format(
             ",".join("?" for _ in categories_list)
         )
-        c.execute(query, month, categories_list)
+        c.execute(query, month)
         return c.fetchall()
 
     if type == "catexprep":
@@ -450,7 +451,7 @@ def ReadAdv(type, month):
         query = 'SELECT category, currency, sum FROM main category IN ({}) WHERE strftime("%m", date) = ? ORDER BY category DESC'.format(
             ",".join("?" for _ in categories_list)
         )
-        c.execute(query, month, categories_list)
+        c.execute(query, month)
         return c.fetchall()
 
     conn.commit()
@@ -870,8 +871,10 @@ def Mark(marker, mode):
         )
         exists = c.fetchone()
         if exists != None:
-            print("Marker already exists!\n\n")
-            return
+            c.execute(
+                "UPDATE Marker_owner SET person_bank = ?, owner = ? WHERE person_bank = ?",
+                (marker[0], marker[1], marker[0]),
+            )
         else:
             c.execute(
                 "INSERT INTO Marker_type (person_bank, type) VALUES (?, ?)",
@@ -886,8 +889,10 @@ def Mark(marker, mode):
         )
         exists = c.fetchone()
         if exists != None:
-            print("Marker already exists!\n\n")
-            return
+            c.execute(
+                "UPDATE Marker_type SET person_bank = ?, type = ? WHERE person_bank = ?",
+                (marker[0], marker[1], marker[0]),
+            )
         else:
             c.execute(
                 "INSERT INTO Marker_owner (person_bank, owner) VALUES (?, ?)",
