@@ -366,21 +366,6 @@ def Read(x):
         )
         return c.fetchall()
 
-    # elif (x == 'catincrep'):
-    #     categories_df = pd.read_csv(SPVcatIncPath, header=None)
-    #     categories_list = categories_df[0].tolist()
-
-    #     query = 'SELECT category, currency, sum FROM main WHERE category IN ({}) ORDER BY category DESC'.format(','.join('?' for _ in categories_list))
-    #     c.execute(query, categories_list)
-    #     return c.fetchall()
-    # elif (x == 'catexprep'):
-    #     categories_df = pd.read_csv(SPVcatExpPath, header=None)
-    #     categories_list = categories_df[0].tolist()
-
-    #     query = 'SELECT category, currency, sum FROM main WHERE category IN ({}) ORDER BY category DESC'.format(','.join('?' for _ in categories_list))
-    #     c.execute(query, categories_list)
-    #     return c.fetchall()
-
     elif x == "extype":
         c.execute("SELECT DISTINCT type FROM Marker_type")
         return c.fetchall()
@@ -402,6 +387,11 @@ def Read(x):
         c.execute("SELECT DISTINCT type FROM Marker_type")
         result = [row[0] for row in c.fetchall()]
         return result
+    
+    elif x == "retcurrr":
+        query = "SELECT * FROM exc_rate ORDER BY date"
+        df = pd.read_sql_query(query, conn)
+        return df
 
     conn.commit()
     conn.close()

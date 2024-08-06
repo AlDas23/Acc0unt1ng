@@ -78,7 +78,21 @@
             {% endfor %}
           </tr>
         {% endfor %}
+        <td>
+          <form action="/edit/expense/{{ row.0 }}" method="get">
+            <input type="submit" value="Edit" />
+          </form>
+        </td>
       </tbody>
     </table>
+  {% endif %}
+  {% if edit_record %}
+    <h2>Edit Expense</h2>
+    <form action="/edit/expense/{{ edit_record.ID }}" method="post">
+      <!-- Similar form structure to the 'Add' form but populated with `edit_record` data -->
+      <!-- Populate form fields with `edit_record` details -->
+      <!-- ... -->
+      <input type="submit" value="Update" class="submitrec" />
+    </form>
   {% endif %}
 {% endblock %}

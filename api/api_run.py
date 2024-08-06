@@ -6,11 +6,34 @@ from flask import (
     url_for,
     render_template_string,
 )
+import base64
+import io
+import matplotlib.pyplot as plt
 from db_scripts.script import *
 from db_scripts.consts import *
 
 
 app = Flask(__name__)
+
+
+def plot_to_img_tag(df):
+    plt.figure(figsize=(10, 5))
+    # Plot each currency's rate over time
+    for currency in df.columns[1:]:  # Skip the 'date' column
+        plt.plot(df['date'], df[currency], marker='o', label=currency)
+    plt.title('Currency Rates Over Time')
+    plt.xlabel('Date')
+    plt.ylabel('Rate')
+    plt.legend()
+    plt.grid(True)
+    # Save plot to a BytesIO object
+    img = io.BytesIO()
+    plt.savefig(img, format='png')
+    img.seek(0)
+    # Encode image to base64 string
+    img_tag = base64.b64encode(img.getvalue()).decode()
+    plt.close()
+    return img_tag
 
 
 def read_csv(file_name):
@@ -87,6 +110,54 @@ def Expense():
             # Return the error message in the response
             return render_template_string(
                 "<h1>Failed to add record!</h1><p>{{ error_message }}</p>",
+                error_message=error_message,
+            )
+
+        return redirect(url_for("Expense"))
+    
+@app.route("/edit/expense/<int:id>", methods=["GET", "POST"])
+def EditExpense(id):
+    if request.method == "GET":
+        # Fetch the existing record by ID
+        record = fetch_record_by_id(id) # Unfinished
+        if record:
+            categories = read_csv(SPVcatExpPath)
+            sub_categories = read_csv(SPVsubcatPath)
+            person_banks = Read("retacc")
+            currencies = read_csv(SPVcurrPath)
+            options = {
+                "categories": categories,
+                "sub_categories": sub_categories,
+                "person_banks": person_banks,
+                "currencies": currencies,
+            }
+
+            return render_template("addexp.html", options=options, edit_record=record, columns=columns, data=data)
+        else:
+            return "Record not found", 404
+
+    else:
+        # Update the existing record
+        date = request.form.get("Date", "")
+        category = request.form.get("Category", "")
+        sub_category = request.form.get("Sub-category", "")
+        person_bank = request.form.get("Person-Bank", "")
+        comment = request.form.get("Comment", "")
+        sum = request.form.get("Sum", "")
+        currency = request.form.get("Currency", "")
+
+        # Check if comment is empty and assign a whitespace if it is
+        if not comment:
+            comment = " "
+
+        try:
+            update_record(id, date, category, sub_category, person_bank, sum, currency, comment)
+        except Exception as e:
+            # Capture the exception message
+            error_message = str(e)
+            # Return the error message in the response
+            return render_template_string(
+                "<h1>Failed to update record!</h1><p>{{ error_message }}</p>",
                 error_message=error_message,
             )
 
@@ -424,8 +495,10 @@ def Currencies():
     if request.method == "GET":
         data = Read("allcurrrate")
         columns = ["Date", "RON", "UAH", "EUR", "USD", "GBP", "CHF", "HUF", "AUR"]
+        df = Read("retcurrr")
+        plot = plot_to_img_tag(df)
 
-        return render_template("currencies.html", columns=columns, data=data)
+        return render_template("currencies.html", columns=columns, data=data, plot=plot)
 
     else:
         date = request.form["Date"]
