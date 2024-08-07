@@ -118,3 +118,7 @@ nav {
 label {
   margin-left: 16px;
 }
+
+a, a:visited, a:hover, a:active {
+  color: rgb(0, 0, 169)
+}

@@ -278,6 +278,20 @@ def Add(input_field, mode):
     Re_calculate()
 
 
+def UpdateRecord(inp):
+    conn = sqlite3.connect(dbPath)
+    c = conn.cursor()
+
+    inp = inp.split(",")
+    c.execute(
+        "UPDATE main SET date = ?, category = ?, sub_category = ?, person_bank = ?, sum = ?, currency = ?, comment = ? WHERE id = ?",
+        (inp[1], inp[2], inp[3], inp[4], inp[5], inp[6], inp[7], int(inp[0])),
+    )
+
+    conn.commit()
+    conn.close()
+
+
 def Read(x):
     conn = sqlite3.connect(dbPath)
     c = conn.cursor()
@@ -387,7 +401,7 @@ def Read(x):
         c.execute("SELECT DISTINCT type FROM Marker_type")
         result = [row[0] for row in c.fetchall()]
         return result
-    
+
     elif x == "retcurrr":
         query = "SELECT * FROM exc_rate ORDER BY date"
         df = pd.read_sql_query(query, conn)
@@ -914,3 +928,23 @@ def DelPB():
     conn.close()
 
     Re_calculate()
+
+
+def GrabRecordByID(id, mode):
+    conn = sqlite3.connect(dbPath)
+    c = conn.cursor()
+
+    if mode == "exp":
+        c.execute("SELECT * FROM main WHERE id = ?", (id,))
+        record = c.fetchall()
+
+    elif mode == "inc":
+        c.execute(
+            "SELECT id, date, category, person_bank, sum, currency, comment FROM main WHERE id = ?",
+            (id,),
+        )
+        record = c.fetchall()
+
+    conn.commit()
+    conn.close()
+    return record
