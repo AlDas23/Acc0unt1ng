@@ -8,12 +8,17 @@ from flask import (
 )
 import base64
 import io
+from pyngrok import ngrok
 import matplotlib.pyplot as plt
 from db_scripts.script import *
 from db_scripts.consts import *
 
 
 app = Flask(__name__)
+
+
+public_url = ngrok.connect(5000)
+print(' * ngrok tunnel "{}" -> "http://127.0.0.1:5000"'.format(public_url))
 
 
 def plot_to_img_tag(df):
@@ -733,7 +738,7 @@ Make a POST request on this adress with in next format:
             to_send = pb + "," + sum + "," + currency
         else:
             to_send = pb + "," + currency
-            
+
         try:
             if mode == "initpb":
                 InitPB(to_send)
@@ -746,5 +751,6 @@ Make a POST request on this adress with in next format:
         finally:
             return "Success!"
 
+
 def api_start():
-    app.run(debug=True)
+    app.run
