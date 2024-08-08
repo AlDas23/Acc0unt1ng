@@ -289,6 +289,8 @@ def UpdateRecord(inp):
     )
 
     Re_calculate()
+    
+    os.system('clear')
 
     conn.commit()
     conn.close()
@@ -297,6 +299,8 @@ def UpdateRecord(inp):
 def Read(x):
     conn = sqlite3.connect(dbPath)
     c = conn.cursor()
+    
+    os.system('clear')
 
     if x == "allm":
         c.execute("SELECT * FROM main")
@@ -467,6 +471,8 @@ def ReadAdv(type, month):
 def MarkerRead(markers, mode):
     conn = sqlite3.connect(dbPath)
     c = conn.cursor()
+    
+    os.system('clear')
 
     if mode == "byowner":
         c.execute(
@@ -640,6 +646,8 @@ def Del(del_id, type):
     conn = sqlite3.connect(dbPath)
     c = conn.cursor()
 
+    os.system('clear')
+
     if type == "main":
         c.execute("SELECT 1 FROM main WHERE id = ?", (del_id,))
         exists = c.fetchone()
@@ -784,6 +792,9 @@ def Re_calculate():
 
 
 def SPVconf(x):
+    
+    os.system('clear')
+    
     if x == "catinc":
         path = SPVcatIncPath
     elif x == "catexp":
@@ -829,6 +840,8 @@ def SPVconf(x):
 def InitPB(new_pb):
     conn = sqlite3.connect(dbPath)
     c = conn.cursor()
+    
+    os.system('clear')
 
     new_pb = new_pb.split(",")
 
@@ -856,6 +869,8 @@ def InitPB(new_pb):
 def Mark(marker, mode):
     conn = sqlite3.connect(dbPath)
     c = conn.cursor()
+    
+    os.system('clear')
 
     marker = marker.split(",")
 
