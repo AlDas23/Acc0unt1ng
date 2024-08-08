@@ -3,7 +3,7 @@ cd /d "%~dp0"
 
 
 REM Set the default parameters here
-set PARAMS=
+set PARAMS= 
 
 
 echo Starting with parameters: %PARAMS%

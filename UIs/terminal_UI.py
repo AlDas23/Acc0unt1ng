@@ -73,9 +73,9 @@ def Terminal():
 
 
 def PreMark():
-    print("Existing type markers:\n", Read("extype"), "\n")
     print("Existing owner markers:\n", Read("exowner"), "\n\n")
-    print("owner or type marker?: ")
+    print("Existing type markers:\n", Read("extype"), "\n")
+    print("'owner' or 'type' marker?: ")
     select = input()
     if select == "type":
         print("Input new marker (person_bank,type)\n")
@@ -109,9 +109,13 @@ What field values to edit?
         SPVconf(inp)
     elif inp == "curr":
         SPVconf(inp)
-    elif inp == "initpb":
-        InitPB()
+    elif inp == "initpb":  
+        print("Input new person_bank record in format: person_bank,sum,currency\n")
+        new_pb = input()
+        InitPB(new_pb)
     elif inp == "delpb":
-        DelPB()
+        print("Delete person_bank record in format: person_bank,currency\n")
+        pb = input()
+        DelPB(pb)
     else:
         print("Unknown command!\n\n")

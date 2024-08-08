@@ -32,6 +32,7 @@ advtr_keys = [
     "person_bank_to",
     "sum_to",
     "currency_to",
+    "currency_rate",
     "comment",
 ]
 dp_keys = [

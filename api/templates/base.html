@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="..\static\styles.css" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
     <title>Acc0unt1ng</title>
   </head>
 
@@ -19,7 +19,7 @@
       <button class="nav_button" onclick="window.location.href='/view/acc'">Balance sheet</button>
       <!-- <button class="nav_button" onclick="window.location.href='/view/rep'">View reports</button> -->
       <button class="nav_button" onclick="window.location.href='/view/advrep'">View advanced reports</button>
-      <button class="nav_button" onclick="window.location.href='/currency'">Currency</button>
+      <button class="nav_button" onclick="window.location.href='/currency'">Currency rates</button>
     </nav>
     <div class="belowbody">
       <br />

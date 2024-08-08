@@ -44,7 +44,7 @@ def NewDBase():
                 owner text,
                 sum real,
                 currency text,
-                months real,
+                months integer,
                 date_out text,
                 percent real,
                 currency_rate real,
@@ -81,6 +81,7 @@ def NewDBase():
                 person_bank_to text,
                 sum_to real,
                 currency_to text,
+                currency_rate real,
                 comment text
             )"""
     )
@@ -128,7 +129,7 @@ def Add(input_field, mode):
         exists = c.fetchone()
         if exists == None:
             raise Exception("Person_bank-currency pair does not exist!")
-        if values[5] > 0:
+        if values[4] < 0:
             c.execute(
                 "SELECT 1 FROM PB_account WHERE person_bank = ? AND currency = ? AND sum > ?",
                 (values[3], values[5], values[4]),
@@ -226,7 +227,7 @@ def Add(input_field, mode):
         records = {advtr_keys[i]: values[i] for i in range(len(advtr_keys))}
 
         c.execute(
-            "INSERT INTO advtransfer VALUES (:id, :date, :person_bank_from, :sum_from, :currency_from, :person_bank_to, :sum_to, :currency_to, :comment)",
+            "INSERT INTO advtransfer VALUES (:id, :date, :person_bank_from, :sum_from, :currency_from, :person_bank_to, :sum_to, :currency_to, :currency_rate :comment)",
             records,
         )
 
@@ -236,7 +237,7 @@ def Add(input_field, mode):
         if values[5] == " ":
             values[5] = 0
         else:
-            values[5] = float(values[5])
+            values[5] = int(values[5])
         values[7] = float(values[7])
         if values[8] == " ":
             values[8] = 0
@@ -277,6 +278,22 @@ def Add(input_field, mode):
     Re_calculate()
 
 
+def UpdateRecord(inp):
+    conn = sqlite3.connect(dbPath)
+    c = conn.cursor()
+
+    inp = inp.split(",")
+    c.execute(
+        "UPDATE main SET date = ?, category = ?, sub_category = ?, person_bank = ?, sum = ?, currency = ?, comment = ? WHERE id = ?",
+        (inp[1], inp[2], inp[3], inp[4], inp[5], inp[6], inp[7], int(inp[0])),
+    )
+
+    Re_calculate()
+
+    conn.commit()
+    conn.close()
+
+
 def Read(x):
     conn = sqlite3.connect(dbPath)
     c = conn.cursor()
@@ -300,6 +317,9 @@ def Read(x):
             "SELECT * FROM PB_account_deposit WHERE sum != 0 ORDER BY person_bank ASC"
         )
         return c.fetchall()
+    elif x == "alldep":
+        c.execute("SELECT * FROM deposit ORDER BY date_out DESC")
+        return c.fetchall()
     elif x == "opendep":
         current_date = datetime.now().strftime("%Y-%m-%d")
         c.execute(
@@ -319,9 +339,6 @@ def Read(x):
         return c.fetchall()
     elif x == "alladvtran":
         c.execute("SELECT * FROM advtransfer ORDER BY date DESC")
-        return c.fetchall()
-    elif x == "alldep":
-        c.execute("SELECT * FROM deposit ORDER BY date_out DESC")
         return c.fetchall()
     elif x == "allcurr":
         c.execute("SELECT currency, SUM(sum) FROM PB_account GROUP BY currency")
@@ -365,21 +382,6 @@ def Read(x):
         )
         return c.fetchall()
 
-    # elif (x == 'catincrep'):
-    #     categories_df = pd.read_csv(SPVcatIncPath, header=None)
-    #     categories_list = categories_df[0].tolist()
-
-    #     query = 'SELECT category, currency, sum FROM main WHERE category IN ({}) ORDER BY category DESC'.format(','.join('?' for _ in categories_list))
-    #     c.execute(query, categories_list)
-    #     return c.fetchall()
-    # elif (x == 'catexprep'):
-    #     categories_df = pd.read_csv(SPVcatExpPath, header=None)
-    #     categories_list = categories_df[0].tolist()
-
-    #     query = 'SELECT category, currency, sum FROM main WHERE category IN ({}) ORDER BY category DESC'.format(','.join('?' for _ in categories_list))
-    #     c.execute(query, categories_list)
-    #     return c.fetchall()
-
     elif x == "extype":
         c.execute("SELECT DISTINCT type FROM Marker_type")
         return c.fetchall()
@@ -401,6 +403,11 @@ def Read(x):
         c.execute("SELECT DISTINCT type FROM Marker_type")
         result = [row[0] for row in c.fetchall()]
         return result
+
+    elif x == "retcurrr":
+        query = "SELECT * FROM exc_rate ORDER BY date"
+        df = pd.read_sql_query(query, conn)
+        return df
 
     conn.commit()
     conn.close()
@@ -440,7 +447,7 @@ def ReadAdv(type, month):
         query = 'SELECT category, currency, sum FROM main category IN ({}) WHERE strftime("%m", date) = ? ORDER BY category DESC'.format(
             ",".join("?" for _ in categories_list)
         )
-        c.execute(query, month, categories_list)
+        c.execute(query, month)
         return c.fetchall()
 
     if type == "catexprep":
@@ -450,7 +457,7 @@ def ReadAdv(type, month):
         query = 'SELECT category, currency, sum FROM main category IN ({}) WHERE strftime("%m", date) = ? ORDER BY category DESC'.format(
             ",".join("?" for _ in categories_list)
         )
-        c.execute(query, month, categories_list)
+        c.execute(query, month)
         return c.fetchall()
 
     conn.commit()
@@ -819,12 +826,10 @@ def SPVconf(x):
         print("Unknown command!\n\n")
 
 
-def InitPB():
+def InitPB(new_pb):
     conn = sqlite3.connect(dbPath)
     c = conn.cursor()
 
-    print("Input new person_bank record in format: person_bank,sum,currency\n")
-    new_pb = input()
     new_pb = new_pb.split(",")
 
     c.execute(
@@ -870,8 +875,10 @@ def Mark(marker, mode):
         )
         exists = c.fetchone()
         if exists != None:
-            print("Marker already exists!\n\n")
-            return
+            c.execute(
+                "UPDATE Marker_owner SET person_bank = ?, owner = ? WHERE person_bank = ?",
+                (marker[0], marker[1], marker[0]),
+            )
         else:
             c.execute(
                 "INSERT INTO Marker_type (person_bank, type) VALUES (?, ?)",
@@ -886,8 +893,10 @@ def Mark(marker, mode):
         )
         exists = c.fetchone()
         if exists != None:
-            print("Marker already exists!\n\n")
-            return
+            c.execute(
+                "UPDATE Marker_type SET person_bank = ?, type = ? WHERE person_bank = ?",
+                (marker[0], marker[1], marker[0]),
+            )
         else:
             c.execute(
                 "INSERT INTO Marker_owner (person_bank, owner) VALUES (?, ?)",
@@ -899,17 +908,18 @@ def Mark(marker, mode):
     conn.close()
 
 
-def DelPB():
+def DelPB(pb):
     conn = sqlite3.connect(dbPath)
     c = conn.cursor()
 
-    print("Delete person_bank record in format: person_bank,currency\n")
-    new_pb = input()
-    new_pb = new_pb.split(",")
+    pb = pb.split(",")
 
     try:
         c.execute(
-            "DELETE FROM PB_account WHERE person_bank = ? AND currency = ?", (new_pb)
+            "DELETE FROM PB_account WHERE person_bank = ? AND currency = ?", (pb[0], pb[1])
+        )
+        c.execute(
+            "DELETE FROM Init_PB WHERE person_bank = ? AND currency = ?", (pb[0], pb[1])
         )
     except:
         print("Failure!\n\n")
@@ -919,3 +929,23 @@ def DelPB():
     conn.close()
 
     Re_calculate()
+
+
+def GrabRecordByID(id, mode):
+    conn = sqlite3.connect(dbPath)
+    c = conn.cursor()
+
+    if mode == "exp":
+        c.execute("SELECT * FROM main WHERE id = ?", (id,))
+        record = c.fetchall()
+
+    elif mode == "inc":
+        c.execute(
+            "SELECT id, date, category, person_bank, sum, currency, comment FROM main WHERE id = ?",
+            (id,),
+        )
+        record = c.fetchall()
+
+    conn.commit()
+    conn.close()
+    return record
