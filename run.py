@@ -1,5 +1,4 @@
 from api.api_run import *
-import argparse
 
 
 def run():

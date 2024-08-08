@@ -17,10 +17,6 @@ from db_scripts.consts import *
 app = Flask(__name__)
 
 
-public_url = ngrok.connect(5000)
-print(' * ngrok tunnel "{}" -> "http://127.0.0.1:5000"'.format(public_url))
-
-
 def plot_to_img_tag(df):
     plt.figure(figsize=(10, 5))
     # Plot each currency's rate over time
@@ -753,4 +749,15 @@ Make a POST request on this adress with in next format:
 
 
 def api_start():
-    app.run
+    ngrok_authtoken = os.getenv("NGROK_AUTHTOKEN")
+
+    if ngrok_authtoken:
+        # Authenticate Ngrok
+        ngrok.set_auth_token(ngrok_authtoken)
+
+    # Open a tunnel on the default port 5000
+    public_url = ngrok.connect(5000)
+    print(f" * Ngrok tunnel available at: {public_url}")
+
+    # Start the Flask app
+    app.run()
