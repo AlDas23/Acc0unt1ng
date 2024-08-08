@@ -109,9 +109,13 @@ What field values to edit?
         SPVconf(inp)
     elif inp == "curr":
         SPVconf(inp)
-    elif inp == "initpb":
-        InitPB()
+    elif inp == "initpb":  
+        print("Input new person_bank record in format: person_bank,sum,currency\n")
+        new_pb = input()
+        InitPB(new_pb)
     elif inp == "delpb":
-        DelPB()
+        print("Delete person_bank record in format: person_bank,currency\n")
+        pb = input()
+        DelPB(pb)
     else:
         print("Unknown command!\n\n")

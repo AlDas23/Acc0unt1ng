@@ -288,6 +288,8 @@ def UpdateRecord(inp):
         (inp[1], inp[2], inp[3], inp[4], inp[5], inp[6], inp[7], int(inp[0])),
     )
 
+    Re_calculate()
+
     conn.commit()
     conn.close()
 
@@ -315,6 +317,9 @@ def Read(x):
             "SELECT * FROM PB_account_deposit WHERE sum != 0 ORDER BY person_bank ASC"
         )
         return c.fetchall()
+    elif x == "alldep":
+        c.execute("SELECT * FROM deposit ORDER BY date_out DESC")
+        return c.fetchall()
     elif x == "opendep":
         current_date = datetime.now().strftime("%Y-%m-%d")
         c.execute(
@@ -334,9 +339,6 @@ def Read(x):
         return c.fetchall()
     elif x == "alladvtran":
         c.execute("SELECT * FROM advtransfer ORDER BY date DESC")
-        return c.fetchall()
-    elif x == "alldep":
-        c.execute("SELECT * FROM deposit ORDER BY date_out DESC")
         return c.fetchall()
     elif x == "allcurr":
         c.execute("SELECT currency, SUM(sum) FROM PB_account GROUP BY currency")
@@ -824,12 +826,10 @@ def SPVconf(x):
         print("Unknown command!\n\n")
 
 
-def InitPB():
+def InitPB(new_pb):
     conn = sqlite3.connect(dbPath)
     c = conn.cursor()
 
-    print("Input new person_bank record in format: person_bank,sum,currency\n")
-    new_pb = input()
     new_pb = new_pb.split(",")
 
     c.execute(
@@ -908,17 +908,18 @@ def Mark(marker, mode):
     conn.close()
 
 
-def DelPB():
+def DelPB(pb):
     conn = sqlite3.connect(dbPath)
     c = conn.cursor()
 
-    print("Delete person_bank record in format: person_bank,currency\n")
-    new_pb = input()
-    new_pb = new_pb.split(",")
+    pb = pb.split(",")
 
     try:
         c.execute(
-            "DELETE FROM PB_account WHERE person_bank = ? AND currency = ?", (new_pb)
+            "DELETE FROM PB_account WHERE person_bank = ? AND currency = ?", (pb[0], pb[1])
+        )
+        c.execute(
+            "DELETE FROM Init_PB WHERE person_bank = ? AND currency = ?", (pb[0], pb[1])
         )
     except:
         print("Failure!\n\n")

@@ -243,7 +243,8 @@ def Income():
             )
 
         return redirect(url_for("Income"))
-    
+
+
 @app.route("/edit/income/<int:id>", methods=["GET", "POST"])
 def EditIncome(id):
     if request.method == "GET":
@@ -292,9 +293,7 @@ def EditIncome(id):
         if not comment:
             comment = " "
 
-        final_str = (
-            f"{id},{date},{category}, ,{person_bank},{sum},{currency},{comment}"
-        )
+        final_str = f"{id},{date},{category}, ,{person_bank},{sum},{currency},{comment}"
 
         try:
             UpdateRecord(final_str)
@@ -613,6 +612,139 @@ def Currencies():
 
         return redirect(url_for("Currencies"))
 
+
+@app.route("/api", methods=["GET"])
+def APIHome():
+    return redirect("/api/help")
+
+
+@app.route("/api/help", methods=["GET"])
+def APIHelp():
+    return """
+API - Help message:
+
+Go to /api/read for Read functions.
+Go to /api/conf/mark to configure Markers.
+Go to /api/conf/spv to configure SPVs and account initialization function.
+    """
+
+
+@app.route("/api/read", methods=["GET", "POST"])
+def APIRead():
+    if request.method == "GET":
+        return """
+API - Read message:
+
+Make a POST request on this adress with in next format:
+
+       Key  |          Value
+    -----------------------------------
+    Command | *Command from list below*
+
+Possible commands are:
+    allm        - show all records from main table
+    m+          - show positive records from main table
+    m-          - show negative records from main table
+    allacc      - show all accounts
+    alldepacc   - show all deposit accounts
+    alldep      - show all deposit records
+    opendep     - show deposit records that considered open
+    closeddep   - show deposit records that considered closed
+    alltran     - show all standard transfer records
+    alladvtran  - show all advanced transfer records  
+    allcurrrate - show all currency rates records 
+    allmtype    - show all accounts grouped by type Marker
+    allmowner   - show all accounts grouped by owner Marker
+    exowner     - show existing owner Markers
+    extype      - show existing type Markers
+        """
+    elif request.method == "POST":
+        command = request.form.get("Command")
+        if not command:
+            return "Command not provided!", 400
+        response = Read(command)
+        if response is None:
+            return "Unknown command!"
+        else:
+            return response
+
+
+@app.route("/api/conf", methods=["GET"])
+def APIConf():
+    if request.method == "GET":
+        return "You are not suppsed to be here pal."
+
+
+@app.route("/api/conf/mark", methods=["GET", "POST"])
+def APIConfMark():
+    if request.method == "GET":
+        return """
+API - Configuration - Mark message:
+
+Make a POST request on this adress with in next format:
+    
+      Key  |       Value
+    ----------------------------
+    Type   | [owner, type]
+    PB     | *Person_bank value*
+    Marker | *Marker value*
+        """
+    else:
+        mode = request.form.get("Type")
+        pb = request.form.get("PB")
+        marker = request.form.get("Marker")
+
+        to_send = pb + "," + marker
+        try:
+            Mark(to_send, mode)
+        except:
+            return "Wrong POST format!"
+        finally:
+            return "Mark success!"
+
+
+@app.route("/api/conf/spv", methods=["GET", "POST"])
+def APIConfSPV():
+    if request.method == "GET":
+        return """
+API - Configuration - SPV message:
+
+Due to poorly structured SPVConf, it is impossible to set-up API connection for it.
+Therefore, the only commands available are:
+    initpb  - Initialize account
+    delpb   - Delete account. WARNING, dangerous function
+
+Make a POST request on this adress with in next format:
+    
+        Key   |             Value
+    -----------------------------------------
+    Command   | *From commands above*
+    PB        | *Person_bank value*
+    Sum       | *Only applicable with initpb*
+    Currency  | *Currency value*
+        """
+    else:
+        mode = request.form.get("Command")
+        pb = request.form.get("PB")
+        sum = request.form.get("Sum")
+        currency = request.form.get("Currency")
+
+        if sum != None:
+            to_send = pb + "," + sum + "," + currency
+        else:
+            to_send = pb + "," + currency
+            
+        try:
+            if mode == "initpb":
+                InitPB(to_send)
+            elif mode == "delpb":
+                DelPB(to_send)
+            else:
+                raise Exception("Wrong POST format!")
+        except:
+            return "Wrong POST format!"
+        finally:
+            return "Success!"
 
 def api_start():
     app.run(debug=True)
