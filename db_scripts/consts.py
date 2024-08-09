@@ -1,8 +1,8 @@
-dbPath = ".\db\Main.db"
-SPVcatIncPath = ".\db\catInc.csv"
-SPVcatExpPath = ".\db\catExp.csv"
-SPVsubcatPath = ".\db\subcat.csv"
-SPVcurrPath = ".\db\curr.csv"
+dbPath = "\content\drive\MyDrive\Acc0unt1ng\Main.db"
+SPVcatIncPath = "\content\drive\MyDrive\Acc0unt1ng\catInc.csv"
+SPVcatExpPath = "\content\drive\MyDrive\Acc0unt1ng\catExp.csv"
+SPVsubcatPath = "\content\drive\MyDrive\Acc0unt1ng\subcat.csv"
+SPVcurrPath = "\content\drive\MyDrive\Acc0unt1ng\curr.csv"
 
 keys = [
     "id",
