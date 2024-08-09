@@ -7,8 +7,13 @@ from db_scripts.consts import *
 
 
 def NewDBase():
+    directory = os.path.dirname(dbPath)
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+        
     if os.path.exists(dbPath):
         os.remove(dbPath)
+        
     conn = sqlite3.connect(dbPath)
     c = conn.cursor()
 
