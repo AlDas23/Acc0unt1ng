@@ -10,3 +10,7 @@ Run notebook from <a target="_blank" href="https://colab.research.google.com/git
 Run Setup cell. <br>
 Paste your ngrok authtoken into "ngrok_authtoken" field and run webui. <br>
 Done! <br>
+
+### Synchronizing DB changes over multiple users
+
+To be able to modify DB from other accounts, follow instruction in section 1. Setup.
