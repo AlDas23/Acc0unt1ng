@@ -7,8 +7,13 @@ from db_scripts.consts import *
 
 
 def NewDBase():
+    directory = os.path.dirname(dbPath)
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
     if os.path.exists(dbPath):
         os.remove(dbPath)
+
     conn = sqlite3.connect(dbPath)
     c = conn.cursor()
 
@@ -288,10 +293,10 @@ def UpdateRecord(inp):
         (inp[1], inp[2], inp[3], inp[4], inp[5], inp[6], inp[7], int(inp[0])),
     )
 
-    Re_calculate()
-
     conn.commit()
     conn.close()
+
+    Re_calculate()
 
 
 def Read(x):
@@ -405,7 +410,12 @@ def Read(x):
         return result
 
     elif x == "retcurrr":
-        query = "SELECT * FROM exc_rate ORDER BY date"
+        query = "SELECT Date, RON, EUR, USD, GBP, CHF FROM exc_rate ORDER BY date"
+        df = pd.read_sql_query(query, conn)
+        return df
+    
+    elif x == "retcurraur":
+        query = "SELECT Date, AUR FROM exc_rate ORDER BY date"
         df = pd.read_sql_query(query, conn)
         return df
 
@@ -444,20 +454,36 @@ def ReadAdv(type, month):
         categories_df = pd.read_csv(SPVcatIncPath, header=None)
         categories_list = categories_df[0].tolist()
 
-        query = 'SELECT category, currency, sum FROM main category IN ({}) WHERE strftime("%m", date) = ? ORDER BY category DESC'.format(
+        query = """
+        SELECT category, currency, sum
+        FROM main
+        WHERE category IN ({})
+        AND strftime("%m", date) = ?
+        ORDER BY category DESC
+        """.format(
             ",".join("?" for _ in categories_list)
         )
-        c.execute(query, month)
+
+        params = categories_list + [month]
+        c.execute(query, params)
         return c.fetchall()
 
     if type == "catexprep":
         categories_df = pd.read_csv(SPVcatExpPath, header=None)
         categories_list = categories_df[0].tolist()
 
-        query = 'SELECT category, currency, sum FROM main category IN ({}) WHERE strftime("%m", date) = ? ORDER BY category DESC'.format(
+        query = """
+        SELECT category, currency, sum
+        FROM main
+        WHERE category IN ({})
+        AND strftime("%m", date) = ?
+        ORDER BY category DESC
+        """.format(
             ",".join("?" for _ in categories_list)
         )
-        c.execute(query, month)
+
+        params = categories_list + [month]
+        c.execute(query, params)
         return c.fetchall()
 
     conn.commit()
@@ -916,7 +942,8 @@ def DelPB(pb):
 
     try:
         c.execute(
-            "DELETE FROM PB_account WHERE person_bank = ? AND currency = ?", (pb[0], pb[1])
+            "DELETE FROM PB_account WHERE person_bank = ? AND currency = ?",
+            (pb[0], pb[1]),
         )
         c.execute(
             "DELETE FROM Init_PB WHERE person_bank = ? AND currency = ?", (pb[0], pb[1])
@@ -948,4 +975,5 @@ def GrabRecordByID(id, mode):
 
     conn.commit()
     conn.close()
+
     return record

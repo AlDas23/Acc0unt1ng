@@ -26,7 +26,7 @@
           </select>
         </td>
         <td class="fields">
-          <select id="Sub-category" name="Sub-category" class="select" required>
+          <select id="Sub-category" name="Sub-category" class="select">
             <option value="" disabled selected></option>
             {% for sub_category in options.sub_categories %}
               <option value="{{ sub_category }}">{{ sub_category }}</option>
@@ -91,7 +91,7 @@
   {% if edit_record %}
     <br />
     <h2>Edit Expense</h2>
-    <form action="{{ url_for('EditExpense', id=edit_record.0.0) }}" method="post">
+    <form action="{{ url_for('EditExpense', id=edit_record.0) }}" method="post">
       <table>
         <tr>
           <th>Date</th>
@@ -106,7 +106,7 @@
           <td>
             <input type="date" id="Date" name="Date" class="date" required />
           </td>
-          <td class="fields">
+          <td>
             <select id="Category" name="Category" class="select" required>
               <option value="" disabled selected></option>
               {% for category in options.categories %}
@@ -114,15 +114,15 @@
               {% endfor %}
             </select>
           </td>
-          <td class="fields">
-            <select id="Sub-category" name="Sub-category" class="select" required>
+          <td>
+            <select id="Sub-category" name="Sub-category" class="select">
               <option value="" disabled selected></option>
               {% for sub_category in options.sub_categories %}
                 <option value="{{ sub_category }}">{{ sub_category }}</option>
               {% endfor %}
             </select>
           </td>
-          <td class="fields">
+          <td>
             <select id="Person-Bank" name="Person-Bank" class="select" required>
               <option value="" disabled selected></option>
               {% for person_bank in options.person_banks %}
@@ -130,7 +130,7 @@
               {% endfor %}
             </select>
           </td>
-          <td class="fields">
+          <td>
             <input type="text" id="Sum" name="Sum" autocomplete="off" required />
           </td>
           <td>
@@ -141,7 +141,7 @@
               {% endfor %}
             </select>
           </td>
-          <td class="fields">
+          <td>
             <input type="text" id="Comment" name="Comment" autocomplete="off" />
           </td>
         </tr>
