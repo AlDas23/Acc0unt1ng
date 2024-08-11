@@ -49,7 +49,12 @@ nav {
 
 .reptable {
   border-collapse: collapse;
-  width: 95%;
+  width: 90%;
+}
+
+.historytable {
+  border-collapse: collapse;
+  width: 78%;
 }
 
 .reptable, .rep {
