@@ -169,6 +169,9 @@ def EditExpense(id):
         if not comment:
             comment = " "
 
+        if not sub_category:
+            sub_category = " "
+
         # Insert minus to expense sum
         sum = "-" + sum
 
@@ -252,7 +255,7 @@ def EditIncome(id):
         # Fetch the existing record by ID
         record = GrabRecordByID(id, "inc")
         if record:
-            categories = read_csv(SPVcatExpPath)
+            categories = read_csv(SPVcatIncPath)
             person_banks = Read("retacc")
             currencies = read_csv(SPVcurrPath)
             options = {
@@ -584,9 +587,11 @@ def Currencies():
         data = Read("allcurrrate")
         columns = ["Date", "RON", "UAH", "EUR", "USD", "GBP", "CHF", "HUF", "AUR"]
         df = Read("retcurrr")
-        plot = plot_to_img_tag(df)
+        plot1 = plot_to_img_tag(df)
+        df = Read("retcurraur")
+        plot2 = plot_to_img_tag(df)
 
-        return render_template("currencies.html", columns=columns, data=data, plot=plot)
+        return render_template("currencies.html", columns=columns, data=data, plot1=plot1, plot2=plot2)
 
     else:
         date = request.form["Date"]
