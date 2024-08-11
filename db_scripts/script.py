@@ -459,6 +459,7 @@ def ReadAdv(type, month):
         FROM main
         WHERE category IN ({})
         AND strftime("%m", date) = ?
+        GROUP BY category, currency
         ORDER BY category DESC
         """.format(
             ",".join("?" for _ in categories_list)
@@ -477,6 +478,7 @@ def ReadAdv(type, month):
         FROM main
         WHERE category IN ({})
         AND strftime("%m", date) = ?
+        GROUP BY category, currency
         ORDER BY category DESC
         """.format(
             ",".join("?" for _ in categories_list)
