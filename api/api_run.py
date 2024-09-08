@@ -512,10 +512,10 @@ def ViewAdvReports():
             columns = ["Category", "Person bank", "Currency", "Sum"]
         if report_type == "catincrep":
             data = ReadAdv(report_type, month)
-            columns = ["Category", "Currency", "Sum"]
+            columns = ["Category", "Currency", "Sum", "Sum RON"]
         if report_type == "catexprep":
             data = ReadAdv(report_type, month)
-            columns = ["Category", "Currency", "Sum"]
+            columns = ["Category", "Sum RON"]
 
         return render_template(
             "viewrepadv.html",
@@ -529,11 +529,11 @@ def ViewAdvReports():
 @app.route("/view/acc", methods=["GET", "POST"])
 def ViewAcc():
     data_curr = Read("allcurr")
-    columns_curr = ["Currency", "Sum"]
-    data_owner = Read("allmowner")
-    columns_owner = ["Owner", "Sum", "Currency"]
-    data_type = Read("allmtype")
-    columns_type = ["Type", "Sum", "Currency"]
+    columns_curr = ["Currency", "Sum", "Currency"]
+    data_owner = ConvRead("norm", "allmowner")
+    columns_owner = ["Owner", "Sum RON"]
+    data_type = ConvRead("norm", "allmtype")
+    columns_type = ["Type", "Sum RON"]
     owners = Read("retmowner")
     types = Read("retmtype")
     options = {"owners": owners, "types": types}
@@ -554,14 +554,14 @@ def ViewAcc():
         type = request.form["Acc type"]
 
         if type == " " and owner != " ":
-            data = MarkerRead(owner, "byowner")
+            data = ConvRead(owner, "byowner")
 
         elif owner == " " and type != " ":
-            data = MarkerRead(type, "bytype")
+            data = ConvRead(type, "bytype")
 
         elif owner != " " and type != " ":
-            temp = owner + "," + type
-            data = MarkerRead(temp, "byall")
+            all = owner + "," + type
+            data = ConvRead(all, "byall")
         else:
             return redirect(url_for("ViewAcc"))
 
@@ -574,7 +574,7 @@ def ViewAcc():
             data_type=data_type,
             columns_type=columns_type,
             options=options,
-            columns=["Person bank", "Sum", "Currency"],
+            columns=["Person bank", "Sum RON"],
             data=data,
             selected_owner=owner,
             selected_type=type,
@@ -591,7 +591,9 @@ def Currencies():
         df = Read("retcurraur")
         plot2 = plot_to_img_tag(df)
 
-        return render_template("currencies.html", columns=columns, data=data, plot1=plot1, plot2=plot2)
+        return render_template(
+            "currencies.html", columns=columns, data=data, plot1=plot1, plot2=plot2
+        )
 
     else:
         date = request.form["Date"]
