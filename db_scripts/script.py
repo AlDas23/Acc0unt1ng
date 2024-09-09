@@ -1,4 +1,5 @@
 import os.path
+import io
 import csv
 import sqlite3
 import pandas as pd
@@ -595,7 +596,10 @@ def ConvertToRON(currency, amount, date):
         query = f"SELECT {currency} FROM exc_rate ORDER BY ABS(JULIANDAY(date) - JULIANDAY(?)) LIMIT 1"
         c.execute(query, (date,))
         excRate_row = c.fetchone()
-        excRate = excRate_row[0]  # Extract the exchange rate
+        if excRate_row != None:
+            excRate = excRate_row[0]  # Extract the exchange rate
+        else:
+            excRate = 1
     else:
         excRate = 1
     converted_amount = amount * excRate
@@ -927,8 +931,38 @@ def Re_calculate():
     conn.close()
 
 
-def SPVconf(x):
+def SPVconf(pth, new_SPV, inpMode):
     # Function for configuring categories and currencies. TODO remake function to be used in API
+    if pth == "catinc":
+        path = SPVcatIncPath
+    elif pth == "catexp":
+        path = SPVcatExpPath
+    elif pth == "subcat":
+        path = SPVsubcatPath
+    elif pth == "curr":
+        path = SPVcurrPath
+
+    new_SPV = new_SPV.split(",")
+    
+    if inpMode == "A" or inpMode == "a":
+        new_SPV = "," + new_SPV
+        with open(path, mode="a", newline="") as file:
+            csvWriter = csv.writer(file)
+            for i in new_SPV:
+                csvWriter.writerow([i])
+        return "Success!"
+
+    elif inpMode == "R" or inpMode == "r":
+        with open(path, mode="w", newline="") as file:
+            csvWriter = csv.writer(file)
+            for i in new_SPV:
+                csvWriter.writerow([i])
+        return "Success!"
+
+    else:
+        raise Exception("Unknown command! Expected A, a, R, r")
+
+def ShowExistingSPV(x):
     if x == "catinc":
         path = SPVcatIncPath
     elif x == "catexp":
@@ -946,30 +980,27 @@ def SPVconf(x):
                 print(lines)
     else:
         print("No values found.\n")
-    print("Input new values in format: str1,str2,...\n")
-    new_SPV = input()
-    new_SPV = new_SPV.split(",")
+        
+def ShowExistingSPVAPI(x):
+    if x == "catinc":
+        path = SPVcatIncPath
+    elif x == "catexp":
+        path = SPVcatExpPath
+    elif x == "subcat":
+        path = SPVsubcatPath
+    elif x == "curr":
+        path = SPVcurrPath
 
-    print(" A - Append\n R - Replace\n")
-    choice = input()
-    if choice == "A" or choice == "a":
-        new_SPV = "," + new_SPV
-        with open(path, mode="a", newline="") as file:
-            csvWriter = csv.writer(file)
-            for i in new_SPV:
-                csvWriter.writerow([i])
-        print("Success!\n\n")
-
-    elif choice == "R" or choice == "r":
-        with open(path, mode="w", newline="") as file:
-            csvWriter = csv.writer(file)
-            for i in new_SPV:
-                csvWriter.writerow([i])
-        print("Success!\n\n")
-
+    if os.path.exists(path):
+        with open(path, mode="r") as file:
+            csvFile = csv.reader(file)
+            output = io.StringIO()
+            output.write("Existing values:\n")
+            for lines in csvFile:
+                output.write(", ".join(lines) + "\n")
+            return output.getvalue()
     else:
-        print("Unknown command!\n\n")
-
+        return "File does not exist."
 
 def InitPB(new_pb):
     # Person_bank initialization function
