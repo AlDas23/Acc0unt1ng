@@ -1,4 +1,5 @@
 import os.path
+import io
 import csv
 import sqlite3
 import pandas as pd
@@ -7,8 +8,14 @@ from db_scripts.consts import *
 
 
 def NewDBase():
+    # Create or replace DB file using template
+    directory = os.path.dirname(dbPath)
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
     if os.path.exists(dbPath):
         os.remove(dbPath)
+
     conn = sqlite3.connect(dbPath)
     c = conn.cursor()
 
@@ -116,6 +123,7 @@ def NewDBase():
 
 
 def Add(input_field, mode):
+    # Function for adding main, transfer, advtransfer, deposit records and currency rates
     conn = sqlite3.connect(dbPath)
     c = conn.cursor()
 
@@ -125,7 +133,7 @@ def Add(input_field, mode):
         c.execute(
             "SELECT 1 FROM PB_account WHERE person_bank = ? AND currency = ?",
             (values[3], values[5]),
-        )
+        )  # Check if person_bank - currency pair exists
         exists = c.fetchone()
         if exists == None:
             raise Exception("Person_bank-currency pair does not exist!")
@@ -133,7 +141,7 @@ def Add(input_field, mode):
             c.execute(
                 "SELECT 1 FROM PB_account WHERE person_bank = ? AND currency = ? AND sum > ?",
                 (values[3], values[5], values[4]),
-            )
+            )  # Check if person_bank - currency pair has enough amount
             exists = c.fetchone()
             if exists == None:
                 raise Exception("Insufficient funds!")
@@ -148,7 +156,9 @@ def Add(input_field, mode):
         )  # Change so that inserted number is +1 from biggest existing id in DB
         values.insert(0, max_id)
 
-        records = {keys[i]: values[i] for i in range(len(keys))}
+        records = {
+            keys[i]: values[i] for i in range(len(keys))
+        }  # Make dictionary with all values to add
 
         c.execute(
             "INSERT INTO main VALUES (:id, :date, :category, :sub_category, :person_bank, :sum, :currency, :comment)",
@@ -163,7 +173,7 @@ def Add(input_field, mode):
         c.execute(
             "SELECT 1 FROM PB_account WHERE person_bank = ? AND currency = ? AND sum > ?",
             (values[2], values[4], values[3]),
-        )
+        )  # Check if person_bank - currency pair exists and has sufficient amount
         exists = c.fetchone()
         if exists == None:
             raise Exception(
@@ -180,7 +190,9 @@ def Add(input_field, mode):
         )  # Change so that inserted number is +1 from biggest existing id in DB
         values.insert(0, max_id)
 
-        records = {tr_keys[i]: values[i] for i in range(len(tr_keys))}
+        records = {
+            tr_keys[i]: values[i] for i in range(len(tr_keys))
+        }  # Make dictionary with all values to add
 
         c.execute(
             "INSERT INTO transfer VALUES (:id, :date, :person_bank_from, :person_bank_to, :sum, :currency, :comment)",
@@ -200,7 +212,7 @@ def Add(input_field, mode):
         c.execute(
             "SELECT 1 FROM PB_account WHERE person_bank = ? AND currency = ? AND sum >= ?",
             (values[1], values[3], values[2]),
-        )
+        )  # Check if sending person_bank - currency pair exists and has sufficient amount
         exists = c.fetchone()
         if exists == None:
             raise Exception(
@@ -209,7 +221,7 @@ def Add(input_field, mode):
         c.execute(
             "SELECT 1 FROM PB_account WHERE person_bank = ? AND currency = ?",
             (values[4], values[6]),
-        )
+        )  # Check if receiving person_bank - currency pair exists
         exists = c.fetchone()
         if exists == None:
             raise Exception("Person_bank-currency pair does not exist!")
@@ -224,7 +236,9 @@ def Add(input_field, mode):
         )  # Change so that inserted number is +1 from biggest existing id in DB
         values.insert(0, max_id)
 
-        records = {advtr_keys[i]: values[i] for i in range(len(advtr_keys))}
+        records = {
+            advtr_keys[i]: values[i] for i in range(len(advtr_keys))
+        }  # Make dictionary with all values to add
 
         c.execute(
             "INSERT INTO advtransfer VALUES (:id, :date, :person_bank_from, :sum_from, :currency_from, :person_bank_to, :sum_to, :currency_to, :currency_rate :comment)",
@@ -247,11 +261,14 @@ def Add(input_field, mode):
         if values[5] == 0 or values[6] == " ":
             values.insert(9, 0)
         else:
+            # Provided formula to calculate deposit return
             percent = values[7] / 100
             expSum = values[3] + (values[3] * (percent / 12) * values[5])
             values.insert(10, round(expSum, 2))
 
-        records = {dp_keys[i]: values[i] for i in range(len(dp_keys))}
+        records = {
+            dp_keys[i]: values[i] for i in range(len(dp_keys))
+        }  # Make dictionary with all values to add
 
         c.execute(
             "INSERT INTO deposit VALUES (:date_in, :name, :owner, :sum, :currency, :months, :date_out, :percent, :currency_rate, :expect, :comment)",
@@ -263,9 +280,11 @@ def Add(input_field, mode):
         for n in range(1, 7):
             values[n] = round(float(values[n]), 2)
 
-        values.insert(2, round(1 / values[1], 2))
+        values.insert(2, round(1 / values[1], 2))  # UAH = 1 / RON
 
-        records = {curr_keys[i]: values[i] for i in range(len(curr_keys))}
+        records = {
+            curr_keys[i]: values[i] for i in range(len(curr_keys))
+        }  # Make dictionary with all values to add
 
         c.execute(
             "INSERT INTO exc_rate VALUES (:date, :RON, :UAH, :EUR, :USD, :GBP, :CHF, :HUF, :AUR)",
@@ -279,6 +298,7 @@ def Add(input_field, mode):
 
 
 def UpdateRecord(inp):
+    # Update record with received input
     conn = sqlite3.connect(dbPath)
     c = conn.cursor()
 
@@ -288,13 +308,14 @@ def UpdateRecord(inp):
         (inp[1], inp[2], inp[3], inp[4], inp[5], inp[6], inp[7], int(inp[0])),
     )
 
-    Re_calculate()
-
     conn.commit()
     conn.close()
 
+    Re_calculate()
+
 
 def Read(x):
+    # Big collection of functions for returning different data from DB
     conn = sqlite3.connect(dbPath)
     c = conn.cursor()
 
@@ -405,7 +426,12 @@ def Read(x):
         return result
 
     elif x == "retcurrr":
-        query = "SELECT * FROM exc_rate ORDER BY date"
+        query = "SELECT Date, RON, EUR, USD, GBP, CHF FROM exc_rate ORDER BY date"
+        df = pd.read_sql_query(query, conn)
+        return df
+
+    elif x == "retcurraur":
+        query = "SELECT Date, AUR FROM exc_rate ORDER BY date"
         df = pd.read_sql_query(query, conn)
         return df
 
@@ -413,7 +439,45 @@ def Read(x):
     conn.close()
 
 
+def ConvRead(x, mode):
+    # Function for reading DB and returning converted to RON amounts
+    conn = sqlite3.connect(dbPath)
+    c = conn.cursor()
+
+    current_date = datetime.now().strftime("%Y-%m-%d")
+
+    if x == "norm":
+        data = Read(mode)
+    else:
+        data = MarkerRead(x, mode)
+    modified_dict = {}
+
+    for row in data:
+        row_list = list(row)
+        owner = row_list[0]
+        amount = row_list[1]
+        currency_column = row_list[2]
+
+        converted_amount = ConvertToRON(currency_column, amount, current_date)
+
+        if owner in modified_dict:
+            modified_dict[owner] += converted_amount
+        else:
+            modified_dict[owner] = converted_amount
+
+    # Convert the grouped data back into a list of tuples
+    modified_list = [
+        (owner, total_amount) for owner, total_amount in modified_dict.items()
+    ]
+
+    conn.commit()
+    conn.close()
+
+    return modified_list
+
+
 def ReadAdv(type, month):
+    # Special read function for reports with month selector
     conn = sqlite3.connect(dbPath)
     c = conn.cursor()
 
@@ -444,27 +508,110 @@ def ReadAdv(type, month):
         categories_df = pd.read_csv(SPVcatIncPath, header=None)
         categories_list = categories_df[0].tolist()
 
-        query = 'SELECT category, currency, sum FROM main category IN ({}) WHERE strftime("%m", date) = ? ORDER BY category DESC'.format(
+        query = """
+        SELECT category, currency, sum, date
+        FROM main
+        WHERE category IN ({})
+        AND strftime("%m", date) = ?
+        GROUP BY category, currency
+        ORDER BY category DESC
+        """.format(
             ",".join("?" for _ in categories_list)
         )
-        c.execute(query, month)
-        return c.fetchall()
+
+        params = categories_list + [month]
+        c.execute(query, params)
+        data = c.fetchall()
+        modified_list = []
+
+        # Convert to RON using dynamic table
+        for row in data:
+            category = row[0]
+            currency = row[1]
+            amount = row[2]
+            date = row[3]
+
+            converted_amount = ConvertToRON(currency, amount, date)
+
+            # Append the tuple with the converted amount
+            modified_list.append((category, currency, amount, converted_amount))
+
+        conn.commit()
+        conn.close()
+
+        return modified_list
 
     if type == "catexprep":
         categories_df = pd.read_csv(SPVcatExpPath, header=None)
         categories_list = categories_df[0].tolist()
 
-        query = 'SELECT category, currency, sum FROM main category IN ({}) WHERE strftime("%m", date) = ? ORDER BY category DESC'.format(
+        query = """
+        SELECT category, currency, sum, date
+        FROM main
+        WHERE category IN ({})
+        AND strftime("%m", date) = ?
+        GROUP BY category, currency
+        ORDER BY category DESC
+        """.format(
             ",".join("?" for _ in categories_list)
         )
-        c.execute(query, month)
-        return c.fetchall()
+
+        params = categories_list + [month]
+        c.execute(query, params)
+        data = c.fetchall()
+        modified_dict = {}
+
+        # Convert to RON using dynamic table
+        for row in data:
+            row_list = list(row)
+            category = row_list[0]
+            currency = row_list[1]
+            amount = row_list[2]
+            date = row_list[3]
+
+            converted_amount = ConvertToRON(currency, amount, date)
+
+            if category in modified_dict:
+                modified_dict[category] += converted_amount
+            else:
+                modified_dict[category] = converted_amount
+
+        # Convert the grouped data back into a list of tuples
+        modified_list = [
+            (category, total_amount) for category, total_amount in modified_dict.items()
+        ]
+
+        conn.commit()
+        conn.close()
+
+        return modified_list
+
+
+def ConvertToRON(currency, amount, date):
+    # Converting to RON
+    conn = sqlite3.connect(dbPath)
+    c = conn.cursor()
+
+    if currency != "RON":
+        query = f"SELECT {currency} FROM exc_rate ORDER BY ABS(JULIANDAY(date) - JULIANDAY(?)) LIMIT 1"
+        c.execute(query, (date,))
+        excRate_row = c.fetchone()
+        if excRate_row != None:
+            excRate = excRate_row[0]  # Extract the exchange rate
+        else:
+            excRate = 1
+    else:
+        excRate = 1
+    converted_amount = amount * excRate
 
     conn.commit()
     conn.close()
 
+    return converted_amount
+
 
 def MarkerRead(markers, mode):
+    # Function for returning markers sums for type/owner/both markers
     conn = sqlite3.connect(dbPath)
     c = conn.cursor()
 
@@ -663,6 +810,7 @@ def Del(del_id, type):
 
 
 def Re_calculate():
+    # Core function for calculating remainders on all accounts. Called after each each finished add, update or delete
     conn = sqlite3.connect(dbPath)
     c = conn.cursor()
 
@@ -783,7 +931,38 @@ def Re_calculate():
     conn.close()
 
 
-def SPVconf(x):
+def SPVconf(pth, new_SPV, inpMode):
+    # Function for configuring categories and currencies. TODO remake function to be used in API
+    if pth == "catinc":
+        path = SPVcatIncPath
+    elif pth == "catexp":
+        path = SPVcatExpPath
+    elif pth == "subcat":
+        path = SPVsubcatPath
+    elif pth == "curr":
+        path = SPVcurrPath
+
+    new_SPV = new_SPV.split(",")
+    
+    if inpMode == "A" or inpMode == "a":
+        new_SPV = "," + new_SPV
+        with open(path, mode="a", newline="") as file:
+            csvWriter = csv.writer(file)
+            for i in new_SPV:
+                csvWriter.writerow([i])
+        return "Success!"
+
+    elif inpMode == "R" or inpMode == "r":
+        with open(path, mode="w", newline="") as file:
+            csvWriter = csv.writer(file)
+            for i in new_SPV:
+                csvWriter.writerow([i])
+        return "Success!"
+
+    else:
+        raise Exception("Unknown command! Expected A, a, R, r")
+
+def ShowExistingSPV(x):
     if x == "catinc":
         path = SPVcatIncPath
     elif x == "catexp":
@@ -801,32 +980,30 @@ def SPVconf(x):
                 print(lines)
     else:
         print("No values found.\n")
-    print("Input new values in format: str1,str2,...\n")
-    new_SPV = input()
-    new_SPV = new_SPV.split(",")
+        
+def ShowExistingSPVAPI(x):
+    if x == "catinc":
+        path = SPVcatIncPath
+    elif x == "catexp":
+        path = SPVcatExpPath
+    elif x == "subcat":
+        path = SPVsubcatPath
+    elif x == "curr":
+        path = SPVcurrPath
 
-    print(" A - Append\n R - Replace\n")
-    choice = input()
-    if choice == "A" or choice == "a":
-        new_SPV = "," + new_SPV
-        with open(path, mode="a", newline="") as file:
-            csvWriter = csv.writer(file)
-            for i in new_SPV:
-                csvWriter.writerow([i])
-        print("Success!\n\n")
-
-    elif choice == "R" or choice == "r":
-        with open(path, mode="w", newline="") as file:
-            csvWriter = csv.writer(file)
-            for i in new_SPV:
-                csvWriter.writerow([i])
-        print("Success!\n\n")
-
+    if os.path.exists(path):
+        with open(path, mode="r") as file:
+            csvFile = csv.reader(file)
+            output = io.StringIO()
+            output.write("Existing values:\n")
+            for lines in csvFile:
+                output.write(", ".join(lines) + "\n")
+            return output.getvalue()
     else:
-        print("Unknown command!\n\n")
-
+        return "File does not exist."
 
 def InitPB(new_pb):
+    # Person_bank initialization function
     conn = sqlite3.connect(dbPath)
     c = conn.cursor()
 
@@ -854,6 +1031,7 @@ def InitPB(new_pb):
 
 
 def Mark(marker, mode):
+    # Function pushing special record into DB with marker: whose or what type of account is this
     conn = sqlite3.connect(dbPath)
     c = conn.cursor()
 
@@ -909,6 +1087,7 @@ def Mark(marker, mode):
 
 
 def DelPB(pb):
+    # Delete person_bank
     conn = sqlite3.connect(dbPath)
     c = conn.cursor()
 
@@ -916,7 +1095,8 @@ def DelPB(pb):
 
     try:
         c.execute(
-            "DELETE FROM PB_account WHERE person_bank = ? AND currency = ?", (pb[0], pb[1])
+            "DELETE FROM PB_account WHERE person_bank = ? AND currency = ?",
+            (pb[0], pb[1]),
         )
         c.execute(
             "DELETE FROM Init_PB WHERE person_bank = ? AND currency = ?", (pb[0], pb[1])
@@ -932,6 +1112,7 @@ def DelPB(pb):
 
 
 def GrabRecordByID(id, mode):
+    # Function for getting record by ID. Used for editing/updating
     conn = sqlite3.connect(dbPath)
     c = conn.cursor()
 
@@ -948,4 +1129,5 @@ def GrabRecordByID(id, mode):
 
     conn.commit()
     conn.close()
+
     return record

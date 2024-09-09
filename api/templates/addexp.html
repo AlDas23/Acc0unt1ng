@@ -26,7 +26,7 @@
           </select>
         </td>
         <td class="fields">
-          <select id="Sub-category" name="Sub-category" class="select" required>
+          <select id="Sub-category" name="Sub-category" class="select">
             <option value="" disabled selected></option>
             {% for sub_category in options.sub_categories %}
               <option value="{{ sub_category }}">{{ sub_category }}</option>
@@ -63,7 +63,7 @@
   <br />
   {% if columns and data %}
     <h3>Expense History</h3>
-    <table class="reptable">
+    <table class="historytable">
       <thead>
         <tr>
           {% for column in columns %}
@@ -115,7 +115,7 @@
             </select>
           </td>
           <td class="fields">
-            <select id="Sub-category" name="Sub-category" class="select" required>
+            <select id="Sub-category" name="Sub-category" class="select">
               <option value="" disabled selected></option>
               {% for sub_category in options.sub_categories %}
                 <option value="{{ sub_category }}">{{ sub_category }}</option>
@@ -133,7 +133,7 @@
           <td class="fields">
             <input type="text" id="Sum" name="Sum" autocomplete="off" required />
           </td>
-          <td>
+          <td class="fields">
             <select id="Currency" name="Currency" class="select_curr" required>
               <option value="" disabled selected></option>
               {% for currency in options.currencies %}
@@ -141,7 +141,7 @@
               {% endfor %}
             </select>
           </td>
-          <td class="fields">
+          <td>
             <input type="text" id="Comment" name="Comment" autocomplete="off" />
           </td>
         </tr>

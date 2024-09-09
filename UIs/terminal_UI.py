@@ -102,14 +102,14 @@ What field values to edit?
     )
     inp = input()
     if inp == "catinc":
-        SPVconf(inp)
+        ToSPVConf(inp)
     elif inp == "catexp":
-        SPVconf(inp)
+        ToSPVConf(inp)
     elif inp == "subcat":
-        SPVconf(inp)
+        ToSPVConf(inp)
     elif inp == "curr":
-        SPVconf(inp)
-    elif inp == "initpb":  
+        ToSPVConf(inp)
+    elif inp == "initpb":
         print("Input new person_bank record in format: person_bank,sum,currency\n")
         new_pb = input()
         InitPB(new_pb)
@@ -119,3 +119,21 @@ What field values to edit?
         DelPB(pb)
     else:
         print("Unknown command!\n\n")
+
+
+def ToSPVConf(inp):
+    ShowExistingSPV(inp)
+
+    print("\nInput new values in format: str1,str2,...\n")
+    spvLine = input()
+
+    print(" A - Append\n R - Replace\n")
+    action = input()
+
+    try:
+        print(SPVconf(inp, spvLine, action) + "\n\n")
+        
+    except Exception as e:
+        errorMessage = str(e)
+        print("Failure!" + "\n" + errorMessage + "\n\n")
+    

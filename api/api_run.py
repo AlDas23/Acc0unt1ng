@@ -54,11 +54,20 @@ def main():
 @app.route("/add/expense", methods=["POST", "GET"])
 def Expense():
     if request.method == "GET":
-        categories = read_csv(SPVcatExpPath)
-        sub_categories = read_csv(SPVsubcatPath)
-        person_banks = Read("retacc")
-        currencies = read_csv(SPVcurrPath)
-
+        try:
+            categories = read_csv(SPVcatExpPath)
+            sub_categories = read_csv(SPVsubcatPath)
+            currencies = read_csv(SPVcurrPath)
+        except:
+            return render_template_string(
+                "<h1>Missing or inaccesible csv with special values!</h1><p>Please check csv files and try again</p>"
+            )
+        try:
+            person_banks = Read("retacc")
+        except:
+            return render_template_string(
+                "<h1>Missing or inaccesible database file!</h1><p>Please check or re-create database and try again</p>"
+            )
         options = {
             "categories": categories,
             "sub_categories": sub_categories,
@@ -168,6 +177,9 @@ def EditExpense(id):
         if not comment:
             comment = " "
 
+        if not sub_category:
+            sub_category = " "
+
         # Insert minus to expense sum
         sum = "-" + sum
 
@@ -251,7 +263,7 @@ def EditIncome(id):
         # Fetch the existing record by ID
         record = GrabRecordByID(id, "inc")
         if record:
-            categories = read_csv(SPVcatExpPath)
+            categories = read_csv(SPVcatIncPath)
             person_banks = Read("retacc")
             currencies = read_csv(SPVcurrPath)
             options = {
@@ -508,10 +520,10 @@ def ViewAdvReports():
             columns = ["Category", "Person bank", "Currency", "Sum"]
         if report_type == "catincrep":
             data = ReadAdv(report_type, month)
-            columns = ["Category", "Currency", "Sum"]
+            columns = ["Category", "Currency", "Sum", "Sum RON"]
         if report_type == "catexprep":
             data = ReadAdv(report_type, month)
-            columns = ["Category", "Currency", "Sum"]
+            columns = ["Category", "Sum RON"]
 
         return render_template(
             "viewrepadv.html",
@@ -526,10 +538,10 @@ def ViewAdvReports():
 def ViewAcc():
     data_curr = Read("allcurr")
     columns_curr = ["Currency", "Sum"]
-    data_owner = Read("allmowner")
-    columns_owner = ["Owner", "Sum", "Currency"]
-    data_type = Read("allmtype")
-    columns_type = ["Type", "Sum", "Currency"]
+    data_owner = ConvRead("norm", "allmowner")
+    columns_owner = ["Owner", "Sum RON"]
+    data_type = ConvRead("norm", "allmtype")
+    columns_type = ["Type", "Sum RON"]
     owners = Read("retmowner")
     types = Read("retmtype")
     options = {"owners": owners, "types": types}
@@ -550,14 +562,14 @@ def ViewAcc():
         type = request.form["Acc type"]
 
         if type == " " and owner != " ":
-            data = MarkerRead(owner, "byowner")
+            data = ConvRead(owner, "byowner")
 
         elif owner == " " and type != " ":
-            data = MarkerRead(type, "bytype")
+            data = ConvRead(type, "bytype")
 
         elif owner != " " and type != " ":
-            temp = owner + "," + type
-            data = MarkerRead(temp, "byall")
+            all = owner + "," + type
+            data = ConvRead(all, "byall")
         else:
             return redirect(url_for("ViewAcc"))
 
@@ -570,7 +582,7 @@ def ViewAcc():
             data_type=data_type,
             columns_type=columns_type,
             options=options,
-            columns=["Person bank", "Sum", "Currency"],
+            columns=["Person bank", "Sum RON"],
             data=data,
             selected_owner=owner,
             selected_type=type,
@@ -583,9 +595,13 @@ def Currencies():
         data = Read("allcurrrate")
         columns = ["Date", "RON", "UAH", "EUR", "USD", "GBP", "CHF", "HUF", "AUR"]
         df = Read("retcurrr")
-        plot = plot_to_img_tag(df)
+        plot1 = plot_to_img_tag(df)
+        df = Read("retcurraur")
+        plot2 = plot_to_img_tag(df)
 
-        return render_template("currencies.html", columns=columns, data=data, plot=plot)
+        return render_template(
+            "currencies.html", columns=columns, data=data, plot1=plot1, plot2=plot2
+        )
 
     else:
         date = request.form["Date"]
@@ -626,6 +642,7 @@ API - Help message:
 Go to /api/read for Read functions.
 Go to /api/conf/mark to configure Markers.
 Go to /api/conf/spv to configure SPVs and account initialization function.
+Go to /api/conf/spv/read to read existing SPVs.
     """
 
 
@@ -694,6 +711,10 @@ Make a POST request on this adress with in next format:
         pb = request.form.get("PB")
         marker = request.form.get("Marker")
 
+        # Check if any of the required form data is missing
+        if not mode or not pb or not marker:
+            return "Missing one or more required fields: 'Type', 'PB', 'Marker'", 400
+        
         to_send = pb + "," + marker
         try:
             Mark(to_send, mode)
@@ -709,22 +730,29 @@ def APIConfSPV():
         return """
 API - Configuration - SPV message:
 
-Due to poorly structured SPVConf, it is impossible to set-up API connection for it.
-Therefore, the only commands available are:
+Commands available for POST are:
+    catinc  - income categories
+    catexp  - expense categories
+    subcat  - sub-categories (expense)
+    curr    - currencies 
     initpb  - Initialize account
-    delpb   - Delete account. WARNING, dangerous function
+    delpb   - Delete account. !WARNING!, dangerous function
 
 Make a POST request on this adress with in next format:
     
-        Key   |             Value
-    -----------------------------------------
+        Key   |                     Value
+    ----------------------------------------------------------
     Command   | *From commands above*
+    SPVLine   | *For SPV values in format: str1,str2,...*  
+    Mode      | *For SPV values, [A]ppend or [R]eplace list* 
     PB        | *Person_bank value*
     Sum       | *Only applicable with initpb*
     Currency  | *Currency value*
         """
     else:
-        mode = request.form.get("Command")
+        command = request.form.get("Command")
+        SPVLine = request.form.get("SPVLine")
+        mode = request.form.get("Mode")
         pb = request.form.get("PB")
         sum = request.form.get("Sum")
         currency = request.form.get("Currency")
@@ -733,11 +761,18 @@ Make a POST request on this adress with in next format:
             to_send = pb + "," + sum + "," + currency
         else:
             to_send = pb + "," + currency
-            
+
         try:
-            if mode == "initpb":
+            if (
+                command == "catinc"
+                or command == "catexp"
+                or command == "subcat"
+                or command == "curr"
+            ):
+                SPVconf(command, SPVLine)
+            elif command == "initpb":
                 InitPB(to_send)
-            elif mode == "delpb":
+            elif command == "delpb":
                 DelPB(to_send)
             else:
                 raise Exception("Wrong POST format!")
@@ -745,6 +780,36 @@ Make a POST request on this adress with in next format:
             return "Wrong POST format!"
         finally:
             return "Success!"
+
+
+@app.route("/api/conf/spv/read", methods=["GET", "POST"])
+def APIConfSPVRead():
+    if request.method == "GET":
+        return """
+API - Configuration - SPV - Read message:
+
+Make a POST request on this adress with in next format:
+    
+        Key   |         Value
+    -----------------------------------
+    Read      | *From values below*
+    
+    
+Possible values:
+    catinc - income categories
+    catexp - expense categories
+    subcat - sub-categories (expense)
+    curr   - currencies 
+    
+        """
+    else:
+        mode = request.form.get("Read")
+
+        try:
+            return ShowExistingSPVAPI(mode)
+        except:
+            return "Wrong POST format!"
+
 
 def api_start():
     app.run(debug=True)
