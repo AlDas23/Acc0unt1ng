@@ -274,6 +274,8 @@ def Add(input_field, mode):
             "INSERT INTO deposit VALUES (:date_in, :name, :owner, :sum, :currency, :months, :date_out, :percent, :currency_rate, :expect, :comment)",
             records,
         )
+        
+        # TODO Automatically mark deposit as type 'deposit'. Now main person_bank is used as deposit core 
 
     elif mode == "currrate":
         values = input_field.split(",")
@@ -458,7 +460,7 @@ def ConvRead(x, mode):
         amount = row_list[1]
         currency_column = row_list[2]
 
-        converted_amount = ConvertToRON(currency_column, amount, current_date)
+        converted_amount = ConvertToRON(currency_column, amount, current_date, c)
 
         if owner in modified_dict:
             modified_dict[owner] += converted_amount
@@ -469,6 +471,36 @@ def ConvRead(x, mode):
     modified_list = [
         (owner, total_amount) for owner, total_amount in modified_dict.items()
     ]
+
+    conn.commit()
+    conn.close()
+
+    return modified_list
+
+
+def ConvReadPlus(x, mode):
+    # Function for reading DB and returning converted to RON amounts
+    conn = sqlite3.connect(dbPath)
+    c = conn.cursor()
+
+    current_date = datetime.now().strftime("%Y-%m-%d")
+
+    if x == "norm":
+        data = Read(mode)
+    else:
+        data = MarkerRead(x, mode)
+    modified_list = []
+
+    for row in data:
+        row_list = list(row)
+        owner = row_list[0]
+        amount = row_list[1]
+        currency_column = row_list[2]
+
+        converted_amount = ConvertToRON(currency_column, amount, current_date, c)
+
+        # Append the tuple with the converted amount
+        modified_list.append((owner, currency_column, amount, converted_amount))
 
     conn.commit()
     conn.close()
@@ -513,7 +545,6 @@ def ReadAdv(type, month):
         FROM main
         WHERE category IN ({})
         AND strftime("%m", date) = ?
-        GROUP BY category, currency
         ORDER BY category DESC
         """.format(
             ",".join("?" for _ in categories_list)
@@ -531,7 +562,7 @@ def ReadAdv(type, month):
             amount = row[2]
             date = row[3]
 
-            converted_amount = ConvertToRON(currency, amount, date)
+            converted_amount = ConvertToRON(currency, amount, date, c)
 
             # Append the tuple with the converted amount
             modified_list.append((category, currency, amount, converted_amount))
@@ -550,7 +581,6 @@ def ReadAdv(type, month):
         FROM main
         WHERE category IN ({})
         AND strftime("%m", date) = ?
-        GROUP BY category, currency
         ORDER BY category DESC
         """.format(
             ",".join("?" for _ in categories_list)
@@ -569,16 +599,20 @@ def ReadAdv(type, month):
             amount = row_list[2]
             date = row_list[3]
 
-            converted_amount = ConvertToRON(currency, amount, date)
+            converted_amount = ConvertToRON(currency, amount, date, c)
 
             if category in modified_dict:
                 modified_dict[category] += converted_amount
             else:
                 modified_dict[category] = converted_amount
 
+        # Calculate the total income in RON
+        total_expense = sum(modified_dict.values())
+
         # Convert the grouped data back into a list of tuples
         modified_list = [
-            (category, total_amount) for category, total_amount in modified_dict.items()
+            (category, total_amount, f"{(total_amount / total_expense) * 100:.2f}%")
+            for category, total_amount in modified_dict.items()
         ]
 
         conn.commit()
@@ -587,10 +621,8 @@ def ReadAdv(type, month):
         return modified_list
 
 
-def ConvertToRON(currency, amount, date):
+def ConvertToRON(currency, amount, date, c):
     # Converting to RON
-    conn = sqlite3.connect(dbPath)
-    c = conn.cursor()
 
     if currency != "RON":
         query = f"SELECT {currency} FROM exc_rate ORDER BY ABS(JULIANDAY(date) - JULIANDAY(?)) LIMIT 1"
@@ -603,9 +635,6 @@ def ConvertToRON(currency, amount, date):
     else:
         excRate = 1
     converted_amount = amount * excRate
-
-    conn.commit()
-    conn.close()
 
     return converted_amount
 
@@ -943,7 +972,7 @@ def SPVconf(pth, new_SPV, inpMode):
         path = SPVcurrPath
 
     new_SPV = new_SPV.split(",")
-    
+
     if inpMode == "A" or inpMode == "a":
         new_SPV = "," + new_SPV
         with open(path, mode="a", newline="") as file:
@@ -961,6 +990,7 @@ def SPVconf(pth, new_SPV, inpMode):
 
     else:
         raise Exception("Unknown command! Expected A, a, R, r")
+
 
 def ShowExistingSPV(x):
     if x == "catinc":
@@ -980,7 +1010,8 @@ def ShowExistingSPV(x):
                 print(lines)
     else:
         print("No values found.\n")
-        
+
+
 def ShowExistingSPVAPI(x):
     if x == "catinc":
         path = SPVcatIncPath
@@ -1001,6 +1032,7 @@ def ShowExistingSPVAPI(x):
             return output.getvalue()
     else:
         return "File does not exist."
+
 
 def InitPB(new_pb):
     # Person_bank initialization function
@@ -1048,13 +1080,13 @@ def Mark(marker, mode):
 
     if mode == "type":
         c.execute(
-            "SELECT 1 FROM Marker_owner WHERE person_bank = ? AND owner = ?",
+            "SELECT 1 FROM Marker_type WHERE person_bank = ? AND type = ?",
             (marker[0], marker[1]),
         )
         exists = c.fetchone()
         if exists != None:
             c.execute(
-                "UPDATE Marker_owner SET person_bank = ?, owner = ? WHERE person_bank = ?",
+                "UPDATE Marker_type SET person_bank = ?, type = ? WHERE person_bank = ?",
                 (marker[0], marker[1], marker[0]),
             )
         else:
@@ -1072,7 +1104,7 @@ def Mark(marker, mode):
         exists = c.fetchone()
         if exists != None:
             c.execute(
-                "UPDATE Marker_type SET person_bank = ?, type = ? WHERE person_bank = ?",
+                "UPDATE Marker_owner SET person_bank = ?, owner = ? WHERE person_bank = ?",
                 (marker[0], marker[1], marker[0]),
             )
         else:

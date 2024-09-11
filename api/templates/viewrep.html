@@ -1,15 +1,8 @@
 {% extends 'base.html' %}
 
 {% block body %}
-<form action="/view/rep" method="post" class="dropdown-report">
-    <label for="viewrep">Choose which report to view:</label>
-    <select name="View Report" id="viewrep">
-        <option value="catincrep" {% if selected_option=='catincrep' %}selected{% endif %}>Income categories report</option>
-        <option value="catexprep" {% if selected_option=='catexprep' %}selected{% endif %}>Expense categories report</option>
-    </select>
-    <input type="submit" value="View">
-</form>
 
+<h2>Yearly reports</h2>
 {% if columns and data %}
 <table class="reptable">
     <thead>

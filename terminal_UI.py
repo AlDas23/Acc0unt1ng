@@ -138,8 +138,11 @@ def ToSPVConf(inp):
 
     try:
         print(SPVconf(inp, spvLine, action) + "\n\n")
-        
+
     except Exception as e:
         errorMessage = str(e)
         print("Failure!" + "\n" + errorMessage + "\n\n")
-    
+
+
+if __name__ == "__main__":
+    Terminal()
