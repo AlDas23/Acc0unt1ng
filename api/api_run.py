@@ -511,26 +511,44 @@ def ViewReports():
 @app.route("/view/advrep", methods=["POST", "GET"])
 def ViewAdvReports():
     if request.method == "GET":
-        return render_template("viewrepadv.html", columns=[], data=[])
+        return render_template("viewrepadv.html", columns=[], data=[], columns2=[], data2=[])
     else:
         report_type = request.form["View Report"]
-        month = request.form["Month"]
-        if report_type == "catpbrep":
-            data = ReadAdv(report_type, month)
-            columns = ["Category", "Person bank", "Currency", "Sum"]
-        if report_type == "catincrep":
-            data = ReadAdv(report_type, month)
-            columns = ["Category", "Currency", "Sum", "Sum RON"]
-        if report_type == "catexprep":
-            data = ReadAdv(report_type, month)
-            columns = ["Category", "Sum RON"]
+        if report_type != "None":
+            month = request.form["Month"]
+            if report_type == "catpbrep":
+                data = ReadAdv(report_type, month)
+                columns = ["Category", "Person bank", "Currency", "Sum"]
+            if report_type == "catincrep":
+                data = ReadAdv(report_type, month)
+                columns = ["Category", "Currency", "Sum", "Sum RON"]
+            if report_type == "catexprep":
+                data = ReadAdv(report_type, month)
+                columns = ["Category", "Sum RON", "%"]
+        
+        report_type2 = request.form["View Report2"]
+        if report_type2 != "None":
+            month2 = request.form["Month2"]
+            if report_type2 == "catpbrep":
+                data2 = ReadAdv(report_type2, month2)
+                columns2 = ["Category", "Person bank", "Currency", "Sum"]
+            if report_type2 == "catincrep":
+                data2 = ReadAdv(report_type2, month2)
+                columns2 = ["Category", "Currency", "Sum", "Sum RON"]
+            if report_type2 == "catexprep":
+                data2 = ReadAdv(report_type2, month2)
+                columns2 = ["Category", "Sum RON", "%"]
 
         return render_template(
             "viewrepadv.html",
             columns=columns,
             data=data,
+            columns2=columns2,
+            data2=data2,
             selected_option=report_type,
+            selected_option2=report_type2,
             selected_month=month,
+            selected_month2=month2,
         )
 
 
@@ -538,8 +556,8 @@ def ViewAdvReports():
 def ViewAcc():
     data_curr = Read("allcurr")
     columns_curr = ["Currency", "Sum"]
-    data_owner = ConvRead("norm", "allmowner")
-    columns_owner = ["Owner", "Sum RON"]
+    data_owner = ConvReadPlus("norm", "allmowner")
+    columns_owner = ["Owner", "Currency", "Sum", "Sum RON"]
     data_type = ConvRead("norm", "allmtype")
     columns_type = ["Type", "Sum RON"]
     owners = Read("retmowner")
@@ -562,14 +580,14 @@ def ViewAcc():
         type = request.form["Acc type"]
 
         if type == " " and owner != " ":
-            data = ConvRead(owner, "byowner")
+            data = Read(owner, "byowner")
 
         elif owner == " " and type != " ":
-            data = ConvRead(type, "bytype")
+            data = Read(type, "bytype")
 
         elif owner != " " and type != " ":
             all = owner + "," + type
-            data = ConvRead(all, "byall")
+            data = Read(all, "byall")
         else:
             return redirect(url_for("ViewAcc"))
 

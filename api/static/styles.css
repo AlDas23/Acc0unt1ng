@@ -127,3 +127,14 @@ label {
 a, a:visited, a:hover, a:active {
   color: rgb(0, 0, 169)
 }
+
+.leftAdvRep_container{
+  width: 47%;
+  float: left;
+  margin-right: 24px;
+}
+
+.rightAdvRep_container{
+  width: 47%;
+  float: right;
+}
