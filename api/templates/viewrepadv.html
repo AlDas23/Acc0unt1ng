@@ -11,10 +11,10 @@
         </option>  -->
                 <option value="None" {% if selected_option2=='None' %}selected{% endif %}>None</option>
                 <option value="catincrep" {% if selected_option=='catincrep' %}selected{% endif %}>Income categories
-
                 </option>
                 <option value="catexprep" {% if selected_option=='catexprep' %}selected{% endif %}>Expense categories
-
+                </option>
+                <option value="catincbankrep" {% if selected_option2=='catincbankrep' %}selected{% endif %}>Income categories bank
                 </option>
             </select>
             <label for="bymonth">By month:</label>
@@ -64,10 +64,10 @@
         </option>  -->
             <option value="None" {% if selected_option2=='None' %}selected{% endif %}>None</option>
             <option value="catincrep" {% if selected_option2=='catincrep' %}selected{% endif %}>Income categories
-
             </option>
             <option value="catexprep" {% if selected_option2=='catexprep' %}selected{% endif %}>Expense categories
-
+            </option>
+            <option value="catincbankrep" {% if selected_option2=='catincbankrep' %}selected{% endif %}>Income categories bank
             </option>
         </select>
         <label for="bymonth2">By month:</label>

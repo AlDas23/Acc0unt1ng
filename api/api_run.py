@@ -490,28 +490,30 @@ def AddDeposit():
         return redirect(url_for("AddDeposit"))
 
 
-@app.route("/view/rep", methods=["POST", "GET"])
+@app.route("/view/rep", methods=["GET"])
 def ViewReports():
-    if request.method == "GET":
-        return render_template("viewrep.html", columns=[], data=[])
-    else:
-        report_type = request.form["View Report"]
-        if report_type == "catincrep":
-            data = Read(report_type)
-            columns = ["Category", "Currency", "Sum"]
-        elif report_type == "catexprep":
-            data = Read(report_type)
-            columns = ["Category", "Currency", "Sum"]
+    
+    Ldata = Read("yeartotalrep")
+    Lcolumns = ["Month", "Expenses", "Incomes", "Total"]
+    
 
-        return render_template(
-            "viewrep.html", columns=columns, data=data, selected_option=report_type
-        )
+    return render_template(
+        "viewrep.html",
+        Lcolumns=Lcolumns,
+        Ldata=Ldata,
+        # Ccolumns=Ccolumns,
+        # Cdata=Cdata,
+        # Rcolumns=Rcolumns,
+        # Rdata=Rdata,
+    )
 
 
 @app.route("/view/advrep", methods=["POST", "GET"])
 def ViewAdvReports():
     if request.method == "GET":
-        return render_template("viewrepadv.html", columns=[], data=[], columns2=[], data2=[])
+        return render_template(
+            "viewrepadv.html", columns=[], data=[], columns2=[], data2=[]
+        )
     else:
         report_type = request.form["View Report"]
         if report_type != "None":
@@ -525,7 +527,10 @@ def ViewAdvReports():
             if report_type == "catexprep":
                 data = ReadAdv(report_type, month)
                 columns = ["Category", "Sum RON", "%"]
-        
+            if report_type == "catincbankrep":
+                data = ReadAdv(report_type, month)
+                columns = ["Category", "Person bank" "Currency", "Sum"]
+
         report_type2 = request.form["View Report2"]
         if report_type2 != "None":
             month2 = request.form["Month2"]
@@ -538,6 +543,9 @@ def ViewAdvReports():
             if report_type2 == "catexprep":
                 data2 = ReadAdv(report_type2, month2)
                 columns2 = ["Category", "Sum RON", "%"]
+            if report_type2 == "catincbankrep":
+                data2 = ReadAdv(report_type2, month2)
+                columns2 = ["Category", "Person bank" "Currency", "Sum"]
 
         return render_template(
             "viewrepadv.html",
@@ -732,7 +740,7 @@ Make a POST request on this adress with in next format:
         # Check if any of the required form data is missing
         if not mode or not pb or not marker:
             return "Missing one or more required fields: 'Type', 'PB', 'Marker'", 400
-        
+
         to_send = pb + "," + marker
         try:
             Mark(to_send, mode)

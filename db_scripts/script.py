@@ -274,8 +274,8 @@ def Add(input_field, mode):
             "INSERT INTO deposit VALUES (:date_in, :name, :owner, :sum, :currency, :months, :date_out, :percent, :currency_rate, :expect, :comment)",
             records,
         )
-        
-        # TODO Automatically mark deposit as type 'deposit'. Now main person_bank is used as deposit core 
+
+        # TODO Automatically mark deposit as type 'deposit'. Now main person_bank is used as deposit core
 
     elif mode == "currrate":
         values = input_field.split(",")
@@ -412,6 +412,61 @@ def Read(x):
         c.execute("SELECT DISTINCT owner FROM Marker_owner")
         return c.fetchall()
 
+    elif x == "yeartotalrep":
+        c.execute(
+            """
+            SELECT 
+                strftime('%Y-%m', date) AS month, 
+                date, 
+                sum,
+                currency
+            FROM main
+            ORDER BY month
+            """
+        )
+
+        result = []
+        rows = c.fetchall()
+
+        monthly_data = {}
+
+        for row in rows:
+            month = row[0]  # month in 'YYYY-MM' format
+            date = row[1]  # transaction date
+            amount = row[2]  # amount of the transaction
+            currency = row[3]  # currency of the transaction
+
+            # Convert the amount to RON
+            amount_in_ron = ConvertToRON(currency, amount, date, c)
+
+            # Initialize the month entry if not already present
+            if month not in monthly_data:
+                monthly_data[month] = {"expense": 0, "income": 0, "total": 0}
+
+            # Categorize as expense or income
+            if amount < 0:
+                monthly_data[month]["expense"] += abs(
+                    amount_in_ron
+                )  # sum of expenses in RON (absolute value)
+            else:
+                monthly_data[month]["income"] += amount_in_ron  # sum of income in RON
+
+            # Update the total (income - expense)
+            monthly_data[month]["total"] += amount_in_ron
+
+        # Convert monthly_data dictionary into a list of tuples
+        for month, data in monthly_data.items():
+            # Prepare the tuple for each month: (month, expense_in_RON, income_in_RON, total_in_RON)
+            month_tuple = (
+                month,
+                data["expense"],  # expense in RON
+                data["income"],  # income in RON
+                data["total"],  # total in RON
+            )
+            result.append(month_tuple)
+
+        return result
+
     elif x == "retacc":  # Return list of all accounts
         c.execute("SELECT DISTINCT person_bank FROM PB_account")
         result = [row[0] for row in c.fetchall()]
@@ -536,7 +591,7 @@ def ReadAdv(type, month):
         )
         return c.fetchall()
 
-    if type == "catincrep":
+    elif type == "catincrep":
         categories_df = pd.read_csv(SPVcatIncPath, header=None)
         categories_list = categories_df[0].tolist()
 
@@ -572,7 +627,7 @@ def ReadAdv(type, month):
 
         return modified_list
 
-    if type == "catexprep":
+    elif type == "catexprep":
         categories_df = pd.read_csv(SPVcatExpPath, header=None)
         categories_list = categories_df[0].tolist()
 
@@ -619,6 +674,25 @@ def ReadAdv(type, month):
         conn.close()
 
         return modified_list
+
+    elif type == "catincbankrep":
+        categories_df = pd.read_csv(SPVcatIncPath, header=None)
+        categories_list = categories_df[0].tolist()
+
+        query = """
+        SELECT category, person_bank, currency, sum
+        FROM main
+        WHERE category IN ({})
+        GRUP BY category, person_bank
+        ORDER BY currency DESC
+        """.format(
+            ",".join("?" for _ in categories_list)
+        )
+
+        params = categories_list + [month]
+        c.execute(query, params)
+
+        return c.fetchall()
 
 
 def ConvertToRON(currency, amount, date, c):
