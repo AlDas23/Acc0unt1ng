@@ -138,3 +138,18 @@ a, a:visited, a:hover, a:active {
   width: 47%;
   float: right;
 }
+
+.leftYear_container {
+  width: 30%;
+  float: left;
+}
+
+.centerYear_container {
+  width: 30%;
+  float: center;
+}
+
+.rightYear_container {
+  width: 30%;
+  float: right;
+}
