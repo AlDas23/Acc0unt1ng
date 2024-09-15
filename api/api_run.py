@@ -36,16 +36,6 @@ def plot_to_img_tag(df):
     return img_tag
 
 
-def read_csv(file_name):
-    values = []
-    with open(file_name, newline="") as csvfile:
-        reader = csv.reader(csvfile)
-        for row in reader:
-            if row:
-                values.append(row[0])
-    return values
-
-
 @app.route("/", methods=["POST", "GET"])
 def main():
     return redirect("/add/expense")
@@ -492,19 +482,23 @@ def AddDeposit():
 
 @app.route("/view/rep", methods=["GET"])
 def ViewReports():
-    
+    currencies = read_csv(SPVcurrPath)
+
     Ldata = Read("yeartotalrep")
     Lcolumns = ["Month", "Expenses", "Incomes", "Total"]
-    
+    Cdata = Read("yearexprep")
+    Ccolumns = ["Month"] + currencies
+    Rdata = Read("yearincrep")
+    Rcolumns = ["Month"] + currencies
 
     return render_template(
         "viewrep.html",
         Lcolumns=Lcolumns,
         Ldata=Ldata,
-        # Ccolumns=Ccolumns,
-        # Cdata=Cdata,
-        # Rcolumns=Rcolumns,
-        # Rdata=Rdata,
+        Ccolumns=Ccolumns,
+        Cdata=Cdata,
+        Rcolumns=Rcolumns,
+        Rdata=Rdata,
     )
 
 
