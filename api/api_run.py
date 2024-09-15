@@ -582,14 +582,14 @@ def ViewAcc():
         type = request.form["Acc type"]
 
         if type == " " and owner != " ":
-            data = Read(owner, "byowner")
+            data = MarkerRead(owner, "byowner")
 
         elif owner == " " and type != " ":
-            data = Read(type, "bytype")
+            data = MarkerRead(type, "bytype")
 
         elif owner != " " and type != " ":
             all = owner + "," + type
-            data = Read(all, "byall")
+            data = MarkerRead(all, "byall")
         else:
             return redirect(url_for("ViewAcc"))
 
