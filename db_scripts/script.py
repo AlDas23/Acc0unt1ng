@@ -122,6 +122,16 @@ def NewDBase():
     conn.close()
 
 
+def read_csv(file_name):
+    values = []
+    with open(file_name, newline="") as csvfile:
+        reader = csv.reader(csvfile)
+        for row in reader:
+            if row:
+                values.append(row[0])
+    return values
+
+
 def Add(input_field, mode):
     # Function for adding main, transfer, advtransfer, deposit records and currency rates
     conn = sqlite3.connect(dbPath)
@@ -462,6 +472,82 @@ def Read(x):
                 data["expense"],  # expense in RON
                 data["income"],  # income in RON
                 data["total"],  # total in RON
+            )
+            result.append(month_tuple)
+
+        return result
+
+    elif x == "yearexprep":
+        c.execute(
+            """
+            SELECT 
+                strftime('%Y-%m', date) AS month,
+                currency,
+                SUM(CASE WHEN sum < 0 THEN ABS(sum) ELSE 0 END) AS total_expense
+            FROM main
+            WHERE sum < 0
+            GROUP BY month, currency
+            ORDER BY month
+            """
+        )
+
+        result = []
+        rows = c.fetchall()
+        currencies = read_csv(SPVcurrPath)
+        monthly_data = {}
+
+        for row in rows:
+            month = row[0]
+            currency = row[1]
+            total = row[2]
+
+            if month not in monthly_data:
+                monthly_data[month] = {curr: 0 for curr in currencies}
+
+            if currency in currencies:
+                monthly_data[month][currency] = total
+
+        for month in sorted(monthly_data.keys()):
+            month_tuple = (month,) + tuple(
+                monthly_data[month][currency] for currency in currencies
+            )
+            result.append(month_tuple)
+
+        return result
+    
+    elif x == "yearincrep":
+        c.execute(
+            """
+            SELECT 
+                strftime('%Y-%m', date) AS month,
+                currency,
+                SUM(CASE WHEN sum > 0 THEN ABS(sum) ELSE 0 END) AS total_income
+            FROM main
+            WHERE sum > 0
+            GROUP BY month, currency
+            ORDER BY month
+            """
+        )
+
+        result = []
+        rows = c.fetchall()
+        currencies = read_csv(SPVcurrPath)
+        monthly_data = {}
+
+        for row in rows:
+            month = row[0]
+            currency = row[1]
+            total = row[2]
+
+            if month not in monthly_data:
+                monthly_data[month] = {curr: 0 for curr in currencies}
+
+            if currency in currencies:
+                monthly_data[month][currency] = total
+
+        for month in sorted(monthly_data.keys()):
+            month_tuple = (month,) + tuple(
+                monthly_data[month][currency] for currency in currencies
             )
             result.append(month_tuple)
 

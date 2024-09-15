@@ -3,9 +3,11 @@
 {% block body %}
 
 <h2>Yearly reports</h2>
+<br>
 <div class="container">
     <div class="leftYear_container">
         {% if Lcolumns and Ldata %}
+        <h3>Total</h3>
         <table class="reptable">
             <thead>
                 <tr>
@@ -26,8 +28,9 @@
         </table>
         {% endif %}
     </div>
-    <!-- <div class="centerYear_container">
+    <div class="centerYear_container">
         {% if Ccolumns and Cdata %}
+        <h3>Expense</h3>
         <table class="reptable">
             <thead>
                 <tr>
@@ -50,6 +53,7 @@
     </div>
     <div class="rightYear_container">
         {% if Rcolumns and Rdata %}
+        <h3>Income</h3>
         <table class="reptable">
             <thead>
                 <tr>
@@ -69,7 +73,7 @@
             </tbody>
         </table>
         {% endif %}
-    </div> -->
+    </div>
 
 </div>
 {% endblock %}
