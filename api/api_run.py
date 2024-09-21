@@ -485,7 +485,7 @@ def ViewReports():
     currencies = read_csv(SPVcurrPath)
 
     Ldata = Read("yeartotalrep")
-    Lcolumns = ["Month", "Expenses", "Incomes", "Total"]
+    Lcolumns = ["Month", "Expenses", "Incomes", "Balance"]
     Cdata = Read("yearexprep")
     Ccolumns = ["Month"] + currencies
     Rdata = Read("yearincrep")
@@ -541,17 +541,42 @@ def ViewAdvReports():
                 data2 = ReadAdv(report_type2, month2)
                 columns2 = ["Category", "Person bank" "Currency", "Sum"]
 
-        return render_template(
-            "viewrepadv.html",
-            columns=columns,
-            data=data,
-            columns2=columns2,
-            data2=data2,
-            selected_option=report_type,
-            selected_option2=report_type2,
-            selected_month=month,
-            selected_month2=month2,
-        )
+        if report_type == "None" and report_type2 == "None":
+            return render_template(
+                "viewrepadv.html",
+                selected_option=report_type,
+                selected_option2=report_type2,
+            )
+        elif report_type != "None" and report_type2 == "None":
+            return render_template(
+                "viewrepadv.html",
+                columns=columns,
+                data=data,
+                selected_option=report_type,
+                selected_option2=report_type2,
+                selected_month=month,
+            )
+        elif report_type == "None" and report_type2 != "None":
+            return render_template(
+                "viewrepadv.html",
+                columns2=columns2,
+                data2=data2,
+                selected_option=report_type,
+                selected_option2=report_type2,
+                selected_month2=month2,
+            )
+        elif report_type != "None" and report_type2 != "None":
+            return render_template(
+                "viewrepadv.html",
+                columns=columns,
+                data=data,
+                columns2=columns2,
+                data2=data2,
+                selected_option=report_type,
+                selected_option2=report_type2,
+                selected_month=month,
+                selected_month2=month2,
+            )
 
 
 @app.route("/view/acc", methods=["GET", "POST"])
@@ -602,7 +627,7 @@ def ViewAcc():
             data_type=data_type,
             columns_type=columns_type,
             options=options,
-            columns=["Person bank", "Sum RON"],
+            columns=["Person bank", "Sum", "Currency"],
             data=data,
             selected_owner=owner,
             selected_type=type,

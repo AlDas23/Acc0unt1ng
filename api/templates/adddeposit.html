@@ -1,134 +1,134 @@
 {% extends 'base.html' %}
 
 {% block body %}
-  <h2>Deposit record</h2>
-  <form action="/add/deposit" method="post">
-    <table>
-      <tr>
-        <th>Date in</th>
-        <th>Name</th>
-        <th>Owner</th>
-        <th>Sum</th>
-        <th>Currency</th>
-        <th>Months</th>
-        <th>Date out</th>
-        <th>Percent</th>
-        <th>Currency rate</th>
-        <th>Comment</th>
-      </tr>
-      <tr>
-        <td>
-          <input type="date" id="DateIn" name="DateIn" class="date" required />
-        </td>
-        <td class="fields">
-          <input type="text" id="Name" name="Name" autocomplete="off" required />
-        </td>
-        <td class="fields">
-          <select id="Owner" name="Owner" class="select" required>
-            <option value="" disabled selected></option>
-            {% for person_bank in options.person_banks %}
-              <option value="{{ person_bank }}">{{ person_bank }}</option>
-            {% endfor %}
-          </select>
-        </td>
-        <td class="SPfields">
-          <input type="text" id="Sum" name="Sum" autocomplete="off" class="SPfields" required />
-        </td>
-        <td>
-          <select id="Currency" name="Currency" class="select_curr" required>
-            <option value="" disabled selected></option>
-            {% for currency in options.currencies %}
-              <option value="{{ currency }}">{{ currency }}</option>
-            {% endfor %}
-          </select>
-        </td>
-        <td class="SPfields">
-          <input type="text" id="Months" name="Months" autocomplete="off" class="SPfields" />
-        </td>
-        <td>
-          <input type="date" id="DateOut" name="DateOut" class="date" />
-        </td>
-        <td>
-          <input type="text" id="Percent" name="Percent" class="percent" autocomplete="off" required />%
-        </td>
-        <td class="SPfields">
-          <input type="text" id="CurrencyRate" name="Currency rate" autocomplete="off" class="SPfields" />
-        </td>
-        <td class="fields">
-          <input type="text" id="Comment" name="Comment" autocomplete="off" />
-        </td>
-      </tr>
-    </table><br />
-    <input type="submit" value="Add" class="submitrec" />
-  </form>
-  <br />
-  {% if columnsA and dataA %}
-    <h2>Deposit account details</h2>
-    <br />
-    <table class="reptable">
-      <thead>
-        <tr>
-          {% for column in columns %}
-            <th class="rep">{{ column }}</th>
+<h2>Deposit record</h2>
+<form action="/add/deposit" method="post">
+  <table>
+    <tr>
+      <th>Deposit Date</th>
+      <th>Name</th>
+      <th>Owner</th>
+      <th>Sum</th>
+      <th>Currency</th>
+      <th>Months</th>
+      <th>Closing Date</th>
+      <th>%</th>
+      <th>Currency rate</th>
+      <th>Comment</th>
+    </tr>
+    <tr>
+      <td>
+        <input type="date" id="DateIn" name="DateIn" class="date" required />
+      </td>
+      <td class="fields">
+        <input type="text" id="Name" name="Name" autocomplete="off" required />
+      </td>
+      <td class="fields">
+        <select id="Owner" name="Owner" class="select" required>
+          <option value="" disabled selected></option>
+          {% for person_bank in options.person_banks %}
+          <option value="{{ person_bank }}">{{ person_bank }}</option>
           {% endfor %}
-        </tr>
-      </thead>
-      <tbody>
-        {% for row in data %}
-          <tr>
-            {% for cell in row %}
-              <td class="rep">{{ cell }}</td>
-            {% endfor %}
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  {% endif %}
-  <br />
-  <br />
-  <h2>Deposit history</h2>
-  {% if columnsA and dataA %}
-    <br />
-    <h3>Active deposits</h3>
-    <table class="reptable">
-      <thead>
-        <tr>
-          {% for column in columnsA %}
-            <th class="rep">{{ column }}</th>
+        </select>
+      </td>
+      <td class="SPfields">
+        <input type="text" id="Sum" name="Sum" autocomplete="off" class="SPfields" required />
+      </td>
+      <td>
+        <select id="Currency" name="Currency" class="select_curr" required>
+          <option value="" disabled selected></option>
+          {% for currency in options.currencies %}
+          <option value="{{ currency }}">{{ currency }}</option>
           {% endfor %}
-        </tr>
-      </thead>
-      <tbody>
-        {% for row in dataA %}
-          <tr>
-            {% for cell in row %}
-              <td class="rep">{{ cell }}</td>
-            {% endfor %}
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  {% endif %}
-  {% if columnsC and dataC %}
-    <br />
-    <h3>Closed deposits</h3>
-    <table class="reptable">
-      <thead>
-        <tr>
-          {% for column in columnsC %}
-            <th class="rep">{{ column }}</th>
-          {% endfor %}
-        </tr>
-      </thead>
-      <tbody>
-        {% for row in dataC %}
-          <tr>
-            {% for cell in row %}
-              <td class="rep">{{ cell }}</td>
-            {% endfor %}
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  {% endif %}
+        </select>
+      </td>
+      <td class="SPfields">
+        <input type="text" id="Months" name="Months" autocomplete="off" class="SPfields" />
+      </td>
+      <td>
+        <input type="date" id="DateOut" name="DateOut" class="date" />
+      </td>
+      <td>
+        <input type="text" id="Percent" name="Percent" class="percent" autocomplete="off" required />
+      </td>
+      <td class="SPfields">
+        <input type="text" id="CurrencyRate" name="Currency rate" autocomplete="off" class="SPfields" />
+      </td>
+      <td class="fields">
+        <input type="text" id="Comment" name="Comment" autocomplete="off" />
+      </td>
+    </tr>
+  </table><br />
+  <input type="submit" value="Add" class="submitrec" />
+</form>
+<br />
+{% if columnsA and dataA %}
+<h2>Deposit account details</h2>
+<br />
+<table class="reptable">
+  <thead>
+    <tr>
+      {% for column in columns %}
+      <th class="rep">{{ column }}</th>
+      {% endfor %}
+    </tr>
+  </thead>
+  <tbody>
+    {% for row in data %}
+    <tr>
+      {% for cell in row %}
+      <td class="rep">{{ cell }}</td>
+      {% endfor %}
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+<br />
+<br />
+<h2>Deposit history</h2>
+{% if columnsA and dataA %}
+<br />
+<h3>Active deposits</h3>
+<table class="reptable">
+  <thead>
+    <tr>
+      {% for column in columnsA %}
+      <th class="rep">{{ column }}</th>
+      {% endfor %}
+    </tr>
+  </thead>
+  <tbody>
+    {% for row in dataA %}
+    <tr>
+      {% for cell in row %}
+      <td class="rep">{{ cell }}</td>
+      {% endfor %}
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+{% if columnsC and dataC %}
+<br />
+<h3>Closed deposits</h3>
+<table class="reptable">
+  <thead>
+    <tr>
+      {% for column in columnsC %}
+      <th class="rep">{{ column }}</th>
+      {% endfor %}
+    </tr>
+  </thead>
+  <tbody>
+    {% for row in dataC %}
+    <tr>
+      {% for cell in row %}
+      <td class="rep">{{ cell }}</td>
+      {% endfor %}
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
 {% endblock %}
