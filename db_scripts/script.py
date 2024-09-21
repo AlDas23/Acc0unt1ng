@@ -274,7 +274,7 @@ def Add(input_field, mode):
             # Provided formula to calculate deposit return
             percent = values[7] / 100
             expSum = values[3] + (values[3] * (percent / 12) * values[5])
-            values.insert(10, round(expSum, 2))
+            values.insert(9, round(expSum, 2))
 
         records = {
             dp_keys[i]: values[i] for i in range(len(dp_keys))
@@ -478,12 +478,14 @@ def Read(x):
         return result
 
     elif x == "yearexprep":
+        # Fetching the monthly data with expenses per currency
         c.execute(
             """
             SELECT 
                 strftime('%Y-%m', date) AS month,
                 currency,
-                SUM(CASE WHEN sum < 0 THEN ABS(sum) ELSE 0 END) AS total_expense
+                SUM(CASE WHEN sum < 0 THEN ABS(sum) ELSE 0 END) AS total_expense,
+                date
             FROM main
             WHERE sum < 0
             GROUP BY month, currency
@@ -500,21 +502,34 @@ def Read(x):
             month = row[0]
             currency = row[1]
             total = row[2]
+            date = row[3]
 
+            # Initialize the monthly data with currency totals if not already present
             if month not in monthly_data:
                 monthly_data[month] = {curr: 0 for curr in currencies}
+                monthly_data[month][
+                    "total_in_RON"
+                ] = 0  # Initialize RON total for the month
 
+            # If currency is found in the list of valid currencies
             if currency in currencies:
                 monthly_data[month][currency] = total
 
+                # Convert the total to RON using the conversion function
+                total_in_RON = ConvertToRON(currency, total, date, c)
+                monthly_data[month]["total_in_RON"] += total_in_RON
+
+        # Prepare the result for each month with the total per currency and total in RON
         for month in sorted(monthly_data.keys()):
-            month_tuple = (month,) + tuple(
-                monthly_data[month][currency] for currency in currencies
-            )
+            month_tuple = (
+                (month,)
+                + tuple(monthly_data[month][currency] for currency in currencies)
+                + (monthly_data[month]["total_in_RON"],)
+            )  # Append RON total
             result.append(month_tuple)
 
         return result
-    
+
     elif x == "yearincrep":
         c.execute(
             """
@@ -522,6 +537,7 @@ def Read(x):
                 strftime('%Y-%m', date) AS month,
                 currency,
                 SUM(CASE WHEN sum > 0 THEN ABS(sum) ELSE 0 END) AS total_income
+                date
             FROM main
             WHERE sum > 0
             GROUP BY month, currency
@@ -538,17 +554,30 @@ def Read(x):
             month = row[0]
             currency = row[1]
             total = row[2]
+            date = row[3]
 
+            # Initialize the monthly data with currency totals if not already present
             if month not in monthly_data:
                 monthly_data[month] = {curr: 0 for curr in currencies}
+                monthly_data[month][
+                    "total_in_RON"
+                ] = 0  # Initialize RON total for the month
 
+            # If currency is found in the list of valid currencies
             if currency in currencies:
                 monthly_data[month][currency] = total
 
+                # Convert the total to RON using the conversion function
+                total_in_RON = ConvertToRON(currency, total, date, c)
+                monthly_data[month]["total_in_RON"] += total_in_RON
+
+        # Prepare the result for each month with the total per currency and total in RON
         for month in sorted(monthly_data.keys()):
-            month_tuple = (month,) + tuple(
-                monthly_data[month][currency] for currency in currencies
-            )
+            month_tuple = (
+                (month,)
+                + tuple(monthly_data[month][currency] for currency in currencies)
+                + (monthly_data[month]["total_in_RON"],)
+            )  # Append RON total
             result.append(month_tuple)
 
         return result
@@ -694,7 +723,7 @@ def ReadAdv(type, month):
         params = categories_list + [month]
         c.execute(query, params)
         data = c.fetchall()
-        modified_list = []
+        modified_dict = {}
 
         # Convert to RON using dynamic table
         for row in data:
@@ -705,8 +734,15 @@ def ReadAdv(type, month):
 
             converted_amount = ConvertToRON(currency, amount, date, c)
 
-            # Append the tuple with the converted amount
-            modified_list.append((category, currency, amount, converted_amount))
+            if category in modified_dict:
+                modified_dict[category] += converted_amount
+            else:
+                modified_dict[category] = converted_amount
+
+        # Convert the grouped data back into a list of tuples
+        modified_list = [
+            (category, total_amount) for category, total_amount in modified_dict.items()
+        ]
 
         conn.commit()
         conn.close()
@@ -747,12 +783,12 @@ def ReadAdv(type, month):
             else:
                 modified_dict[category] = converted_amount
 
-        # Calculate the total income in RON
+        # Calculate the total expense in RON
         total_expense = sum(modified_dict.values())
 
         # Convert the grouped data back into a list of tuples
         modified_list = [
-            (category, total_amount, f"{(total_amount / total_expense) * 100:.2f}%")
+            (category, total_amount, f"{(total_amount / total_expense) * 100:.0f}%")
             for category, total_amount in modified_dict.items()
         ]
 
@@ -769,7 +805,8 @@ def ReadAdv(type, month):
         SELECT category, person_bank, currency, sum
         FROM main
         WHERE category IN ({})
-        GRUP BY category, person_bank
+        AND strftime("%m", date) = ?
+        GROUP BY category, person_bank
         ORDER BY currency DESC
         """.format(
             ",".join("?" for _ in categories_list)
