@@ -745,22 +745,22 @@ API - Configuration - Mark message:
 
 Make a POST request on this adress with in next format:
     
-      Key  |       Value
-    ----------------------------
+      Key  |                      Value
+    ----------------------------------------------------------
     Type   | [owner, type]
-    PB     | *Person_bank value*
+    BR     | *person_bank of account or deposit account name*
     Marker | *Marker value*
         """
     else:
         mode = request.form.get("Type")
-        pb = request.form.get("PB")
+        br = request.form.get("BR")
         marker = request.form.get("Marker")
 
         # Check if any of the required form data is missing
-        if not mode or not pb or not marker:
-            return "Missing one or more required fields: 'Type', 'PB', 'Marker'", 400
+        if not mode or not br or not marker:
+            return "Missing one or more required fields: 'Type', 'BR', 'Marker'", 400
 
-        to_send = pb + "," + marker
+        to_send = br + "," + marker
         try:
             Mark(to_send, mode)
         except:

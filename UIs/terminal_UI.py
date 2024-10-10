@@ -78,12 +78,12 @@ def PreMark():
     print("'owner' or 'type' marker?: ")
     select = input()
     if select == "type":
-        print("Input new marker (person_bank,type)\n")
+        print("Input new marker (person_bank/deposit name,type)\n")
         input_field = input()
         Mark(input_field, select)
 
     elif select == "owner":
-        print("Input new marker (person_bank,owner)\n")
+        print("Input new marker (person_bank/deposit name,owner)\n")
         input_field = input()
         Mark(input_field, select)
 

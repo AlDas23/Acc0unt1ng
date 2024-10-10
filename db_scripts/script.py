@@ -108,13 +108,13 @@ def NewDBase():
     )
     c.execute(
         """CREATE TABLE Marker_owner (
-                person_bank text,
+                bank_rec text,
                 owner text
             )"""
     )
     c.execute(
         """CREATE TABLE Marker_type (
-                person_bank text,
+                bank_rec text,
                 type text
             )"""
     )
@@ -845,7 +845,7 @@ def MarkerRead(markers, mode):
         c.execute(
             """
                 SELECT
-                    person_bank
+                    bank_rec
                 FROM
                     Marker_owner
                 WHERE
@@ -898,7 +898,7 @@ def MarkerRead(markers, mode):
         c.execute(
             """
                 SELECT
-                    person_bank
+                    bank_rec
                 FROM
                     Marker_type
                 WHERE
@@ -952,11 +952,11 @@ def MarkerRead(markers, mode):
         c.execute(
             """
                 SELECT
-                    mo.person_bank
+                    mo.bank_rec
                 FROM
                     Marker_owner mo
                 JOIN
-                    Marker_type mt ON mo.person_bank = mt.person_bank
+                    Marker_type mt ON mo.bank_rec = mt.bank_rec
                 WHERE
                     mo.owner = ?
                     AND
@@ -1267,46 +1267,46 @@ def Mark(marker, mode):
     marker = marker.split(",")
 
     c.execute(
-        "SELECT 1 FROM (PB_account pb, PB_account_deposit pbd) WHERE pb.person_bank = ? OR pbd.person_bank = ?",
+        "SELECT 1 FROM (PB_account pb, PB_account_deposit pbd) WHERE pb.person_bank = ? OR pbd.name = ?",
         (marker[0], marker[0]),
     )
     exists = c.fetchone()
     if exists != None:
-        print("Person_bank does not exist!\n\n")
+        print("Account record does not exist!\n\n")
         return
 
     if mode == "type":
         c.execute(
-            "SELECT 1 FROM Marker_type WHERE person_bank = ? AND type = ?",
+            "SELECT 1 FROM Marker_type WHERE bank_rec = ? AND type = ?",
             (marker[0], marker[1]),
         )
         exists = c.fetchone()
         if exists != None:
             c.execute(
-                "UPDATE Marker_type SET person_bank = ?, type = ? WHERE person_bank = ?",
+                "UPDATE Marker_type SET bank_rec = ?, type = ? WHERE bank_rec = ?",
                 (marker[0], marker[1], marker[0]),
             )
         else:
             c.execute(
-                "INSERT INTO Marker_type (person_bank, type) VALUES (?, ?)",
+                "INSERT INTO Marker_type (bank_rec, type) VALUES (?, ?)",
                 (marker[0], marker[1]),
             )
             print("Success!\n\n")
 
     elif mode == "owner":
         c.execute(
-            "SELECT 1 FROM Marker_owner WHERE person_bank = ? AND owner = ?",
+            "SELECT 1 FROM Marker_owner WHERE bank_rec = ? AND owner = ?",
             (marker[0], marker[1]),
         )
         exists = c.fetchone()
         if exists != None:
             c.execute(
-                "UPDATE Marker_owner SET person_bank = ?, owner = ? WHERE person_bank = ?",
+                "UPDATE Marker_owner SET bank_rec = ?, owner = ? WHERE bank_rec = ?",
                 (marker[0], marker[1], marker[0]),
             )
         else:
             c.execute(
-                "INSERT INTO Marker_owner (person_bank, owner) VALUES (?, ?)",
+                "INSERT INTO Marker_owner (bank_rec, owner) VALUES (?, ?)",
                 (marker[0], marker[1]),
             )
             print("Success!\n\n")
