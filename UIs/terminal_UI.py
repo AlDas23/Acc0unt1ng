@@ -4,7 +4,7 @@ from db_scripts.script import *
 def Terminal():
     while True:
         print(
-            """TERMINAL UI\n\n1. Add field\n2. Read\n3. Delete field\nConf. Configure special field values\nNdb. New DataBase\n"""
+            "TERMINAL UI\n\n1. Add field\n2. Read\n3. Delete field\nConf. Configure special field values\nNdb. New DataBase\n"
         )
         inp = input()
 
