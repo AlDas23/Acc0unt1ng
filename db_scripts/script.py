@@ -312,8 +312,6 @@ def UpdateRecord(inp):
     conn.commit()
     conn.close()
 
-    Re_calculate()
-
 
 def Read(x):
     # Big collection of functions for returning different data from DB
