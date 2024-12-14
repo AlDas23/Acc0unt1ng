@@ -13,7 +13,7 @@ def Terminal():
             mode = input()
             if mode == "m":
                 print(
-                    "Enter (Date,Category,Sub-Category,Person+bank,Comment,Sum,Currency):\n"
+                    "Enter (Date,Category,Sub-Category,Person+bank,Sum,Currency,Comment):\n"
                 )
                 field = input()
                 mode = "main"
@@ -33,7 +33,8 @@ def Terminal():
             print(
                 """ 
  allm - all main records
- allacc - all pb accounts
+ allacc - all pb accounts balance
+ initpb - all initial accounts
  m+ - positive main records
  m- - negative main records
  allcurr - all currencies

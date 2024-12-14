@@ -62,30 +62,7 @@
   <input type="submit" value="Add" class="submitrec" />
 </form>
 <br />
-{% if columnsA and dataA %}
-<h2>Deposit account details</h2>
-<br />
-<table class="reptable">
-  <thead>
-    <tr>
-      {% for column in columns %}
-      <th class="rep">{{ column }}</th>
-      {% endfor %}
-    </tr>
-  </thead>
-  <tbody>
-    {% for row in data %}
-    <tr>
-      {% for cell in row %}
-      <td class="rep">{{ cell }}</td>
-      {% endfor %}
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
-{% endif %}
-<br />
-<br />
+
 <h2>Deposit history</h2>
 {% if columnsA and dataA %}
 <br />
