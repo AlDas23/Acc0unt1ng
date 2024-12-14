@@ -4,7 +4,7 @@ from db_scripts.script import *
 def Terminal():
     while True:
         print(
-            """TERMINAL UI\n\n1. Add field\n2. Read\n3. Delete field\nConf. Configure special field values\nNdb. New DataBase\n"""
+            "TERMINAL UI\n\n1. Add field\n2. Read\n3. Delete field\nConf. Configure special field values\nNdb. New DataBase\n"
         )
         inp = input()
 
@@ -13,7 +13,7 @@ def Terminal():
             mode = input()
             if mode == "m":
                 print(
-                    "Enter (Date,Category,Sub-Category,Person+bank,Comment,Sum,Currency):\n"
+                    "Enter (Date,Category,Sub-Category,Person+bank,Sum,Currency,Comment):\n"
                 )
                 field = input()
                 mode = "main"
@@ -33,7 +33,8 @@ def Terminal():
             print(
                 """ 
  allm - all main records
- allacc - all pb accounts
+ allacc - all pb accounts balance
+ initpb - all initial accounts
  m+ - positive main records
  m- - negative main records
  allcurr - all currencies
@@ -78,12 +79,12 @@ def PreMark():
     print("'owner' or 'type' marker?: ")
     select = input()
     if select == "type":
-        print("Input new marker (person_bank,type)\n")
+        print("Input new marker (person_bank/deposit name,type)\n")
         input_field = input()
         Mark(input_field, select)
 
     elif select == "owner":
-        print("Input new marker (person_bank,owner)\n")
+        print("Input new marker (person_bank/deposit name,owner)\n")
         input_field = input()
         Mark(input_field, select)
 
@@ -132,8 +133,11 @@ def ToSPVConf(inp):
 
     try:
         print(SPVconf(inp, spvLine, action) + "\n\n")
-        
+
     except Exception as e:
         errorMessage = str(e)
         print("Failure!" + "\n" + errorMessage + "\n\n")
-    
+
+
+if __name__ == "__main__":
+    Terminal()

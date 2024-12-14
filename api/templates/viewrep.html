@@ -1,34 +1,79 @@
 {% extends 'base.html' %}
 
 {% block body %}
-<form action="/view/rep" method="post" class="dropdown-report">
-    <label for="viewrep">Choose which report to view:</label>
-    <select name="View Report" id="viewrep">
-        <option value="catincrep" {% if selected_option=='catincrep' %}selected{% endif %}>Income categories report</option>
-        <option value="catexprep" {% if selected_option=='catexprep' %}selected{% endif %}>Expense categories report</option>
-    </select>
-    <input type="submit" value="View">
-</form>
 
-{% if columns and data %}
-<table class="reptable">
-    <thead>
-        <tr>
-            {% for column in columns %}
-            <th class="rep">{{ column }}</th>
-            {% endfor %}
-        </tr>
-    </thead>
-    <tbody>
-        {% for row in data %}
-        <tr>
-            {% for cell in row %}
-            <td class="rep">{{ cell }}</td>
-            {% endfor %}
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-{% endif %}
+<h2>Yearly reports</h2>
+<br>
+<div class="container">
+    <div class="leftYear_container">
+        {% if Lcolumns and Ldata %}
+        <h3>Total</h3>
+        <table class="reptable">
+            <thead>
+                <tr>
+                    {% for column in Lcolumns %}
+                    <th class="rep">{{ column }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in Ldata %}
+                <tr>
+                    {% for cell in row %}
+                    <td class="rep">{{ cell }}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+    </div>
+    <div class="centerYear_container">
+        {% if Ccolumns and Cdata %}
+        <h3>Expense</h3>
+        <table class="reptable">
+            <thead>
+                <tr>
+                    {% for column in Ccolumns %}
+                    <th class="rep">{{ column }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in Cdata %}
+                <tr>
+                    {% for cell in row %}
+                    <td class="rep">{{ cell }}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+    </div>
+    <div class="rightYear_container">
+        {% if Rcolumns and Rdata %}
+        <h3>Income</h3>
+        <table class="reptable">
+            <thead>
+                <tr>
+                    {% for column in Rcolumns %}
+                    <th class="rep">{{ column }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in Rdata %}
+                <tr>
+                    {% for cell in row %}
+                    <td class="rep">{{ cell }}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+    </div>
 
+</div>
 {% endblock %}

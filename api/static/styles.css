@@ -63,6 +63,14 @@ nav {
   padding-top: 1px;
   padding-bottom: 1px;
   border: 1px solid;
+  text-align: right;
+}
+
+.disabled {
+  background-color: grey;
+  pointer-events: none;
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
 .container {
@@ -126,4 +134,30 @@ label {
 
 a, a:visited, a:hover, a:active {
   color: rgb(0, 0, 169)
+}
+
+.leftAdvRep_container{
+  width: 47%;
+  float: left;
+  margin-right: 24px;
+}
+
+.rightAdvRep_container{
+  width: 47%;
+  float: right;
+}
+
+.leftYear_container {
+  width: 33%;
+  float: left;
+}
+
+.centerYear_container {
+  width: 33%;
+  float: center;
+}
+
+.rightYear_container {
+  width: 33%;
+  float: right;
 }
