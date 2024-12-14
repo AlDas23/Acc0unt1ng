@@ -60,14 +60,6 @@ def NewDBase():
             )"""
     )
     c.execute(
-        """CREATE TABLE PB_account_deposit (
-                name text,
-                person_bank text,
-                sum real,
-                currency text
-            )"""
-    )
-    c.execute(
         """CREATE TABLE transfer (
                 id integer,
                 date text,
@@ -100,21 +92,14 @@ def NewDBase():
             )"""
     )
     c.execute(
-        """CREATE TABLE PB_account (
-                person_bank text,
-                sum real,
-                currency text
-            )"""
-    )
-    c.execute(
         """CREATE TABLE Marker_owner (
-                person_bank text,
+                bank_rec text,
                 owner text
             )"""
     )
     c.execute(
         """CREATE TABLE Marker_type (
-                person_bank text,
+                bank_rec text,
                 type text
             )"""
     )
@@ -140,26 +125,19 @@ def Add(input_field, mode):
     if mode == "main":
         values = input_field.split(",")
         values[4] = round(float(values[4]), 2)
+
         c.execute(
-            "SELECT 1 FROM PB_account WHERE person_bank = ? AND currency = ?",
+            "SELECT 1 FROM Init_PB WHERE person_bank = ? AND currency = ?",
             (values[3], values[5]),
         )  # Check if person_bank - currency pair exists
         exists = c.fetchone()
         if exists == None:
             raise Exception("Person_bank-currency pair does not exist!")
-        if values[4] < 0:
-            c.execute(
-                "SELECT 1 FROM PB_account WHERE person_bank = ? AND currency = ? AND sum > ?",
-                (values[3], values[5], values[4]),
-            )  # Check if person_bank - currency pair has enough amount
-            exists = c.fetchone()
-            if exists == None:
-                raise Exception("Insufficient funds!")
 
         c.execute("SELECT MAX(id) FROM main")
         max_id = c.fetchone()
         max_id = max_id[0]
-        if max_id == None:  # Check if it is exist and change to 0 if not
+        if max_id == None:  # Check if it exist and change to 0 if not
             max_id = 0
         max_id = (
             max_id + 1
@@ -181,14 +159,13 @@ def Add(input_field, mode):
         if values[3] < 0:  # Make sum positive if not
             values[3] = values[3] * -1
         c.execute(
-            "SELECT 1 FROM PB_account WHERE person_bank = ? AND currency = ? AND sum > ?",
-            (values[2], values[4], values[3]),
-        )  # Check if person_bank - currency pair exists and has sufficient amount
+            "SELECT 1 FROM Init_PB WHERE person_bank = ? AND currency = ?",
+            (values[2], values[4]),
+        )
+        # Check if person_bank - currency pair exists
         exists = c.fetchone()
         if exists == None:
-            raise Exception(
-                "Person_bank-currency pair does not exist or insufficient funds!"
-            )
+            raise Exception("Person_bank-currency pair does not exist!")
 
         c.execute("SELECT MAX(id) FROM transfer")
         max_id = c.fetchone()
@@ -220,16 +197,15 @@ def Add(input_field, mode):
             values[5] = values[5] * -1
 
         c.execute(
-            "SELECT 1 FROM PB_account WHERE person_bank = ? AND currency = ? AND sum >= ?",
-            (values[1], values[3], values[2]),
-        )  # Check if sending person_bank - currency pair exists and has sufficient amount
+            "SELECT 1 FROM Init_PB WHERE person_bank = ? AND currency = ?",
+            (values[1], values[3]),
+        )  # Check if sending person_bank - currency pair exists
         exists = c.fetchone()
         if exists == None:
-            raise Exception(
-                "Person_bank-currency pair does not exist or insufficient funds!"
-            )
+            raise Exception("Person_bank-currency pair does not exist!")
+
         c.execute(
-            "SELECT 1 FROM PB_account WHERE person_bank = ? AND currency = ?",
+            "SELECT 1 FROM Init_PB WHERE person_bank = ? AND currency = ?",
             (values[4], values[6]),
         )  # Check if receiving person_bank - currency pair exists
         exists = c.fetchone()
@@ -257,6 +233,18 @@ def Add(input_field, mode):
 
     elif mode == "deposit":
         values = input_field.split(",")
+
+        c.execute(
+            "SELECT 1 FROM deposit WHERE name = ?",
+            (values[1]),
+        )  # Check if name already exists
+        exists = c.fetchone()
+        if exists != None:
+            raise Exception("Deposit name already exists!")
+
+        exists = c.fetchone()
+        if exists == None:
+            raise Exception("Person_bank-currency pair does not exist!")
         values[3] = round(float(values[3]), 2)
         if values[5] == " ":
             values[5] = 0
@@ -285,7 +273,8 @@ def Add(input_field, mode):
             records,
         )
 
-        # TODO Automatically mark deposit as type 'deposit'. Now main person_bank is used as deposit core
+        # Automatically mark deposit as type 'deposit'
+        c.execute("INSERT INTO Marker_type VALUES(?, ?)", ("deposit", values[1]))
 
     elif mode == "currrate":
         values = input_field.split(",")
@@ -306,7 +295,7 @@ def Add(input_field, mode):
     conn.commit()
     conn.close()
 
-    Re_calculate()
+    Re_Calculate_deposit()
 
 
 def UpdateRecord(inp):
@@ -342,12 +331,28 @@ def Read(x):
     elif x == "m-":
         c.execute("SELECT * FROM main WHERE sum < 0 ORDER BY date DESC, id DESC")
         return c.fetchall()
-    elif x == "allacc":
-        c.execute("SELECT * FROM PB_account ORDER BY person_bank ASC")
+    elif x == "initpb":
+        c.execute("SELECT * FROM Init_PB ORDER BY person_bank DESC")
         return c.fetchall()
-    elif x == "alldepacc":
+    elif x == "allacc":
         c.execute(
-            "SELECT * FROM PB_account_deposit WHERE sum != 0 ORDER BY person_bank ASC"
+            """
+                SELECT person_bank, currency, SUM(sum) 
+                FROM (
+                    SELECT person_bank, currency, sum FROM main
+                    UNION ALL
+                    SELECT person_bank, currency, sum FROM Init_PB
+                    UNION ALL
+                    SELECT person_bank_from AS person_bank, currency, -sum FROM transfer
+                    UNION ALL
+                    SELECT person_bank_from AS person_bank, currency_from AS currency, -sum_from AS sum FROM advtransfer
+                    UNION ALL
+                    SELECT person_bank_to AS person_bank, currency_to AS currency, sum_to AS sum FROM advtransfer
+                    UNION ALL
+                    SELECT person_bank_to AS person_bank, currency, sum FROM transfer) 
+                    GROUP BY person_bank, currency
+                    ORDER BY person_bank ASC
+            """
         )
         return c.fetchall()
     elif x == "alldep":
@@ -374,7 +379,31 @@ def Read(x):
         c.execute("SELECT * FROM advtransfer ORDER BY date DESC")
         return c.fetchall()
     elif x == "allcurr":
-        c.execute("SELECT currency, SUM(sum) FROM PB_account GROUP BY currency")
+        c.execute(
+            """
+                SELECT currency, SUM(total_sum) AS total_amount
+                FROM (
+                    SELECT currency, sum AS total_sum FROM Init_PB
+                    
+                    UNION ALL
+                    
+                    SELECT currency, sum AS total_sum FROM main
+    
+                    UNION ALL
+    
+                    SELECT currency, sum AS total_sum FROM deposit
+    
+                    UNION ALL
+    
+                    SELECT currency_from AS currency, -sum_from AS total_sum FROM advtransfer
+    
+                    UNION ALL
+    
+                    SELECT currency_to AS currency, sum_to AS total_sum FROM advtransfer
+                ) AS combined
+                GROUP BY currency    
+            """
+        )
         return c.fetchall()
     elif x == "allcurrrate":
         c.execute("SELECT * FROM exc_rate ORDER BY date DESC")
@@ -385,15 +414,97 @@ def Read(x):
             """
                 SELECT 
                     m.type,
-                    COALESCE(SUM(pb.sum), 0) + COALESCE(SUM(pbd.sum), 0) as total_balance,
-                    pb.currency as pb_currency
+                    COALESCE(SUM(normal_account_balances.normal_balance), 0) + COALESCE(SUM(deposit_account_balances.deposit_balance), 0) AS total_balance,
+                    COALESCE(normal_account_balances.currency, deposit_account_balances.currency) AS currency
                 FROM 
                     Marker_type m
-                LEFT JOIN PB_account pb ON m.person_bank = pb.person_bank
-                LEFT JOIN PB_account_deposit pbd ON m.person_bank = pbd.person_bank
+                LEFT JOIN (
+                    -- Normal account balances (Init_PB, main, transfer, advtransfer)
+                    SELECT
+                        person_bank,
+                        currency,
+                        SUM(normal_balance) AS normal_balance
+                    FROM (
+                        SELECT
+                            init.person_bank,
+                            currency,
+                            SUM(sum) AS normal_balance
+                        FROM
+                            Init_PB AS init
+                        GROUP BY
+                            init.person_bank, currency
+                
+                        UNION ALL
+                        
+                        SELECT
+                            mt.person_bank,
+                            currency,
+                            SUM(sum) AS normal_balance
+                        FROM
+                            main AS mt
+                        GROUP BY
+                            mt.person_bank, currency
+                
+                        UNION ALL
+                        
+                        SELECT
+                            tr.person_bank_from AS person_bank,
+                            currency,
+                            -SUM(tr.sum) AS normal_balance
+                        FROM
+                            transfer AS tr
+                        GROUP BY
+                            tr.person_bank_from, currency
+                
+                        UNION ALL
+                        
+                        SELECT
+                            tr.person_bank_to AS person_bank,
+                            currency,
+                            SUM(tr.sum) AS normal_balance
+                        FROM
+                            transfer AS tr
+                        GROUP BY
+                            tr.person_bank_to, currency
+                
+                        UNION ALL
+                        
+                        SELECT
+                            at.person_bank_from AS person_bank,
+                            currency_from AS currency,
+                            -SUM(at.sum_from) AS normal_balance
+                        FROM
+                            advtransfer AS at
+                        GROUP BY
+                            at.person_bank_from, currency_from
+                
+                        UNION ALL
+                        
+                        SELECT
+                            at.person_bank_to AS person_bank,
+                            currency_to AS currency,
+                            SUM(at.sum_to) AS normal_balance
+                        FROM
+                            advtransfer AS at
+                        GROUP BY
+                            at.person_bank_to, currency_to
+                    ) AS all_normal_balances
+                    GROUP BY person_bank, currency
+                ) AS normal_account_balances ON m.bank_rec = normal_account_balances.person_bank
+                LEFT JOIN (
+                    -- Deposit balances
+                    SELECT
+                        dt.name AS owner,
+                        currency,
+                        SUM(dt.sum) AS deposit_balance
+                    FROM
+                        deposit AS dt
+                    GROUP BY
+                        dt.name, currency
+                ) AS deposit_account_balances ON m.bank_rec = deposit_account_balances.owner
                 GROUP BY 
                     m.type, 
-                    pb.currency
+                    COALESCE(normal_account_balances.currency, deposit_account_balances.currency)
                 """
         )
         return c.fetchall()
@@ -402,15 +513,97 @@ def Read(x):
             """
                 SELECT 
                     m.owner,
-                    COALESCE(SUM(pb.sum), 0) + COALESCE(SUM(pbd.sum), 0) as total_balance,
-                    pb.currency as pb_currency
+                    COALESCE(SUM(normal_account_balances.normal_balance), 0) + COALESCE(SUM(deposit_account_balances.deposit_balance), 0) AS total_balance,
+                    COALESCE(normal_account_balances.currency, deposit_account_balances.currency) AS currency
                 FROM 
                     Marker_owner m
-                LEFT JOIN PB_account pb ON m.person_bank = pb.person_bank
-                LEFT JOIN PB_account_deposit pbd ON m.person_bank = pbd.person_bank
+                LEFT JOIN (
+                    -- Normal account balances (Init_PB, main, transfer, advtransfer)
+                    SELECT
+                        person_bank,
+                        currency,
+                        SUM(normal_balance) AS normal_balance
+                    FROM (
+                        SELECT
+                            init.person_bank,
+                            currency,
+                            SUM(sum) AS normal_balance
+                        FROM
+                            Init_PB AS init
+                        GROUP BY
+                            init.person_bank, currency
+                
+                        UNION ALL
+                        
+                        SELECT
+                            mt.person_bank,
+                            currency,
+                            SUM(sum) AS normal_balance
+                        FROM
+                            main AS mt
+                        GROUP BY
+                            mt.person_bank, currency
+                
+                        UNION ALL
+                        
+                        SELECT
+                            tr.person_bank_from AS person_bank,
+                            currency,
+                            -SUM(tr.sum) AS normal_balance
+                        FROM
+                            transfer AS tr
+                        GROUP BY
+                            tr.person_bank_from, currency
+                
+                        UNION ALL
+                        
+                        SELECT
+                            tr.person_bank_to AS person_bank,
+                            currency,
+                            SUM(tr.sum) AS normal_balance
+                        FROM
+                            transfer AS tr
+                        GROUP BY
+                            tr.person_bank_to, currency
+                
+                        UNION ALL
+                        
+                        SELECT
+                            at.person_bank_from AS person_bank,
+                            currency_from AS currency,
+                            -SUM(at.sum_from) AS normal_balance
+                        FROM
+                            advtransfer AS at
+                        GROUP BY
+                            at.person_bank_from, currency_from
+                
+                        UNION ALL
+                        
+                        SELECT
+                            at.person_bank_to AS person_bank,
+                            currency_to AS currency,
+                            SUM(at.sum_to) AS normal_balance
+                        FROM
+                            advtransfer AS at
+                        GROUP BY
+                            at.person_bank_to, currency_to
+                    ) AS all_normal_balances
+                    GROUP BY person_bank, currency
+                ) AS normal_account_balances ON m.bank_rec = normal_account_balances.person_bank
+                LEFT JOIN (
+                    -- Deposit balances
+                    SELECT
+                        dt.name AS owner,
+                        currency,
+                        SUM(dt.sum) AS deposit_balance
+                    FROM
+                        deposit AS dt
+                    GROUP BY
+                        dt.name, currency
+                ) AS deposit_account_balances ON m.owner = deposit_account_balances.owner
                 GROUP BY 
                     m.owner, 
-                    pb.currency
+                    COALESCE(normal_account_balances.currency, deposit_account_balances.currency)
                 """
         )
         return c.fetchall()
@@ -482,10 +675,10 @@ def Read(x):
         c.execute(
             """
             SELECT 
-                strftime('%Y-%m', date) AS month,
+                strftime('%Y-%m', "date") AS month,
                 currency,
                 SUM(CASE WHEN sum < 0 THEN ABS(sum) ELSE 0 END) AS total_expense,
-                date
+                "date"
             FROM main
             WHERE sum < 0
             GROUP BY month, currency
@@ -534,10 +727,10 @@ def Read(x):
         c.execute(
             """
             SELECT 
-                strftime('%Y-%m', date) AS month,
+                strftime('%Y-%m', "date") AS month,
                 currency,
-                SUM(CASE WHEN sum > 0 THEN ABS(sum) ELSE 0 END) AS total_income
-                date
+                SUM(CASE WHEN sum > 0 THEN ABS(sum) ELSE 0 END) AS total_income,
+                "date"
             FROM main
             WHERE sum > 0
             GROUP BY month, currency
@@ -583,7 +776,7 @@ def Read(x):
         return result
 
     elif x == "retacc":  # Return list of all accounts
-        c.execute("SELECT DISTINCT person_bank FROM PB_account")
+        c.execute("SELECT DISTINCT person_bank FROM Init_PB")
         result = [row[0] for row in c.fetchall()]
         return result
 
@@ -841,11 +1034,13 @@ def MarkerRead(markers, mode):
     conn = sqlite3.connect(dbPath)
     c = conn.cursor()
 
+    person_banks = []
+
     if mode == "byowner":
         c.execute(
             """
                 SELECT
-                    person_bank
+                    bank_rec
                 FROM
                     Marker_owner
                 WHERE
@@ -855,50 +1050,11 @@ def MarkerRead(markers, mode):
         )
         person_banks = c.fetchall()
 
-        person_banks = [pb[0] for pb in person_banks]
-        results = []
-
-        c.execute(
-            """
-                SELECT
-                    person_bank,
-                    sum,
-                    currency
-                FROM
-                    PB_account
-                WHERE
-                    person_bank IN ({seq})
-                """.format(
-                seq=",".join(["?"] * len(person_banks))
-            ),
-            person_banks,
-        )
-        results.extend(c.fetchall())
-
-        c.execute(
-            """
-                SELECT
-                    person_bank,
-                    sum,
-                    currency
-                FROM
-                    PB_account_deposit
-                WHERE 
-                    person_bank IN ({seq})
-                """.format(
-                seq=",".join(["?"] * len(person_banks))
-            ),
-            person_banks,
-        )
-        results.extend(c.fetchall())
-
-        return results
-
     elif mode == "bytype":
         c.execute(
             """
                 SELECT
-                    person_bank
+                    bank_rec
                 FROM
                     Marker_type
                 WHERE
@@ -908,55 +1064,16 @@ def MarkerRead(markers, mode):
         )
         person_banks = c.fetchall()
 
-        person_banks = [pb[0] for pb in person_banks]
-        results = []
-
-        c.execute(
-            """
-                SELECT
-                    person_bank,
-                    sum,
-                    currency
-                FROM
-                    PB_account
-                WHERE
-                    person_bank IN ({seq})
-                """.format(
-                seq=",".join(["?"] * len(person_banks))
-            ),
-            person_banks,
-        )
-        results.extend(c.fetchall())
-
-        c.execute(
-            """
-                SELECT
-                    person_bank,
-                    sum,
-                    currency
-                FROM
-                    PB_account_deposit
-                WHERE 
-                    person_bank IN ({seq})
-                """.format(
-                seq=",".join(["?"] * len(person_banks))
-            ),
-            person_banks,
-        )
-        results.extend(c.fetchall())
-
-        return results
-
     elif mode == "byall":
         values = markers.split(",")
         c.execute(
             """
                 SELECT
-                    mo.person_bank
+                    mo.bank_rec
                 FROM
                     Marker_owner mo
                 JOIN
-                    Marker_type mt ON mo.person_bank = mt.person_bank
+                    Marker_type mt ON mo.bank_rec = mt.bank_rec
                 WHERE
                     mo.owner = ?
                     AND
@@ -966,47 +1083,48 @@ def MarkerRead(markers, mode):
         )
         person_banks = c.fetchall()
 
+    if person_banks:
         person_banks = [pb[0] for pb in person_banks]
-        results = []
+        # Prepare dynamic query to calculate balances using person_banks
+        seq = ",".join(["?"] * len(person_banks))
 
+        # This query combines the balances from multiple sources and also integrates PBD logic
         c.execute(
-            """
-                SELECT
-                    person_bank,
-                    sum,
-                    currency
-                FROM
-                    PB_account
-                WHERE
-                    person_bank IN ({seq})
-                """.format(
-                seq=",".join(["?"] * len(person_banks))
-            ),
+            f"""
+                SELECT person_bank, currency, SUM(sum) 
+                FROM (
+                    -- Main accounts and transfers
+                    SELECT person_bank, currency, sum FROM main
+                    UNION ALL
+                    SELECT person_bank, currency, sum FROM Init_PB
+                    UNION ALL
+                    SELECT person_bank_from AS person_bank, currency, -sum FROM transfer
+                    UNION ALL
+                    SELECT person_bank_from AS person_bank, currency_from AS currency, -sum_from AS sum FROM advtransfer
+                    UNION ALL
+                    SELECT person_bank_to AS person_bank, currency_to AS currency, sum_to AS sum FROM advtransfer
+                    UNION ALL
+                    SELECT person_bank_to AS person_bank, currency, sum FROM transfer
+                    
+                    -- PBD logic
+                    UNION ALL
+                    SELECT owner AS person_bank, currency, sum FROM deposit
+                )
+                WHERE person_bank IN ({seq})
+                GROUP BY person_bank, currency
+                """,
             person_banks,
         )
-        results.extend(c.fetchall())
 
-        c.execute(
-            """
-                SELECT
-                    person_bank,
-                    sum,
-                    currency
-                FROM
-                    PB_account_deposit
-                WHERE 
-                    person_bank IN ({seq})
-                """.format(
-                seq=",".join(["?"] * len(person_banks))
-            ),
-            person_banks,
-        )
-        results.extend(c.fetchall())
+        results = c.fetchall()
+        conn.commit()
+        conn.close()
 
         return results
-
-    conn.commit()
-    conn.close()
+    else:
+        conn.commit()
+        conn.close()
+        return []
 
 
 def Del(del_id, type):
@@ -1029,114 +1147,50 @@ def Del(del_id, type):
         else:
             print("Record with id ", del_id, " does not exist.\n")
 
-    Re_calculate()
-
     conn.commit()
     conn.close()
 
 
-def Re_calculate():
-    # Core function for calculating remainders on all accounts. Called after each each finished add, update or delete
+def Re_Calculate_deposit():
+    # Function for calculating if deposit is due or not
     conn = sqlite3.connect(dbPath)
     c = conn.cursor()
 
-    # Calculate sums for each person_bank and currency pair
-    c.execute(
-        """
-        SELECT person_bank, currency, SUM(sum) 
-        FROM (
-            SELECT person_bank, currency, sum FROM main
-            UNION ALL
-            SELECT person_bank, currency, sum FROM Init_PB
-            UNION ALL
-            SELECT person_bank_from AS person_bank, currency, -sum FROM transfer
-            UNION ALL
-            SELECT person_bank_from AS person_bank, currency_from AS currency, -sum_from AS sum FROM advtransfer
-            UNION ALL
-            SELECT person_bank_to AS person_bank, currency_to AS currency, sum_to AS sum FROM advtransfer
-            UNION ALL
-            SELECT person_bank_to AS person_bank, currency, sum FROM transfer
-            UNION ALL
-            SELECT owner AS person_bank, currency, -sum FROM deposit
-        )
-        GROUP BY person_bank, currency
-    """
-    )
-    sums = c.fetchall()
-
-    for person_bank, currency, total_sum in sums:
-        c.execute(
-            "SELECT COUNT(*) FROM PB_account WHERE person_bank = ? AND currency = ?",
-            (person_bank, currency),
-        )
-        row_exists = c.fetchone()[0]
-
-        if row_exists:
-            c.execute(
-                "UPDATE PB_account SET sum = ? WHERE person_bank = ? AND currency = ?",
-                (round(total_sum, 2), person_bank, currency),
-            )
-        else:
-            c.execute(
-                "INSERT INTO PB_account (person_bank, sum, currency) VALUES (?, ?, ?)",
-                (person_bank, round(total_sum, 2), currency),
-            )
-
-    # Calculate deposit sums for each person_bank and currency pair
-    c.execute(
-        """
-        SELECT name, person_bank, currency, SUM(sum) 
-        FROM (
-                SELECT name, owner AS person_bank, currency, sum FROM deposit
-            )
-        GROUP BY name, person_bank, currency
-    """
-    )
-    DSums = c.fetchall()
-
-    for name, person_bank, currency, total_sum in DSums:
-        c.execute(
-            "SELECT COUNT(*) FROM PB_account_deposit WHERE name = ? AND person_bank = ? AND currency = ?",
-            (name, person_bank, currency),
-        )
-        row_exists = c.fetchone()[0]
-
-        if row_exists:
-            c.execute(
-                "UPDATE PB_account_deposit SET sum = ? WHERE name = ? AND person_bank = ? AND currency = ?",
-                (round(total_sum, 2), name, person_bank, currency),
-            )
-        else:
-            c.execute(
-                "INSERT INTO PB_account_deposit (name, person_bank, sum, currency) VALUES (?, ?, ?, ?)",
-                (name, person_bank, round(total_sum, 2), currency),
-            )
-
     # Check active deposits and create income/expense if due
-    c.execute(
-        "SELECT name, person_bank, sum, currency FROM PB_account_deposit WHERE sum != 0"
-    )
-    openD = c.fetchall()
     current_date = datetime.now().strftime("%Y-%m-%d")
 
-    for deposit in openD:
-        name, owner, sum, currency = deposit
-        c.execute(
-            "SELECT name, owner, sum, currency FROM deposit WHERE name = ? AND date_out < ? AND date_out != ' '",
-            (name, current_date),
-        )
-        expired = c.fetchone()
+    # Fetch active deposits from the deposit table where sum != 0 and the deposit is not expired
+    c.execute(
+        """
+        SELECT name, owner, sum, currency, date_out 
+        FROM deposit 
+        WHERE sum != 0 AND (date_out > ? OR date_out = ' ')
+        """,
+        (current_date,),
+    )
+    open_deposits = c.fetchall()
 
-        if expired:
+    for deposit in open_deposits:
+        name, owner, sum_val, currency, date_out = deposit
+
+        # Check if the deposit has expired
+        if date_out != " " and date_out < current_date:
+            # Mark the deposit as fully processed (sum = 0)
             c.execute(
-                "UPDATE PB_account_deposit SET sum = 0 WHERE name = ? AND person_bank = ? AND currency = ?",
-                (expired[0], expired[1], expired[3]),
+                """
+                UPDATE deposit 
+                SET sum = 0 
+                WHERE name = ? AND owner = ? AND currency = ?
+                """,
+                (name, owner, currency),
             )
 
+            # Get the maximum id from the main table
             c.execute("SELECT MAX(id) FROM main")
             max_id = c.fetchone()[0]
             max_id = 0 if max_id is None else max_id + 1
 
+            # Insert a transaction in the main table for the deposit return
             c.execute(
                 """
                 INSERT INTO main (
@@ -1149,8 +1203,8 @@ def Re_calculate():
                     sum,
                     currency
                 ) VALUES (?, ?, ' ', ' ', ?, 'Deposit return', ?, ?)
-            """,
-                (max_id, current_date, expired[1], expired[2], expired[3]),
+                """,
+                (max_id, current_date, owner, sum_val, currency),
             )
 
     conn.commit()
@@ -1158,7 +1212,7 @@ def Re_calculate():
 
 
 def SPVconf(pth, new_SPV, inpMode):
-    # Function for configuring categories and currencies. TODO remake function to be used in API
+    # Function for configuring categories and currencies
     if pth == "catinc":
         path = SPVcatIncPath
     elif pth == "catexp":
@@ -1239,7 +1293,7 @@ def InitPB(new_pb):
     new_pb = new_pb.split(",")
 
     c.execute(
-        "SELECT 1 FROM PB_account WHERE person_bank = ? AND currency = ?",
+        "SELECT 1 FROM Init_PB WHERE person_bank = ? AND currency = ?",
         (new_pb[0], new_pb[2]),
     )
     exists = c.fetchone()
@@ -1256,8 +1310,6 @@ def InitPB(new_pb):
     conn.commit()
     conn.close()
 
-    Re_calculate()
-
 
 def Mark(marker, mode):
     # Function pushing special record into DB with marker: whose or what type of account is this
@@ -1265,48 +1317,47 @@ def Mark(marker, mode):
     c = conn.cursor()
 
     marker = marker.split(",")
-
     c.execute(
-        "SELECT 1 FROM (PB_account pb, PB_account_deposit pbd) WHERE pb.person_bank = ? OR pbd.person_bank = ?",
+        "SELECT 1 FROM (Init_PB pb, deposit pbd) WHERE pb.person_bank = ? OR pbd.name = ?",
         (marker[0], marker[0]),
     )
     exists = c.fetchone()
     if exists != None:
-        print("Person_bank does not exist!\n\n")
+        print("Account record does not exist!\n\n")
         return
 
     if mode == "type":
         c.execute(
-            "SELECT 1 FROM Marker_type WHERE person_bank = ? AND type = ?",
+            "SELECT 1 FROM Marker_type WHERE bank_rec = ? AND type = ?",
             (marker[0], marker[1]),
         )
         exists = c.fetchone()
         if exists != None:
             c.execute(
-                "UPDATE Marker_type SET person_bank = ?, type = ? WHERE person_bank = ?",
+                "UPDATE Marker_type SET bank_rec = ?, type = ? WHERE bank_rec = ?",
                 (marker[0], marker[1], marker[0]),
             )
         else:
             c.execute(
-                "INSERT INTO Marker_type (person_bank, type) VALUES (?, ?)",
+                "INSERT INTO Marker_type (bank_rec, type) VALUES (?, ?)",
                 (marker[0], marker[1]),
             )
             print("Success!\n\n")
 
     elif mode == "owner":
         c.execute(
-            "SELECT 1 FROM Marker_owner WHERE person_bank = ? AND owner = ?",
+            "SELECT 1 FROM Marker_owner WHERE bank_rec = ? AND owner = ?",
             (marker[0], marker[1]),
         )
         exists = c.fetchone()
         if exists != None:
             c.execute(
-                "UPDATE Marker_owner SET person_bank = ?, owner = ? WHERE person_bank = ?",
+                "UPDATE Marker_owner SET bank_rec = ?, owner = ? WHERE bank_rec = ?",
                 (marker[0], marker[1], marker[0]),
             )
         else:
             c.execute(
-                "INSERT INTO Marker_owner (person_bank, owner) VALUES (?, ?)",
+                "INSERT INTO Marker_owner (bank_rec, owner) VALUES (?, ?)",
                 (marker[0], marker[1]),
             )
             print("Success!\n\n")
@@ -1321,15 +1372,35 @@ def DelPB(pb):
     c = conn.cursor()
 
     pb = pb.split(",")
-
     try:
         c.execute(
-            "DELETE FROM PB_account WHERE person_bank = ? AND currency = ?",
+            "DELETE FROM Init_PB WHERE person_bank = ? AND currency = ?",
             (pb[0], pb[1]),
         )
         c.execute(
-            "DELETE FROM Init_PB WHERE person_bank = ? AND currency = ?", (pb[0], pb[1])
+            "DELETE FROM main WHERE person_bank = ? AND currency = ?", (pb[0], pb[1])
         )
+        c.execute(
+            "DELETE FROM transfer WHERE person_bank_from = ? AND currency = ?",
+            (pb[0], pb[1]),
+        )
+        c.execute(
+            "DELETE FROM transfer WHERE person_bank_to = ? AND currency = ?",
+            (pb[0], pb[1]),
+        )
+        c.execute(
+            "DELETE FROM advtransfer WHERE person_bank_from = ? AND currency_from = ?",
+            (pb[0], pb[1]),
+        )
+        c.execute(
+            "DELETE FROM advtransfer WHERE person_bank_to = ? AND currency_to = ?",
+            (pb[0], pb[1]),
+        )
+        c.execute(
+            "DELETE FROM deposit WHERE person_bank = ? AND currency = ?", (pb[0], pb[1])
+        )
+        c.execute("DELETE FROM Marker_type WHERE banc_rec = ?", (pb[0]))
+        c.execute("DELETE FROM Marker_owner WHERE banc_rec = ?", (pb[0]))
     except:
         print("Failure!\n\n")
     print("Success!\n\n")
@@ -1337,7 +1408,7 @@ def DelPB(pb):
     conn.commit()
     conn.close()
 
-    Re_calculate()
+    Re_Calculate_deposit()
 
 
 def GrabRecordByID(id, mode):

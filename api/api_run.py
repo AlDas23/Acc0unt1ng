@@ -39,6 +39,7 @@ def plot_to_img_tag(df):
 
 @app.route("/", methods=["POST", "GET"])
 def main():
+    Re_Calculate_deposit()
     return redirect("/add/expense")
 
 
@@ -407,15 +408,15 @@ def Transfer():
 @app.route("/add/deposit", methods=["POST", "GET"])
 def AddDeposit():
     if request.method == "GET":
-        Re_calculate()
+        
 
         currencies = read_csv(SPVcurrPath)
         person_banks = Read("retacc")
 
         options = {"person_banks": person_banks, "currencies": currencies}
 
-        data = Read("alldepacc")
-        columns = ["Name", "Owner", "Sum", "Currency"]
+        # data = Read("alldepacc")
+        # columns = ["Name", "Owner", "Sum", "Currency"]
 
         dataA = Read("opendep")
         columnsH = [
@@ -436,8 +437,6 @@ def AddDeposit():
         return render_template(
             "adddeposit.html",
             options=options,
-            columns=columns,
-            data=data,
             columnsA=columnsH,
             dataA=dataA,
             columnsC=columnsH,
@@ -709,6 +708,7 @@ Possible commands are:
     m+          - show positive records from main table
     m-          - show negative records from main table
     allacc      - show all accounts
+    initpb      - show all initial accounts
     alldepacc   - show all deposit accounts
     alldep      - show all deposit records
     opendep     - show deposit records that considered open
@@ -746,22 +746,22 @@ API - Configuration - Mark message:
 
 Make a POST request on this adress with in next format:
     
-      Key  |       Value
-    ----------------------------
+      Key  |                      Value
+    ----------------------------------------------------------
     Type   | [owner, type]
-    PB     | *Person_bank value*
+    BR     | *person_bank of account or deposit account name*
     Marker | *Marker value*
         """
     else:
         mode = request.form.get("Type")
-        pb = request.form.get("PB")
+        br = request.form.get("BR")
         marker = request.form.get("Marker")
 
         # Check if any of the required form data is missing
-        if not mode or not pb or not marker:
-            return "Missing one or more required fields: 'Type', 'PB', 'Marker'", 400
+        if not mode or not br or not marker:
+            return "Missing one or more required fields: 'Type', 'BR', 'Marker'", 400
 
-        to_send = pb + "," + marker
+        to_send = br + "," + marker
         try:
             Mark(to_send, mode)
         except:
