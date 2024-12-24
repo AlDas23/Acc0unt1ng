@@ -236,12 +236,16 @@ def Add(input_field, mode):
 
         c.execute(
             "SELECT 1 FROM deposit WHERE name = ?",
-            (values[1]),
+            (values[1],)
         )  # Check if name already exists
         exists = c.fetchone()
         if exists != None:
             raise Exception("Deposit name already exists!")
 
+        c.execute(
+            "SELECT 1 FROM Init_PB WHERE person_bank = ? AND currency = ?",
+            (values[2], values[4]),
+        )  # Check if sending person_bank - currency pair exists
         exists = c.fetchone()
         if exists == None:
             raise Exception("Person_bank-currency pair does not exist!")
