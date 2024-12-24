@@ -861,7 +861,7 @@ def ConvReadPlus(x, mode):
     for row in data:
         row_list = list(row)
         owner = row_list[0]
-        amount = row_list[1]
+        amount = round(row_list[1], 2)
         currency_column = row_list[2]
 
         converted_amount = ConvertToRON(currency_column, amount, current_date, c)
