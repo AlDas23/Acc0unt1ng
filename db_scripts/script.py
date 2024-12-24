@@ -1028,7 +1028,7 @@ def ConvertToRON(currency, amount, date, c):
             excRate = 1
     else:
         excRate = 1
-    converted_amount = amount * excRate
+    converted_amount = round(amount * excRate, 2)
 
     return converted_amount
 
