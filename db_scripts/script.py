@@ -279,7 +279,7 @@ def Add(input_field, mode):
     elif mode == "currrate":
         values = input_field.split(",")
         for n in range(1, 7):
-            values[n] = round(float(values[n]), 2)
+            values[n] = round(float(values[n]), 4)
 
         values.insert(2, round(1 / values[1], 2))  # UAH = 1 / RON
 
@@ -611,6 +611,12 @@ def Read(x):
         return c.fetchall()
     elif x == "exowner":
         c.execute("SELECT DISTINCT owner FROM Marker_owner")
+        return c.fetchall()
+    elif x == "mtype":
+        c.execute("SELECT * FROM Marker_type")
+        return c.fetchall()
+    elif x == "mowner":
+        c.execute("SELECT * FROM Marker_owner")
         return c.fetchall()
 
     elif x == "yeartotalrep":
@@ -1009,12 +1015,12 @@ def ReadAdv(type, month):
         return c.fetchall()
 
 
-def ConvertToRON(currency, amount, date, c):
+def ConvertToRON(currency, amount, date, c): 
     # Converting to RON
 
     if currency != "RON":
-        query = f"SELECT {currency} FROM exc_rate ORDER BY ABS(JULIANDAY(date) - JULIANDAY(?)) LIMIT 1"
-        c.execute(query, (date,))
+        query = f"SELECT {currency} FROM exc_rate ORDER BY ABS(JULIANDAY(date) - JULIANDAY('{date}')) LIMIT 1"
+        c.execute(query)
         excRate_row = c.fetchone()
         if excRate_row != None:
             excRate = excRate_row[0]  # Extract the exchange rate

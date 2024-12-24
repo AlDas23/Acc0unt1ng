@@ -716,6 +716,8 @@ Possible commands are:
     alltran     - show all standard transfer records
     alladvtran  - show all advanced transfer records  
     allcurrrate - show all currency rates records 
+    mtype       - show all type markers
+    mowner      - show all owner markers
     allmtype    - show all accounts grouped by type Marker
     allmowner   - show all accounts grouped by owner Marker
     exowner     - show existing owner Markers
@@ -806,7 +808,7 @@ Make a POST request on this adress with in next format:
         if sum != None:
             to_send = pb + "," + sum + "," + currency
         else:
-            to_send = pb + "," + currency
+            to_send = pb + "," + currency # TODO CBug: When using delpb command TypeError: unsupported operand type(s) for +: 'NoneType' and 'str'
 
         try:
             if (
