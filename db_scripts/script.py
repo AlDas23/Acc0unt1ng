@@ -235,8 +235,7 @@ def Add(input_field, mode):
         values = input_field.split(",")
 
         c.execute(
-            "SELECT 1 FROM deposit WHERE name = ?",
-            (values[1],)
+            "SELECT 1 FROM deposit WHERE name = ?", (values[1],)
         )  # Check if name already exists
         exists = c.fetchone()
         if exists != None:
@@ -589,6 +588,17 @@ def Read(x):
                             advtransfer AS at
                         GROUP BY
                             at.person_bank_to, currency_to
+							
+							UNION ALL
+							
+						SELECT
+							dt.owner AS owner,
+							currency,
+							-SUM(dt.sum) AS deposit_balance
+						FROM
+							deposit AS dt
+						GROUP BY
+							dt.name, currency
                     ) AS all_normal_balances
                     GROUP BY person_bank, currency
                 ) AS normal_account_balances ON m.bank_rec = normal_account_balances.person_bank
@@ -606,7 +616,7 @@ def Read(x):
                 GROUP BY 
                     m.owner, 
                     COALESCE(normal_account_balances.currency, deposit_account_balances.currency)
-                """
+            """
         )
         return c.fetchall()
 
@@ -840,7 +850,7 @@ def ConvRead(x, mode):
 
     # Convert the grouped data back into a list of tuples
     modified_list = [
-        (owner, total_amount) for owner, total_amount in modified_dict.items()
+        (owner, round(total_amount, 2)) for owner,total_amount in modified_dict.items()
     ]
 
     conn.commit()
@@ -1019,7 +1029,7 @@ def ReadAdv(type, month):
         return c.fetchall()
 
 
-def ConvertToRON(currency, amount, date, c): 
+def ConvertToRON(currency, amount, date, c):
     # Converting to RON
 
     if currency != "RON":
@@ -1099,7 +1109,7 @@ def MarkerRead(markers, mode):
         # This query combines the balances from multiple sources and also integrates PBD logic
         c.execute(
             f"""
-                SELECT person_bank, currency, SUM(sum) 
+                SELECT person_bank, ROUND(SUM(sum), 2) AS sum, currency
                 FROM (
                     -- Main accounts and transfers
                     SELECT person_bank, currency, sum FROM main
@@ -1116,7 +1126,7 @@ def MarkerRead(markers, mode):
                     
                     -- PBD logic
                     UNION ALL
-                    SELECT owner AS person_bank, currency, sum FROM deposit
+                    SELECT owner AS person_bank, currency, -sum FROM deposit
                 )
                 WHERE person_bank IN ({seq})
                 GROUP BY person_bank, currency
