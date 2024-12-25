@@ -227,7 +227,7 @@ def Add(input_field, mode):
         }  # Make dictionary with all values to add
 
         c.execute(
-            "INSERT INTO advtransfer VALUES (:id, :date, :person_bank_from, :sum_from, :currency_from, :person_bank_to, :sum_to, :currency_to, :currency_rate :comment)",
+            "INSERT INTO advtransfer VALUES (:id, :date, :person_bank_from, :sum_from, :currency_from, :person_bank_to, :sum_to, :currency_to, :currency_rate, :comment)",
             records,
         )
 
