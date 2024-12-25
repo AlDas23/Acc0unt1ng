@@ -278,7 +278,7 @@ def Add(input_field, mode):
         )
 
         # Automatically mark deposit as type 'deposit'
-        c.execute("INSERT INTO Marker_type VALUES(?, ?)", ("deposit", values[1]))
+        c.execute("INSERT INTO Marker_type VALUES(?, ?)", (values[1], "deposit"))
 
     elif mode == "currrate":
         values = input_field.split(",")
@@ -1336,8 +1336,8 @@ def Mark(marker, mode):
 
     if mode == "type":
         c.execute(
-            "SELECT 1 FROM Marker_type WHERE bank_rec = ? AND type = ?",
-            (marker[0], marker[1]),
+            "SELECT 1 FROM Marker_type WHERE bank_rec = ?",
+            (marker[0]),
         )
         exists = c.fetchone()
         if exists != None:
@@ -1354,8 +1354,8 @@ def Mark(marker, mode):
 
     elif mode == "owner":
         c.execute(
-            "SELECT 1 FROM Marker_owner WHERE bank_rec = ? AND owner = ?",
-            (marker[0], marker[1]),
+            "SELECT 1 FROM Marker_owner WHERE bank_rec = ?",
+            (marker[0]),
         )
         exists = c.fetchone()
         if exists != None:
