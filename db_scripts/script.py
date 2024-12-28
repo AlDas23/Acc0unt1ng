@@ -382,7 +382,7 @@ def Read(x):
     elif x == "allcurr":
         c.execute(
             """
-                SELECT currency, SUM(total_sum) AS total_amount
+                SELECT currency, ROUND(SUM(total_sum), 2) AS total_amount
                 FROM (
                     SELECT currency, sum AS total_sum FROM Init_PB
                     
@@ -695,7 +695,7 @@ def Read(x):
             SELECT 
                 strftime('%Y-%m', "date") AS month,
                 currency,
-                SUM(CASE WHEN sum < 0 THEN ABS(sum) ELSE 0 END) AS total_expense,
+                ROUND(SUM(CASE WHEN sum < 0 THEN ABS(sum) ELSE 0 END), 2) AS total_expense,
                 "date"
             FROM main
             WHERE sum < 0
@@ -747,7 +747,7 @@ def Read(x):
             SELECT 
                 strftime('%Y-%m', "date") AS month,
                 currency,
-                SUM(CASE WHEN sum > 0 THEN ABS(sum) ELSE 0 END) AS total_income,
+                ROUND(SUM(CASE WHEN sum > 0 THEN ABS(sum) ELSE 0 END), 2) AS total_income,
                 "date"
             FROM main
             WHERE sum > 0
@@ -794,7 +794,7 @@ def Read(x):
         return result
 
     elif x == "retacc":  # Return list of all accounts
-        c.execute("SELECT DISTINCT person_bank FROM Init_PB")
+        c.execute("SELECT DISTINCT person_bank FROM Init_PB ORDER BY person_bank ASC")
         result = [row[0] for row in c.fetchall()]
         return result
 
