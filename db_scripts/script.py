@@ -227,7 +227,7 @@ def Add(input_field, mode):
         }  # Make dictionary with all values to add
 
         c.execute(
-            "INSERT INTO advtransfer VALUES (:id, :date, :person_bank_from, :sum_from, :currency_from, :person_bank_to, :sum_to, :currency_to, :currency_rate :comment)",
+            "INSERT INTO advtransfer VALUES (:id, :date, :person_bank_from, :sum_from, :currency_from, :person_bank_to, :sum_to, :currency_to, :currency_rate, :comment)",
             records,
         )
 
@@ -235,13 +235,16 @@ def Add(input_field, mode):
         values = input_field.split(",")
 
         c.execute(
-            "SELECT 1 FROM deposit WHERE name = ?",
-            (values[1]),
+            "SELECT 1 FROM deposit WHERE name = ?", (values[1],)
         )  # Check if name already exists
         exists = c.fetchone()
         if exists != None:
             raise Exception("Deposit name already exists!")
 
+        c.execute(
+            "SELECT 1 FROM Init_PB WHERE person_bank = ? AND currency = ?",
+            (values[2], values[4]),
+        )  # Check if sending person_bank - currency pair exists
         exists = c.fetchone()
         if exists == None:
             raise Exception("Person_bank-currency pair does not exist!")
@@ -274,12 +277,12 @@ def Add(input_field, mode):
         )
 
         # Automatically mark deposit as type 'deposit'
-        c.execute("INSERT INTO Marker_type VALUES(?, ?)", ("deposit", values[1]))
+        c.execute("INSERT INTO Marker_type VALUES(?, ?)", (values[1], "deposit"))
 
     elif mode == "currrate":
         values = input_field.split(",")
         for n in range(1, 7):
-            values[n] = round(float(values[n]), 2)
+            values[n] = round(float(values[n]), 4)
 
         values.insert(2, round(1 / values[1], 2))  # UAH = 1 / RON
 
@@ -379,7 +382,7 @@ def Read(x):
     elif x == "allcurr":
         c.execute(
             """
-                SELECT currency, SUM(total_sum) AS total_amount
+                SELECT currency, ROUND(SUM(total_sum), 2) AS total_amount
                 FROM (
                     SELECT currency, sum AS total_sum FROM Init_PB
                     
@@ -585,6 +588,17 @@ def Read(x):
                             advtransfer AS at
                         GROUP BY
                             at.person_bank_to, currency_to
+							
+							UNION ALL
+							
+						SELECT
+							dt.owner AS owner,
+							currency,
+							-SUM(dt.sum) AS deposit_balance
+						FROM
+							deposit AS dt
+						GROUP BY
+							dt.name, currency
                     ) AS all_normal_balances
                     GROUP BY person_bank, currency
                 ) AS normal_account_balances ON m.bank_rec = normal_account_balances.person_bank
@@ -602,7 +616,7 @@ def Read(x):
                 GROUP BY 
                     m.owner, 
                     COALESCE(normal_account_balances.currency, deposit_account_balances.currency)
-                """
+            """
         )
         return c.fetchall()
 
@@ -611,6 +625,12 @@ def Read(x):
         return c.fetchall()
     elif x == "exowner":
         c.execute("SELECT DISTINCT owner FROM Marker_owner")
+        return c.fetchall()
+    elif x == "mtype":
+        c.execute("SELECT * FROM Marker_type")
+        return c.fetchall()
+    elif x == "mowner":
+        c.execute("SELECT * FROM Marker_owner")
         return c.fetchall()
 
     elif x == "yeartotalrep":
@@ -675,7 +695,7 @@ def Read(x):
             SELECT 
                 strftime('%Y-%m', "date") AS month,
                 currency,
-                SUM(CASE WHEN sum < 0 THEN ABS(sum) ELSE 0 END) AS total_expense,
+                ROUND(SUM(CASE WHEN sum < 0 THEN ABS(sum) ELSE 0 END), 2) AS total_expense,
                 "date"
             FROM main
             WHERE sum < 0
@@ -727,7 +747,7 @@ def Read(x):
             SELECT 
                 strftime('%Y-%m', "date") AS month,
                 currency,
-                SUM(CASE WHEN sum > 0 THEN ABS(sum) ELSE 0 END) AS total_income,
+                ROUND(SUM(CASE WHEN sum > 0 THEN ABS(sum) ELSE 0 END), 2) AS total_income,
                 "date"
             FROM main
             WHERE sum > 0
@@ -774,7 +794,7 @@ def Read(x):
         return result
 
     elif x == "retacc":  # Return list of all accounts
-        c.execute("SELECT DISTINCT person_bank FROM Init_PB")
+        c.execute("SELECT DISTINCT person_bank FROM Init_PB ORDER BY person_bank ASC")
         result = [row[0] for row in c.fetchall()]
         return result
 
@@ -830,7 +850,7 @@ def ConvRead(x, mode):
 
     # Convert the grouped data back into a list of tuples
     modified_list = [
-        (owner, total_amount) for owner, total_amount in modified_dict.items()
+        (owner, round(total_amount, 2)) for owner,total_amount in modified_dict.items()
     ]
 
     conn.commit()
@@ -855,7 +875,7 @@ def ConvReadPlus(x, mode):
     for row in data:
         row_list = list(row)
         owner = row_list[0]
-        amount = row_list[1]
+        amount = round(row_list[1], 2)
         currency_column = row_list[2]
 
         converted_amount = ConvertToRON(currency_column, amount, current_date, c)
@@ -1013,8 +1033,8 @@ def ConvertToRON(currency, amount, date, c):
     # Converting to RON
 
     if currency != "RON":
-        query = f"SELECT {currency} FROM exc_rate ORDER BY ABS(JULIANDAY(date) - JULIANDAY(?)) LIMIT 1"
-        c.execute(query, (date,))
+        query = f"SELECT {currency} FROM exc_rate ORDER BY ABS(JULIANDAY(date) - JULIANDAY('{date}')) LIMIT 1"
+        c.execute(query)
         excRate_row = c.fetchone()
         if excRate_row != None:
             excRate = excRate_row[0]  # Extract the exchange rate
@@ -1022,7 +1042,7 @@ def ConvertToRON(currency, amount, date, c):
             excRate = 1
     else:
         excRate = 1
-    converted_amount = amount * excRate
+    converted_amount = round(amount * excRate, 2)
 
     return converted_amount
 
@@ -1089,7 +1109,7 @@ def MarkerRead(markers, mode):
         # This query combines the balances from multiple sources and also integrates PBD logic
         c.execute(
             f"""
-                SELECT person_bank, currency, SUM(sum) 
+                SELECT person_bank, ROUND(SUM(sum), 2) AS sum, currency
                 FROM (
                     -- Main accounts and transfers
                     SELECT person_bank, currency, sum FROM main
@@ -1106,7 +1126,7 @@ def MarkerRead(markers, mode):
                     
                     -- PBD logic
                     UNION ALL
-                    SELECT owner AS person_bank, currency, sum FROM deposit
+                    SELECT owner AS person_bank, currency, -sum FROM deposit
                 )
                 WHERE person_bank IN ({seq})
                 GROUP BY person_bank, currency
@@ -1326,8 +1346,8 @@ def Mark(marker, mode):
 
     if mode == "type":
         c.execute(
-            "SELECT 1 FROM Marker_type WHERE bank_rec = ? AND type = ?",
-            (marker[0], marker[1]),
+            "SELECT 1 FROM Marker_type WHERE bank_rec = ?",
+            (marker[0]),
         )
         exists = c.fetchone()
         if exists != None:
@@ -1344,8 +1364,8 @@ def Mark(marker, mode):
 
     elif mode == "owner":
         c.execute(
-            "SELECT 1 FROM Marker_owner WHERE bank_rec = ? AND owner = ?",
-            (marker[0], marker[1]),
+            "SELECT 1 FROM Marker_owner WHERE bank_rec = ?",
+            (marker[0]),
         )
         exists = c.fetchone()
         if exists != None:
