@@ -420,14 +420,14 @@ def AddDeposit():
 
         dataA = Read("opendep")
         columnsH = [
-            "Date in",
+            "Deposit Date",
             "Name",
-            "Owner",
+            "Person-bank",
             "Sum",
             "Currency",
             "Months",
-            "Date out",
-            "Percent",
+            "Closing Date",
+            "%",
             "Currency rate",
             "Expected amount",
             "Comment",

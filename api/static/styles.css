@@ -93,7 +93,9 @@ nav {
 
 .table-container {
   flex: 1;
-  margin: 10px;
+  margin-left: 5px;
+  margin-top: 10px;
+  margin-right: 5px;
 }
 
 .viewacc {
