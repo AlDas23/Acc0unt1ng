@@ -594,7 +594,7 @@ def Read(x):
 						SELECT
 							dt.owner AS owner,
 							currency,
-							-SUM(dt.sum) AS deposit_balance
+							SUM(dt.sum) AS deposit_balance
 						FROM
 							deposit AS dt
 						GROUP BY
@@ -850,7 +850,7 @@ def ConvRead(x, mode):
 
     # Convert the grouped data back into a list of tuples
     modified_list = [
-        (owner, round(total_amount, 2)) for owner,total_amount in modified_dict.items()
+        (owner, round(total_amount, 2)) for owner, total_amount in modified_dict.items()
     ]
 
     conn.commit()
@@ -1200,7 +1200,7 @@ def Re_Calculate_deposit():
                 SET sum = 0 
                 WHERE name = ? AND owner = ? AND currency = ?
                 """,
-                (name, owner, currency),
+                (name, owner, currency)
             )
 
             # Get the maximum id from the main table
@@ -1222,7 +1222,7 @@ def Re_Calculate_deposit():
                     currency
                 ) VALUES (?, ?, ' ', ' ', ?, 'Deposit return', ?, ?)
                 """,
-                (max_id, current_date, owner, sum_val, currency),
+                (max_id, current_date, owner, sum_val, currency)
             )
 
     conn.commit()
@@ -1312,7 +1312,7 @@ def InitPB(new_pb):
 
     c.execute(
         "SELECT 1 FROM Init_PB WHERE person_bank = ? AND currency = ?",
-        (new_pb[0], new_pb[2]),
+        (new_pb[0], new_pb[2])
     )
     exists = c.fetchone()
     if exists != None:
@@ -1321,7 +1321,7 @@ def InitPB(new_pb):
     else:
         c.execute(
             "INSERT INTO Init_PB (person_bank, sum, currency) VALUES (?, ?, ?)",
-            (new_pb[0], new_pb[1], new_pb[2]),
+            (new_pb[0], new_pb[1], new_pb[2])
         )
         print("Success!\n\n")
 
@@ -1337,7 +1337,7 @@ def Mark(marker, mode):
     marker = marker.split(",")
     c.execute(
         "SELECT 1 FROM (Init_PB pb, deposit pbd) WHERE pb.person_bank = ? OR pbd.name = ?",
-        (marker[0], marker[0]),
+        (marker[0], marker[0])
     )
     exists = c.fetchone()
     if exists != None:
@@ -1345,38 +1345,35 @@ def Mark(marker, mode):
         return
 
     if mode == "type":
-        c.execute(
-            "SELECT 1 FROM Marker_type WHERE bank_rec = ?",
-            (marker[0]),
-        )
+        c.execute("SELECT 1 FROM Marker_type WHERE bank_rec = ?", (marker[0],))
         exists = c.fetchone()
         if exists != None:
             c.execute(
                 "UPDATE Marker_type SET bank_rec = ?, type = ? WHERE bank_rec = ?",
-                (marker[0], marker[1], marker[0]),
+                (marker[0], marker[1], marker[0])
             )
         else:
             c.execute(
                 "INSERT INTO Marker_type (bank_rec, type) VALUES (?, ?)",
-                (marker[0], marker[1]),
+                (marker[0], marker[1])
             )
             print("Success!\n\n")
 
     elif mode == "owner":
         c.execute(
             "SELECT 1 FROM Marker_owner WHERE bank_rec = ?",
-            (marker[0]),
+            (marker[0],)
         )
         exists = c.fetchone()
         if exists != None:
             c.execute(
                 "UPDATE Marker_owner SET bank_rec = ?, owner = ? WHERE bank_rec = ?",
-                (marker[0], marker[1], marker[0]),
+                (marker[0], marker[1], marker[0])
             )
         else:
             c.execute(
                 "INSERT INTO Marker_owner (bank_rec, owner) VALUES (?, ?)",
-                (marker[0], marker[1]),
+                (marker[0], marker[1])
             )
             print("Success!\n\n")
 
@@ -1393,32 +1390,32 @@ def DelPB(pb):
     try:
         c.execute(
             "DELETE FROM Init_PB WHERE person_bank = ? AND currency = ?",
-            (pb[0], pb[1]),
+            (pb[0], pb[1])
         )
         c.execute(
             "DELETE FROM main WHERE person_bank = ? AND currency = ?", (pb[0], pb[1])
         )
         c.execute(
             "DELETE FROM transfer WHERE person_bank_from = ? AND currency = ?",
-            (pb[0], pb[1]),
+            (pb[0], pb[1])
         )
         c.execute(
             "DELETE FROM transfer WHERE person_bank_to = ? AND currency = ?",
-            (pb[0], pb[1]),
+            (pb[0], pb[1])
         )
         c.execute(
             "DELETE FROM advtransfer WHERE person_bank_from = ? AND currency_from = ?",
-            (pb[0], pb[1]),
+            (pb[0], pb[1])
         )
         c.execute(
             "DELETE FROM advtransfer WHERE person_bank_to = ? AND currency_to = ?",
-            (pb[0], pb[1]),
+            (pb[0], pb[1])
         )
         c.execute(
             "DELETE FROM deposit WHERE person_bank = ? AND currency = ?", (pb[0], pb[1])
         )
-        c.execute("DELETE FROM Marker_type WHERE banc_rec = ?", (pb[0]))
-        c.execute("DELETE FROM Marker_owner WHERE banc_rec = ?", (pb[0]))
+        c.execute("DELETE FROM Marker_type WHERE banc_rec = ?", (pb[0],))
+        c.execute("DELETE FROM Marker_owner WHERE banc_rec = ?", (pb[0],))
     except:
         print("Failure!\n\n")
     print("Success!\n\n")
