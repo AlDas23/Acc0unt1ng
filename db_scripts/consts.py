@@ -47,5 +47,6 @@ dp_keys = [
     "currency_rate",
     "expect",
     "comment",
+    "isOpen",
 ]
 curr_keys = ["date", "RON", "UAH", "EUR", "USD", "GBP", "CHF", "HUF", "AUR"]
