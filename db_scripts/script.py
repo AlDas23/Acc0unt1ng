@@ -391,10 +391,6 @@ def Read(x):
     
                     UNION ALL
     
-                    SELECT currency, sum AS total_sum FROM deposit WHERE isOpen = 1
-    
-                    UNION ALL
-    
                     SELECT currency_from AS currency, -sum_from AS total_sum FROM advtransfer
     
                     UNION ALL
@@ -414,89 +410,104 @@ def Read(x):
             """
                 SELECT 
                     m.type,
-                    COALESCE(SUM(normal_account_balances.normal_balance), 0) + COALESCE(SUM(deposit_account_balances.deposit_balance), 0) AS total_balance,
+                    ROUND(COALESCE(SUM(normal_account_balances.normal_balance), 0) - COALESCE(SUM(deposit_account_balances.deposit_balance), 0), 2) AS total_balance,
                     COALESCE(normal_account_balances.currency, deposit_account_balances.currency) AS currency
                 FROM 
                     Marker_type m
                 LEFT JOIN (
-                    -- Normal account balances (Init_PB, main, transfer, advtransfer)
+                    WITH all_transactions AS (
                     SELECT
-                        person_bank,
+                        init.person_bank,
                         currency,
-                        SUM(normal_balance) AS normal_balance
-                    FROM (
-                        SELECT
-                            init.person_bank,
-                            currency,
-                            SUM(sum) AS normal_balance
-                        FROM
-                            Init_PB AS init
-                        GROUP BY
-                            init.person_bank, currency
-                
-                        UNION ALL
-                        
-                        SELECT
-                            mt.person_bank,
-                            currency,
-                            SUM(sum) AS normal_balance
-                        FROM
-                            main AS mt
-                        GROUP BY
-                            mt.person_bank, currency
-                
-                        UNION ALL
-                        
-                        SELECT
-                            tr.person_bank_from AS person_bank,
-                            currency,
-                            -SUM(tr.sum) AS normal_balance
-                        FROM
-                            transfer AS tr
-                        GROUP BY
-                            tr.person_bank_from, currency
-                
-                        UNION ALL
-                        
-                        SELECT
-                            tr.person_bank_to AS person_bank,
-                            currency,
-                            SUM(tr.sum) AS normal_balance
-                        FROM
-                            transfer AS tr
-                        GROUP BY
-                            tr.person_bank_to, currency
-                
-                        UNION ALL
-                        
-                        SELECT
-                            at.person_bank_from AS person_bank,
-                            currency_from AS currency,
-                            -SUM(at.sum_from) AS normal_balance
-                        FROM
-                            advtransfer AS at
-                        GROUP BY
-                            at.person_bank_from, currency_from
-                
-                        UNION ALL
-                        
-                        SELECT
-                            at.person_bank_to AS person_bank,
-                            currency_to AS currency,
-                            SUM(at.sum_to) AS normal_balance
-                        FROM
-                            advtransfer AS at
-                        GROUP BY
-                            at.person_bank_to, currency_to
-                    ) AS all_normal_balances
-                    GROUP BY person_bank, currency
+                        SUM(sum) AS normal_balance
+                    FROM
+                        Init_PB AS init
+                    GROUP BY
+                        init.person_bank, currency
+
+                    UNION ALL
+
+                    SELECT
+                        mt.person_bank,
+                        currency,
+                        SUM(sum) AS normal_balance
+                    FROM
+                        main AS mt
+                    GROUP BY
+                        mt.person_bank, currency
+
+                    UNION ALL
+
+                    SELECT
+                        tr.person_bank_from AS person_bank,
+                        currency,
+                        -SUM(tr.sum) AS normal_balance
+                    FROM
+                        transfer AS tr
+                    GROUP BY
+                        tr.person_bank_from, currency
+
+                    UNION ALL
+
+                    SELECT
+                        tr.person_bank_to AS person_bank,
+                        currency,
+                        SUM(tr.sum) AS normal_balance
+                    FROM
+                        transfer AS tr
+                    GROUP BY
+                        tr.person_bank_to, currency
+
+                    UNION ALL
+
+                    SELECT
+                        at.person_bank_from AS person_bank,
+                        currency_from AS currency,
+                        -SUM(at.sum_from) AS normal_balance
+                    FROM
+                        advtransfer AS at
+                    GROUP BY
+                        at.person_bank_from, currency_from
+
+                    UNION ALL
+
+                    SELECT
+                        at.person_bank_to AS person_bank,
+                        currency_to AS currency,
+                        SUM(at.sum_to) AS normal_balance
+                    FROM
+                        advtransfer AS at
+                    GROUP BY
+                        at.person_bank_to, currency_to
+
+                    UNION ALL
+
+                    SELECT    
+                        dt.owner AS person_bank,
+                        currency,
+                        -SUM(dt.sum) AS normal_balance
+                    FROM
+                        deposit AS dt
+                    WHERE
+                        dt.isOpen = 1
+                    GROUP BY 
+                        dt.owner, currency
+                )
+                SELECT
+                    person_bank,
+                    currency,
+                    SUM(normal_balance) AS normal_balance
+                FROM
+                    all_transactions
+                GROUP BY
+                    person_bank, currency
                 ) AS normal_account_balances ON m.bank_rec = normal_account_balances.person_bank
                 LEFT JOIN (
                     -- Deposit balances
                     SELECT
                         dt.name AS owner,
                         currency,
-                        SUM(dt.sum) AS deposit_balance
+                        -SUM(dt.sum) AS deposit_balance
                     FROM
                         deposit AS dt
 					WHERE
