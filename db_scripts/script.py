@@ -57,7 +57,7 @@ def NewDBase():
                 currency_rate real,
                 expect real,
                 comment text,
-                isOpen integer DEFAULT 1
+                isOpen integer
             )"""
     )
     c.execute(
@@ -595,20 +595,6 @@ def Read(x):
                             advtransfer AS at
                         GROUP BY
                             at.person_bank_to, currency_to
-
-                        UNION ALL
-
-                        SELECT
-                            dt.owner AS owner,
-                            currency,
-                            0 AS normal_balance,
-                            SUM(dt.sum) AS deposit_balance
-                        FROM
-                            deposit AS dt
-                        WHERE
-                            dt.isOpen = 1
-                        GROUP BY
-                            dt.name, currency
                     ) AS all_normal_balances
                     GROUP BY person_bank, currency
                 ) AS all_normal_balances ON m.bank_rec = all_normal_balances.person_bank
