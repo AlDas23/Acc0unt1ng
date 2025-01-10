@@ -486,9 +486,9 @@ def ViewReports():
     Ldata = Read("yeartotalrep")
     Lcolumns = ["Month", "Expenses", "Incomes", "Balance"]
     Cdata = Read("yearexprep")
-    Ccolumns = ["Month"] + currencies
+    Ccolumns = ["Month"] + currencies + ["Total in RON"]
     Rdata = Read("yearincrep")
-    Rcolumns = ["Month"] + currencies
+    Rcolumns = ["Month"] + currencies + ["Total in RON"]
 
     return render_template(
         "viewrep.html",

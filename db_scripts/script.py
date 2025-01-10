@@ -56,7 +56,8 @@ def NewDBase():
                 percent real,
                 currency_rate real,
                 expect real,
-                comment text
+                comment text,
+                isOpen integer
             )"""
     )
     c.execute(
@@ -266,13 +267,14 @@ def Add(input_field, mode):
             percent = values[7] / 100
             expSum = values[3] + (values[3] * (percent / 12) * values[5])
             values.insert(9, round(expSum, 2))
+            values.insert(11, 1)
 
         records = {
             dp_keys[i]: values[i] for i in range(len(dp_keys))
         }  # Make dictionary with all values to add
 
         c.execute(
-            "INSERT INTO deposit VALUES (:date_in, :name, :owner, :sum, :currency, :months, :date_out, :percent, :currency_rate, :expect, :comment)",
+            "INSERT INTO deposit VALUES (:date_in, :name, :owner, :sum, :currency, :months, :date_out, :percent, :currency_rate, :expect, :comment, :isOpen)",
             records,
         )
 
@@ -320,6 +322,7 @@ def Read(x):
     # Big collection of functions for returning different data from DB
     conn = sqlite3.connect(dbPath)
     c = conn.cursor()
+    current_date = datetime.now().strftime("%Y-%m-%d")
 
     if x == "allm":
         c.execute("SELECT * FROM main")
@@ -360,17 +363,13 @@ def Read(x):
         c.execute("SELECT * FROM deposit ORDER BY date_out DESC")
         return c.fetchall()
     elif x == "opendep":
-        current_date = datetime.now().strftime("%Y-%m-%d")
         c.execute(
-            "SELECT * FROM deposit WHERE date_out > ? OR date_out == ' ' ORDER BY date_out DESC",
-            (current_date,),
+            "SELECT date_in, name, owner, sum, currency, months, date_out, percent, currency_rate, expect, comment FROM deposit WHERE isOpen = 1 ORDER BY date_out DESC"
         )
         return c.fetchall()
     elif x == "closeddep":
-        current_date = datetime.now().strftime("%Y-%m-%d")
         c.execute(
-            "SELECT * FROM deposit WHERE date_out <= ? AND date_out != ' ' ORDER BY date_out DESC",
-            (current_date,),
+            "SELECT date_in, name, owner, sum, currency, months, date_out, percent, currency_rate, expect, comment FROM deposit WHERE isOpen = 0 ORDER BY date_out DESC"
         )
         return c.fetchall()
     elif x == "alltran":
@@ -389,10 +388,6 @@ def Read(x):
                     UNION ALL
                     
                     SELECT currency, sum AS total_sum FROM main
-    
-                    UNION ALL
-    
-                    SELECT currency, sum AS total_sum FROM deposit
     
                     UNION ALL
     
@@ -415,91 +410,108 @@ def Read(x):
             """
                 SELECT 
                     m.type,
-                    COALESCE(SUM(normal_account_balances.normal_balance), 0) + COALESCE(SUM(deposit_account_balances.deposit_balance), 0) AS total_balance,
+                    ROUND(COALESCE(SUM(normal_account_balances.normal_balance), 0) - COALESCE(SUM(deposit_account_balances.deposit_balance), 0), 2) AS total_balance,
                     COALESCE(normal_account_balances.currency, deposit_account_balances.currency) AS currency
                 FROM 
                     Marker_type m
                 LEFT JOIN (
-                    -- Normal account balances (Init_PB, main, transfer, advtransfer)
+                    WITH all_transactions AS (
                     SELECT
-                        person_bank,
+                        init.person_bank,
                         currency,
-                        SUM(normal_balance) AS normal_balance
-                    FROM (
-                        SELECT
-                            init.person_bank,
-                            currency,
-                            SUM(sum) AS normal_balance
-                        FROM
-                            Init_PB AS init
-                        GROUP BY
-                            init.person_bank, currency
-                
-                        UNION ALL
-                        
-                        SELECT
-                            mt.person_bank,
-                            currency,
-                            SUM(sum) AS normal_balance
-                        FROM
-                            main AS mt
-                        GROUP BY
-                            mt.person_bank, currency
-                
-                        UNION ALL
-                        
-                        SELECT
-                            tr.person_bank_from AS person_bank,
-                            currency,
-                            -SUM(tr.sum) AS normal_balance
-                        FROM
-                            transfer AS tr
-                        GROUP BY
-                            tr.person_bank_from, currency
-                
-                        UNION ALL
-                        
-                        SELECT
-                            tr.person_bank_to AS person_bank,
-                            currency,
-                            SUM(tr.sum) AS normal_balance
-                        FROM
-                            transfer AS tr
-                        GROUP BY
-                            tr.person_bank_to, currency
-                
-                        UNION ALL
-                        
-                        SELECT
-                            at.person_bank_from AS person_bank,
-                            currency_from AS currency,
-                            -SUM(at.sum_from) AS normal_balance
-                        FROM
-                            advtransfer AS at
-                        GROUP BY
-                            at.person_bank_from, currency_from
-                
-                        UNION ALL
-                        
-                        SELECT
-                            at.person_bank_to AS person_bank,
-                            currency_to AS currency,
-                            SUM(at.sum_to) AS normal_balance
-                        FROM
-                            advtransfer AS at
-                        GROUP BY
-                            at.person_bank_to, currency_to
-                    ) AS all_normal_balances
-                    GROUP BY person_bank, currency
+                        SUM(sum) AS normal_balance
+                    FROM
+                        Init_PB AS init
+                    GROUP BY
+                        init.person_bank, currency
+
+                    UNION ALL
+
+                    SELECT
+                        mt.person_bank,
+                        currency,
+                        SUM(sum) AS normal_balance
+                    FROM
+                        main AS mt
+                    GROUP BY
+                        mt.person_bank, currency
+
+                    UNION ALL
+
+                    SELECT
+                        tr.person_bank_from AS person_bank,
+                        currency,
+                        -SUM(tr.sum) AS normal_balance
+                    FROM
+                        transfer AS tr
+                    GROUP BY
+                        tr.person_bank_from, currency
+
+                    UNION ALL
+
+                    SELECT
+                        tr.person_bank_to AS person_bank,
+                        currency,
+                        SUM(tr.sum) AS normal_balance
+                    FROM
+                        transfer AS tr
+                    GROUP BY
+                        tr.person_bank_to, currency
+
+                    UNION ALL
+
+                    SELECT
+                        at.person_bank_from AS person_bank,
+                        currency_from AS currency,
+                        -SUM(at.sum_from) AS normal_balance
+                    FROM
+                        advtransfer AS at
+                    GROUP BY
+                        at.person_bank_from, currency_from
+
+                    UNION ALL
+
+                    SELECT
+                        at.person_bank_to AS person_bank,
+                        currency_to AS currency,
+                        SUM(at.sum_to) AS normal_balance
+                    FROM
+                        advtransfer AS at
+                    GROUP BY
+                        at.person_bank_to, currency_to
+
+                    UNION ALL
+
+                    SELECT    
+                        dt.owner AS person_bank,
+                        currency,
+                        -SUM(dt.sum) AS normal_balance
+                    FROM
+                        deposit AS dt
+                    WHERE
+                        dt.isOpen = 1
+                    GROUP BY 
+                        dt.owner, currency
+                )
+                SELECT
+                    person_bank,
+                    currency,
+                    SUM(normal_balance) AS normal_balance
+                FROM
+                    all_transactions
+                GROUP BY
+                    person_bank, currency
                 ) AS normal_account_balances ON m.bank_rec = normal_account_balances.person_bank
                 LEFT JOIN (
                     -- Deposit balances
                     SELECT
                         dt.name AS owner,
                         currency,
-                        SUM(dt.sum) AS deposit_balance
+                        -SUM(dt.sum) AS deposit_balance
                     FROM
                         deposit AS dt
+					WHERE
+						isOpen = 1
                     GROUP BY
                         dt.name, currency
                 ) AS deposit_account_balances ON m.bank_rec = deposit_account_balances.owner
@@ -514,108 +526,92 @@ def Read(x):
             """
                 SELECT 
                     m.owner,
-                    COALESCE(SUM(normal_account_balances.normal_balance), 0) + COALESCE(SUM(deposit_account_balances.deposit_balance), 0) AS total_balance,
-                    COALESCE(normal_account_balances.currency, deposit_account_balances.currency) AS currency
+                    ROUND(COALESCE(SUM(all_normal_balances.normal_balance), 0) + COALESCE(SUM(all_normal_balances.deposit_balance), 0), 2) AS total_balance,
+                    all_normal_balances.currency AS currency
                 FROM 
                     Marker_owner m
                 LEFT JOIN (
-                    -- Normal account balances (Init_PB, main, transfer, advtransfer)
                     SELECT
                         person_bank,
                         currency,
-                        SUM(normal_balance) AS normal_balance
+                        SUM(normal_balance) AS normal_balance,
+                        SUM(deposit_balance) AS deposit_balance
                     FROM (
                         SELECT
                             init.person_bank,
                             currency,
-                            SUM(sum) AS normal_balance
+                            SUM(sum) AS normal_balance,
+                            0 AS deposit_balance
                         FROM
                             Init_PB AS init
                         GROUP BY
                             init.person_bank, currency
-                
+
                         UNION ALL
-                        
+
                         SELECT
                             mt.person_bank,
                             currency,
-                            SUM(sum) AS normal_balance
+                            SUM(sum) AS normal_balance,
+                            0 AS deposit_balance
                         FROM
                             main AS mt
                         GROUP BY
                             mt.person_bank, currency
-                
+
                         UNION ALL
-                        
+
                         SELECT
                             tr.person_bank_from AS person_bank,
                             currency,
-                            -SUM(tr.sum) AS normal_balance
+                            -SUM(tr.sum) AS normal_balance,
+                            0 AS deposit_balance
                         FROM
                             transfer AS tr
                         GROUP BY
                             tr.person_bank_from, currency
-                
+
                         UNION ALL
-                        
+
                         SELECT
                             tr.person_bank_to AS person_bank,
                             currency,
-                            SUM(tr.sum) AS normal_balance
+                            SUM(tr.sum) AS normal_balance,
+                            0 AS deposit_balance
                         FROM
                             transfer AS tr
                         GROUP BY
                             tr.person_bank_to, currency
-                
+
                         UNION ALL
-                        
+
                         SELECT
                             at.person_bank_from AS person_bank,
                             currency_from AS currency,
-                            -SUM(at.sum_from) AS normal_balance
+                            -SUM(at.sum_from) AS normal_balance,
+                            0 AS deposit_balance
                         FROM
                             advtransfer AS at
                         GROUP BY
                             at.person_bank_from, currency_from
-                
+
                         UNION ALL
-                        
+
                         SELECT
                             at.person_bank_to AS person_bank,
                             currency_to AS currency,
-                            SUM(at.sum_to) AS normal_balance
+                            SUM(at.sum_to) AS normal_balance,
+                            0 AS deposit_balance
                         FROM
                             advtransfer AS at
                         GROUP BY
                             at.person_bank_to, currency_to
-							
-							UNION ALL
-							
-						SELECT
-							dt.owner AS owner,
-							currency,
-							-SUM(dt.sum) AS deposit_balance
-						FROM
-							deposit AS dt
-						GROUP BY
-							dt.name, currency
                     ) AS all_normal_balances
                     GROUP BY person_bank, currency
-                ) AS normal_account_balances ON m.bank_rec = normal_account_balances.person_bank
-                LEFT JOIN (
-                    -- Deposit balances
-                    SELECT
-                        dt.name AS owner,
-                        currency,
-                        SUM(dt.sum) AS deposit_balance
-                    FROM
-                        deposit AS dt
-                    GROUP BY
-                        dt.name, currency
-                ) AS deposit_account_balances ON m.owner = deposit_account_balances.owner
+                ) AS all_normal_balances ON m.bank_rec = all_normal_balances.person_bank
                 GROUP BY 
                     m.owner, 
-                    COALESCE(normal_account_balances.currency, deposit_account_balances.currency)
+                    all_normal_balances.currency
             """
         )
         return c.fetchall()
@@ -850,7 +846,7 @@ def ConvRead(x, mode):
 
     # Convert the grouped data back into a list of tuples
     modified_list = [
-        (owner, round(total_amount, 2)) for owner,total_amount in modified_dict.items()
+        (owner, round(total_amount, 2)) for owner, total_amount in modified_dict.items()
     ]
 
     conn.commit()
@@ -1126,7 +1122,7 @@ def MarkerRead(markers, mode):
                     
                     -- PBD logic
                     UNION ALL
-                    SELECT owner AS person_bank, currency, -sum FROM deposit
+                    SELECT owner AS person_bank, currency, -sum FROM deposit WHERE isOpen = 1
                 )
                 WHERE person_bank IN ({seq})
                 GROUP BY person_bank, currency
@@ -1180,7 +1176,7 @@ def Re_Calculate_deposit():
     # Fetch active deposits from the deposit table where sum != 0 and the deposit is not expired
     c.execute(
         """
-        SELECT name, owner, sum, currency, date_out 
+        SELECT name, date_out 
         FROM deposit 
         WHERE sum != 0 AND (date_out > ? OR date_out = ' ')
         """,
@@ -1189,7 +1185,7 @@ def Re_Calculate_deposit():
     open_deposits = c.fetchall()
 
     for deposit in open_deposits:
-        name, owner, sum_val, currency, date_out = deposit
+        name, date_out = deposit
 
         # Check if the deposit has expired
         if date_out != " " and date_out < current_date:
@@ -1197,32 +1193,19 @@ def Re_Calculate_deposit():
             c.execute(
                 """
                 UPDATE deposit 
-                SET sum = 0 
-                WHERE name = ? AND owner = ? AND currency = ?
+                SET isOpen = 0
+                WHERE name = ?
                 """,
-                (name, owner, currency),
+                (name,),
             )
-
-            # Get the maximum id from the main table
-            c.execute("SELECT MAX(id) FROM main")
-            max_id = c.fetchone()[0]
-            max_id = 0 if max_id is None else max_id + 1
-
-            # Insert a transaction in the main table for the deposit return
             c.execute(
                 """
-                INSERT INTO main (
-                    id,
-                    date,
-                    category,
-                    sub_category,
-                    person_bank,
-                    comment,
-                    sum,
-                    currency
-                ) VALUES (?, ?, ' ', ' ', ?, 'Deposit return', ?, ?)
-                """,
-                (max_id, current_date, owner, sum_val, currency),
+                    DELETE
+                    FROM 
+                        Marker_type
+                    WHERE bank_rec = ?
+                      """,
+                (name,),
             )
 
     conn.commit()
@@ -1345,10 +1328,7 @@ def Mark(marker, mode):
         return
 
     if mode == "type":
-        c.execute(
-            "SELECT 1 FROM Marker_type WHERE bank_rec = ?",
-            (marker[0]),
-        )
+        c.execute("SELECT 1 FROM Marker_type WHERE bank_rec = ?", (marker[0],))
         exists = c.fetchone()
         if exists != None:
             c.execute(
@@ -1363,10 +1343,7 @@ def Mark(marker, mode):
             print("Success!\n\n")
 
     elif mode == "owner":
-        c.execute(
-            "SELECT 1 FROM Marker_owner WHERE bank_rec = ?",
-            (marker[0]),
-        )
+        c.execute("SELECT 1 FROM Marker_owner WHERE bank_rec = ?", (marker[0],))
         exists = c.fetchone()
         if exists != None:
             c.execute(
@@ -1392,8 +1369,7 @@ def DelPB(pb):
     pb = pb.split(",")
     try:
         c.execute(
-            "DELETE FROM Init_PB WHERE person_bank = ? AND currency = ?",
-            (pb[0], pb[1]),
+            "DELETE FROM Init_PB WHERE person_bank = ? AND currency = ?", (pb[0], pb[1])
         )
         c.execute(
             "DELETE FROM main WHERE person_bank = ? AND currency = ?", (pb[0], pb[1])
@@ -1417,8 +1393,8 @@ def DelPB(pb):
         c.execute(
             "DELETE FROM deposit WHERE person_bank = ? AND currency = ?", (pb[0], pb[1])
         )
-        c.execute("DELETE FROM Marker_type WHERE banc_rec = ?", (pb[0]))
-        c.execute("DELETE FROM Marker_owner WHERE banc_rec = ?", (pb[0]))
+        c.execute("DELETE FROM Marker_type WHERE banc_rec = ?", (pb[0],))
+        c.execute("DELETE FROM Marker_owner WHERE banc_rec = ?", (pb[0],))
     except:
         print("Failure!\n\n")
     print("Success!\n\n")
