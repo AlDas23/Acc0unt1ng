@@ -1178,9 +1178,9 @@ def Re_Calculate_deposit():
         """
         SELECT name, date_out 
         FROM deposit 
-        WHERE sum != 0 AND (date_out > ? OR date_out = ? OR date_out = ' ')
+        WHERE sum != 0 AND (date_out >= ? OR date_out = ' ')
         """,
-        (current_date, current_date)
+        (current_date,)
     )
     open_deposits = c.fetchall()
 
