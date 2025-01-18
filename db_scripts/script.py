@@ -1176,37 +1176,35 @@ def Re_Calculate_deposit():
     # Fetch active deposits from the deposit table where sum != 0 and the deposit is not expired
     c.execute(
         """
-        SELECT name, date_out 
+        SELECT name
         FROM deposit 
-        WHERE isOpen = 0 AND (date_out <= ? OR date_out = ' ')
+        WHERE isOpen = 1 AND (date_out <= ? OR date_out = ' ')
         """,
         (current_date,)
     )
     open_deposits = c.fetchall()
 
     for deposit in open_deposits:
-        name, date_out = deposit
+        name = deposit[0]
 
-        # Check if the deposit has expired
-        if date_out != " " and date_out < current_date:
-            # Mark the deposit as fully processed (sum = 0)
-            c.execute(
-                """
-                UPDATE deposit 
-                SET isOpen = 0
-                WHERE name = ?
-                """,
-                (name,),
-            )
-            c.execute(
-                """
-                    DELETE
-                    FROM 
-                        Marker_type
-                    WHERE bank_rec = ?
-                      """,
-                (name,),
-            )
+        # Mark the deposit as fully processed (sum = 0)
+        c.execute(
+            """
+            UPDATE deposit 
+            SET isOpen = 0
+            WHERE name = ?
+            """,
+            (name,)
+        )
+        c.execute(
+            """
+                DELETE
+                FROM 
+                    Marker_type
+                WHERE bank_rec = ?
+                  """,
+            (name,)
+        )
 
     conn.commit()
     conn.close()
