@@ -517,13 +517,13 @@ def ViewAdvReports():
                 columns = ["Category", "Person bank", "Currency", "Sum"]
             if report_type == "catincrep":
                 data = ReadAdv(report_type, month)
-                columns = ["Category", "Currency", "Sum", "Sum RON"]
+                columns = ["Category", "Sum RON"]
             if report_type == "catexprep":
                 data = ReadAdv(report_type, month)
                 columns = ["Category", "Sum RON", "%"]
             if report_type == "catincbankrep":
                 data = ReadAdv(report_type, month)
-                columns = ["Category", "Person bank" "Currency", "Sum"]
+                columns = ["Category", "Person bank", "Currency", "Sum"]
 
         report_type2 = request.form["View Report2"]
         if report_type2 != "None":
@@ -533,13 +533,13 @@ def ViewAdvReports():
                 columns2 = ["Category", "Person bank", "Currency", "Sum"]
             if report_type2 == "catincrep":
                 data2 = ReadAdv(report_type2, month2)
-                columns2 = ["Category", "Currency", "Sum", "Sum RON"]
+                columns2 = ["Category", "Sum RON"]
             if report_type2 == "catexprep":
                 data2 = ReadAdv(report_type2, month2)
                 columns2 = ["Category", "Sum RON", "%"]
             if report_type2 == "catincbankrep":
                 data2 = ReadAdv(report_type2, month2)
-                columns2 = ["Category", "Person bank" "Currency", "Sum"]
+                columns2 = ["Category", "Person bank", "Currency", "Sum"]
 
         if report_type == "None" and report_type2 == "None":
             return render_template(
@@ -581,12 +581,12 @@ def ViewAdvReports():
 
 @app.route("/view/acc", methods=["GET", "POST"])
 def ViewAcc():
-    data_curr = Read("allcurr")
-    columns_curr = ["Currency", "Sum"]
+    data_curr = ConvRead("norm", "allcurr", True)
+    columns_curr = ["Currency", "Sum", "%"]
     data_owner = ConvReadPlus("norm", "allmowner")
     columns_owner = ["Owner", "Currency", "Sum", "Sum RON"]
-    data_type = ConvRead("norm", "allmtype")
-    columns_type = ["Type", "Sum RON"]
+    data_type = ConvRead("norm", "allmtype", True)
+    columns_type = ["Type", "Sum RON", "%"]
     owners = Read("retmowner")
     types = Read("retmtype")
     options = {"owners": owners, "types": types}
