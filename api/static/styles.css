@@ -152,16 +152,17 @@ a, a:visited, a:hover, a:active {
 }
 
 .leftYear_container {
-  width: 33%;
+  width: 30%;
   float: left;
 }
 
 .centerYear_container {
-  width: 33%;
+  width: 37%;
   float: center;
 }
 
 .rightYear_container {
   width: 33%;
   float: right;
+  margin-right: 10px;
 }

@@ -676,9 +676,9 @@ def Read(x):
             # Prepare the tuple for each month: (month, expense_in_RON, income_in_RON, total_in_RON)
             month_tuple = (
                 month,
-                data["expense"],  # expense in RON
-                data["income"],  # income in RON
-                data["total"],  # total in RON
+                round(data["expense"], 2),  # expense in RON
+                round(data["income"], 2),  # income in RON
+                round(data["total"], 2),  # total in RON
             )
             result.append(month_tuple)
 
@@ -729,9 +729,9 @@ def Read(x):
         # Prepare the result for each month with the total per currency and total in RON
         for month in sorted(monthly_data.keys()):
             month_tuple = (
-                (month,)
-                + tuple(monthly_data[month][currency] for currency in currencies)
-                + (monthly_data[month]["total_in_RON"],)
+            (month,)
+            + tuple(round(monthly_data[month][currency], 2) for currency in currencies)
+            + (round(monthly_data[month]["total_in_RON"], 2),)
             )  # Append RON total
             result.append(month_tuple)
 
@@ -782,8 +782,8 @@ def Read(x):
         for month in sorted(monthly_data.keys()):
             month_tuple = (
                 (month,)
-                + tuple(monthly_data[month][currency] for currency in currencies)
-                + (monthly_data[month]["total_in_RON"],)
+                + tuple(round(monthly_data[month][currency], 2) for currency in currencies)
+                + (round(monthly_data[month]["total_in_RON"], 2),)
             )  # Append RON total
             result.append(month_tuple)
 
@@ -818,11 +818,7 @@ def Read(x):
     conn.close()
 
 
-def ConvRead(x, mode):
-    # Function for reading DB and returning converted to RON amounts
-    conn = sqlite3.connect(dbPath)
-    c = conn.cursor()
-
+def read_and_convert_data(x, mode, cursor):
     current_date = datetime.now().strftime("%Y-%m-%d")
 
     if x == "norm":
@@ -831,23 +827,52 @@ def ConvRead(x, mode):
         data = MarkerRead(x, mode)
     modified_dict = {}
 
-    for row in data:
-        row_list = list(row)
-        owner = row_list[0]
-        amount = row_list[1]
-        currency_column = row_list[2]
+    if mode == "allcurr":
+        for row in data:
+            row_list = list(row)
+            currency = row_list[0]
+            amount = row_list[1]
+            
+            converted_amount = ConvertToRON(currency, amount, current_date, cursor)
 
-        converted_amount = ConvertToRON(currency_column, amount, current_date, c)
+            modified_dict[currency] = converted_amount  
+            
+    else:
+        for row in data:
+            row_list = list(row)
+            owner = row_list[0]
+            amount = row_list[1]
+            currency_column = row_list[2]
 
-        if owner in modified_dict:
-            modified_dict[owner] += converted_amount
-        else:
-            modified_dict[owner] = converted_amount
+            converted_amount = ConvertToRON(currency_column, amount, current_date, cursor)
+
+            if owner in modified_dict:
+                modified_dict[owner] += converted_amount
+            else:
+                modified_dict[owner] = converted_amount
+
+    return modified_dict
+
+def ConvRead(x, mode, include_percentage=False):
+    conn = sqlite3.connect(dbPath)
+    c = conn.cursor()
+
+    modified_dict = read_and_convert_data(x, mode, c)
+
+    # Calculate the total sum of all amounts
+    total_sum = sum(modified_dict.values())
 
     # Convert the grouped data back into a list of tuples
-    modified_list = [
-        (owner, round(total_amount, 2)) for owner, total_amount in modified_dict.items()
-    ]
+    if include_percentage:
+        modified_list = [
+            (owner, round(total_amount, 2), round((total_amount / total_sum) * 100, 2))
+            for owner, total_amount in modified_dict.items()
+        ]
+    else:
+        modified_list = [
+            (owner, round(total_amount, 2))
+            for owner, total_amount in modified_dict.items()
+        ]
 
     conn.commit()
     conn.close()
@@ -948,7 +973,7 @@ def ReadAdv(type, month):
 
         # Convert the grouped data back into a list of tuples
         modified_list = [
-            (category, total_amount) for category, total_amount in modified_dict.items()
+            (category, round(total_amount, 2)) for category, total_amount in modified_dict.items()
         ]
 
         conn.commit()
@@ -995,7 +1020,7 @@ def ReadAdv(type, month):
 
         # Convert the grouped data back into a list of tuples
         modified_list = [
-            (category, total_amount, f"{(total_amount / total_expense) * 100:.0f}%")
+            (category, round(total_amount, 2), f"{(total_amount / total_expense) * 100:.0f}%")
             for category, total_amount in modified_dict.items()
         ]
 
@@ -1014,7 +1039,7 @@ def ReadAdv(type, month):
         WHERE category IN ({})
         AND strftime("%m", date) = ?
         GROUP BY category, person_bank
-        ORDER BY currency DESC
+        ORDER BY category, person_bank DESC
         """.format(
             ",".join("?" for _ in categories_list)
         )
@@ -1176,37 +1201,35 @@ def Re_Calculate_deposit():
     # Fetch active deposits from the deposit table where sum != 0 and the deposit is not expired
     c.execute(
         """
-        SELECT name, date_out 
+        SELECT name
         FROM deposit 
-        WHERE sum != 0 AND (date_out > ? OR date_out = ' ')
+        WHERE isOpen = 1 AND (date_out <= ? OR date_out = ' ')
         """,
-        (current_date,),
+        (current_date,)
     )
     open_deposits = c.fetchall()
 
     for deposit in open_deposits:
-        name, date_out = deposit
+        name = deposit[0]
 
-        # Check if the deposit has expired
-        if date_out != " " and date_out < current_date:
-            # Mark the deposit as fully processed (sum = 0)
-            c.execute(
-                """
-                UPDATE deposit 
-                SET isOpen = 0
-                WHERE name = ?
-                """,
-                (name,),
-            )
-            c.execute(
-                """
-                    DELETE
-                    FROM 
-                        Marker_type
-                    WHERE bank_rec = ?
-                      """,
-                (name,),
-            )
+        # Mark the deposit as fully processed (sum = 0)
+        c.execute(
+            """
+            UPDATE deposit 
+            SET isOpen = 0
+            WHERE name = ?
+            """,
+            (name,)
+        )
+        c.execute(
+            """
+                DELETE
+                FROM 
+                    Marker_type
+                WHERE bank_rec = ?
+                  """,
+            (name,)
+        )
 
     conn.commit()
     conn.close()
