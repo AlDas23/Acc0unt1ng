@@ -971,9 +971,12 @@ def ReadAdv(type, month):
             else:
                 modified_dict[category] = converted_amount
 
-        # Convert the grouped data back into a list of tuples
+        total_income = sum(modified_dict.values())
+
+        # Convert the grouped data back into a list of tuples with percentage
         modified_list = [
-            (category, round(total_amount, 2)) for category, total_amount in modified_dict.items()
+            (category, round(total_amount, 2), round((total_amount / total_income) * 100, 2)) 
+            for category, total_amount in modified_dict.items()
         ]
 
         conn.commit()
@@ -1034,7 +1037,7 @@ def ReadAdv(type, month):
         categories_list = categories_df[0].tolist()
 
         query = """
-        SELECT category, person_bank, currency, sum
+        SELECT category, person_bank, currency, ROUND(SUM(sum), 2)
         FROM main
         WHERE category IN ({})
         AND strftime("%m", date) = ?
