@@ -1133,7 +1133,7 @@ def MarkerRead(markers, mode):
         # This query combines the balances from multiple sources and also integrates PBD logic
         c.execute(
             f"""
-                SELECT person_bank, ROUND(SUM(sum), 2) AS sum, currency
+                SELECT person_bank, currency, ROUND(SUM(sum), 2) AS sum
                 FROM (
                     -- Main accounts and transfers
                     SELECT person_bank, currency, sum FROM main

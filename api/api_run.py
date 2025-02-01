@@ -626,7 +626,7 @@ def ViewAcc():
             data_type=data_type,
             columns_type=columns_type,
             options=options,
-            columns=["Person bank", "Sum", "Currency"],
+            columns=["Person bank", "Currency", "Sum"],
             data=data,
             selected_owner=owner,
             selected_type=type,
