@@ -1,24 +1,73 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="{{ url_for('static', filename='reportStyles.css') }}" />
-    <title>Acc0unt1ng reports</title>
-  </head>
 
-  <body>
-    <header class="header-banner">
-      <h1>Acc0unt1ng</h1>
-      <h2>Reports tool</h2>
-    </header>
-    <nav>
-      <button class="nav_button" onclick="window.location.href='/add/expense'">Back to Acc0unt1ng</button>
-    </nav>
-    <br />
-    <div class="belowbody">
-      <div class="table-container"></div>
-      <div class="options-container"></div>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='reportStyle.css') }}" />
+  <script src="{{ url_for('static', filename='scripts/reportsScripts.js') }}"></script>
+  <title>Acc0unt1ng reports</title>
+</head>
+
+<body>
+  <header class="header-banner">
+    <h1>Acc0unt1ng</h1>
+    <h2><i>Reports tool</i></h2>
+  </header>
+  <nav>
+    <button class="nav_button" onclick="window.location.href='/'">Back to Acc0unt1ng</button>
+  </nav>
+  <br />
+  <div class="belowbody">
+    <div class="table-container">
+      <table id="report-table">
+        <!-- Report table will be generated here -->
+      </table>
     </div>
-  </body>
+    <div class="options-container">
+      <form id="report-form">
+        <h3>Select Columns:</h3>
+        <label><input type="checkbox" name="columns" value="date" onchange="toggleDateFilter()" id="date-checkbox" />
+          Date</label>
+        <label><input type="checkbox" name="columns" value="category" onchange="toggleCatFilter()"/> Category</label>
+        <br />
+        <h3>Filter Parameters:</h3>
+        <table>
+          <tr>
+            <td class="filter-label">
+              <label for="start-date" id="start-date-label">Start Date:</label>
+            </td>
+            <td><input type="date" id="start-date" name="start-date" />
+            </td>
+          </tr>
+          <tr>
+            <td class="filter-label"><label for="end-date" id="end-date-label">End Date:</label></td>
+            <td><input type="date" id="end-date" name="end-date" /></td>
+          </tr>
+          <tr>
+            <td class="filter-label"><label for="min-amount" id="min-amount-label">Min Amount:</label></td>
+            <td><input type="number" id="min-amount" name="min-amount" /></td>
+          </tr>
+          <tr>
+            <td class="filter-label"><label for="max-amount" id="max-amount-label">Max Amount:</label></td>
+            <td><input type="number" id="max-amount" name="max-amount" /></td>
+          </tr>
+        </table>
+        <br />
+        <button type="button" onclick="generateReport()">Generate Report</button>
+      </form>
+    </div>
+
+  </div>
+  <script>
+    function generateReport() {
+      // JavaScript code to handle form submission and generate report
+      const form = document.getElementById('report-form');
+      const formData = new FormData(form);
+      // Process formData and generate report table
+      // This part will involve making a request to the server and updating the table
+    }
+  </script>
+</body>
+
 </html>
