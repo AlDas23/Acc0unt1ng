@@ -1,30 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
-    <title>Acc0unt1ng</title>
-  </head>
 
-  <body>
-    <header class="header-banner">
-      <h1>Acc0unt1ng</h1>
-    </header>
-    <nav>
-      <button class="nav_button {% if request.path == '/add/expense' %}disabled{% endif %}" onclick="window.location.href='/add/expense'">Expense records</button>
-      <button class="nav_button {% if request.path == '/add/income' %}disabled{% endif %}" onclick="window.location.href='/add/income'">Income records</button>
-      <button class="nav_button {% if request.path == '/transfer' %}disabled{% endif %}" onclick="window.location.href='/transfer'">Transfer records</button>
-      <button class="nav_button {% if request.path == '/add/deposit' %}disabled{% endif %}" onclick="window.location.href='/add/deposit'">Deposits</button>
-      <button class="nav_button {% if request.path == '/currency' %}disabled{% endif %}" onclick="window.location.href='/currency'">Currency rates</button>
-      <button class="nav_button {% if request.path == '/view/acc' %}disabled{% endif %}" onclick="window.location.href='/view/acc'">Balance sheet</button>
-      <button class="nav_button {% if request.path == '/view/advrep' %}disabled{% endif %}" onclick="window.location.href='/view/advrep'">Monthly reports</button>
-      <button class="nav_button {% if request.path == '/view/rep' %}disabled{% endif %}" onclick="window.location.href='/view/rep'">Yearly reports</button>
-    </nav>
-    <div class="belowbody">
-      <br />
-      {% block body %}
-      {% endblock %}
-    </div>
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+  <title>Acc0unt1ng</title>
+</head>
+
+<body>
+  <header class="header">
+    <h1>Acc0unt1ng</h1>
+  </header>
+  <nav>
+    <button class="nav_button {% if request.path == '/add/expense' %}disabled{% endif %}"
+      onclick="window.location.href='/add/expense'">Expense records</button>
+    <button class="nav_button {% if request.path == '/add/income' %}disabled{% endif %}"
+      onclick="window.location.href='/add/income'">Income records</button>
+    <button class="nav_button {% if request.path == '/transfer' %}disabled{% endif %}"
+      onclick="window.location.href='/transfer'">Transfer records</button>
+    <button class="nav_button {% if request.path == '/add/deposit' %}disabled{% endif %}"
+      onclick="window.location.href='/add/deposit'">Deposits</button>
+    <button class="nav_button {% if request.path == '/currency' %}disabled{% endif %}"
+      onclick="window.location.href='/currency'">Currency rates</button>
+    <button class="nav_button {% if request.path == '/view/acc' %}disabled{% endif %}"
+      onclick="window.location.href='/view/acc'">Balance sheet</button>
+    <button class="nav_button {% if request.path == '/view/advrep' %}disabled{% endif %}"
+      onclick="window.location.href='/view/advrep'">Monthly reports</button>
+    <button class="nav_button {% if request.path == '/view/rep' %}disabled{% endif %}"
+      onclick="window.location.href='/view/rep'">Yearly reports</button>
+  </nav>
+  <div class="belowbody">
+    <br />
+    {% block body %}
+    {% endblock %}
+  </div>
+</body>
+
 </html>
