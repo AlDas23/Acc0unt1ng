@@ -17,7 +17,7 @@
   <nav>
     <button class="nav_button" onclick="window.location.href='/'">Back to Acc0unt1ng</button>
   </nav>
-  <br />
+  <br />  
   <div class="belowbody">
     <div class="table-container">
       <table id="report-table">
@@ -26,48 +26,72 @@
     </div>
     <div class="options-container">
       <form id="report-form">
-        <h3>Select Columns:</h3>
+        <h3>Select type:</h3>
+        <label><input type="radio" name="type" value="income" required /> Income</label>
+        <label><input type="radio" name="type" value="expense" required /> Expense</label>
+        <br />
+
+        <h3>Select category level:</h3>
+        <label><input type="radio" name="categoryLevel" value="category" required /> Category</label>
+        <label><input type="radio" name="categoryLevel" value="sub-category" required /> Sub-category</label>
+        <br />
+
+        <h3>Select parameters:</h3>
         <label><input type="checkbox" name="columns" value="date" onchange="toggleDateFilter()" id="date-checkbox" />
           Date</label>
-        <label><input type="checkbox" name="columns" value="category" onchange="toggleCatFilter()"/> Category</label>
-        <br />
+        <label><input type="checkbox" name="columns" value="currencies" onchange="toggleCurrFilter()"
+            id="curr-checkbox" />
+          All currencies</label>
+
         <h3>Filter Parameters:</h3>
         <table>
           <tr>
             <td class="filter-label">
               <label for="start-date" id="start-date-label">Start Date:</label>
             </td>
-            <td><input type="date" id="start-date" name="start-date" />
+            <td>
+              <input type="date" id="start-date" name="start-date" />
             </td>
           </tr>
           <tr>
-            <td class="filter-label"><label for="end-date" id="end-date-label">End Date:</label></td>
-            <td><input type="date" id="end-date" name="end-date" /></td>
+            <td class="filter-label">
+              <label for="end-date" id="end-date-label">End Date:</label>
+            </td>
+            <td>
+              <input type="date" id="end-date" name="end-date" />
+            </td>
           </tr>
           <tr>
-            <td class="filter-label"><label for="min-amount" id="min-amount-label">Min Amount:</label></td>
-            <td><input type="number" id="min-amount" name="min-amount" /></td>
+            <td>
+              <label for="currency-eur" id="eur-label"><input type="checkbox" name="currency-eur"
+                  id="currency-eur">EUR</label>
+            </td>
           </tr>
           <tr>
-            <td class="filter-label"><label for="max-amount" id="max-amount-label">Max Amount:</label></td>
-            <td><input type="number" id="max-amount" name="max-amount" /></td>
+            <td>
+              <label for="currency-usd" id="usd-label"><input type="checkbox" name="currency-usd"
+                  id="currency-usd">USD</label>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <label for="currency-ron" id="ron-label"><input type="checkbox" name="currency-ron"
+                  id="currency-ron">RON</label>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <label for="currency-uah" id="uah-label"><input type="checkbox" name="currency-uah"
+                  id="currency-uah">UAH</label>
+            </td>
           </tr>
         </table>
         <br />
-        <button type="button" onclick="generateReport()">Generate Report</button>
+        <button type="button" onclick="generateReport()" class="reportSubmit">Generate Report</button>
       </form>
     </div>
 
   </div>
-  <script>
-    function generateReport() {
-      // JavaScript code to handle form submission and generate report
-      const form = document.getElementById('report-form');
-      const formData = new FormData(form);
-      // Process formData and generate report table
-      // This part will involve making a request to the server and updating the table
-    }
-  </script>
 </body>
 
 </html>

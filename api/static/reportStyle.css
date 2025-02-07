@@ -51,11 +51,11 @@ nav {
     margin-top: 10px;
     margin-bottom: 20px;
     margin-right: 15px;
-    border: 2px solid black;
 }
 
 .table-container {
     float: left;
+    min-height: 400px;
     width: 75%;
     border: 2px solid black;
     background-color: rgb(200, 200, 105);
@@ -64,6 +64,7 @@ nav {
 .options-container {
     float: right;
     width: 25%;
+    height: 400px;
     background-color: rgb(180, 180, 96);
     border: 2px solid black;
     padding-left: 4px;
@@ -75,4 +76,10 @@ nav {
     padding-right: 6px;
     padding-top: 2px;
     padding-bottom: 2px;
+}
+
+.reportSubmit {
+    margin-left: 20px;
+    margin-top: 30px;
+    padding: 8px;
 }
