@@ -71,11 +71,67 @@ function toggleCurrFilter() {
 }
 
 function generateReport() {
-  // JavaScript code to handle form submission and generate report
-  const form = document.getElementById('report-form');
-  const formData = new FormData(form);
-  // Process formData and generate report table
-  // This part will involve making a request to the server and updating the table
+  const reportData = {};
+
+  // Add selection from income/expenses radio buttons to JSON
+  const incomeRadio = document.getElementById('income-radio');
+  const expensesRadio = document.getElementById('expenses-radio');
+  if (incomeRadio.checked) {
+    reportData.type = 'income';
+  } else if (expensesRadio.checked) {
+    reportData.type = 'expenses';
+  }
+
+  // Add selection from category/subcategory radio buttons to JSON
+  const category = document.getElementById('cat-radio');
+  const subcategory = document.getElementById('subcat-radio');
+  if (category.checked) {
+    reportData.catlevel = 'category';
+  } else if(subcategory.checked) {
+    reportData.catlevel = 'subcategory';
+  }
+
+  // Add currency selection to JSON
+  const currCheckbox = document.getElementById('curr-checkbox');
+  if (currCheckbox.checked) {
+    reportData.currencies = ['EUR', 'USD', 'RON', 'UAH'];
+  } else {
+    const selectedCurrencies = [];
+    const currencyCheckboxes = document.querySelectorAll('input[name^="currency-"]:checked');
+    currencyCheckboxes.forEach(checkbox => {
+      selectedCurrencies.push(checkbox.id.split('-')[1].toUpperCase());
+    });
+    reportData.currencies = selectedCurrencies;
+  }
+
+  // Add date selection to JSON
+  const dateCheckbox = document.getElementById('date-checkbox');
+  if (dateCheckbox.checked) {
+    const startDate = document.getElementById('start-date').value;
+    const endDate = document.getElementById('end-date').value;
+    reportData.startDate = startDate;
+    reportData.endDate = endDate;
+  }
+
+  // Parse into JSON and send to backend
+  const jsonData = JSON.stringify(reportData);
+  console.log(jsonData); // For debugging purposes
+
+  // Example of sending JSON data to the server using fetch
+  fetch('/reports', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: jsonData
+  })
+  .then(response => response.json())
+  .then(data => {
+    console.log('Success:', data);
+  })
+  .catch((error) => {
+    console.error('Error:', error);
+  });
 }
 
   window.onload = function() {

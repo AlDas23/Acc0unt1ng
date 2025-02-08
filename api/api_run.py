@@ -676,8 +676,9 @@ def Currencies():
 def ReportsPage():
     if request.method == "GET":
         return render_template("reportsPage.html")
-        ## TODO: Finish reports page backend logic
+        
     else:
+        ## TODO: Finish reports page backend logic
         pass
 
 
