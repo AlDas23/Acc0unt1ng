@@ -516,7 +516,7 @@ def ViewAdvReports():
                 columns = ["Category", "Person bank", "Currency", "Sum"]
             if report_type == "catincrep":
                 data = ReadAdv(report_type, month)
-                columns = ["Category", "Sum RON"]
+                columns = ["Category", "Sum RON", "%"]
             if report_type == "catexprep":
                 data = ReadAdv(report_type, month)
                 columns = ["Category", "Sum RON", "%"]
