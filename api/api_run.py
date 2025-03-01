@@ -407,7 +407,6 @@ def Transfer():
 @app.route("/add/deposit", methods=["POST", "GET"])
 def AddDeposit():
     if request.method == "GET":
-        
 
         currencies = read_csv(SPVcurrPath)
         person_banks = Read("retacc")
@@ -516,7 +515,7 @@ def ViewAdvReports():
                 columns = ["Category", "Person bank", "Currency", "Sum"]
             if report_type == "catincrep":
                 data = ReadAdv(report_type, month)
-                columns = ["Category", "Sum RON"]
+                columns = ["Category", "Sum RON", "%"]
             if report_type == "catexprep":
                 data = ReadAdv(report_type, month)
                 columns = ["Category", "Sum RON", "%"]
@@ -580,8 +579,26 @@ def ViewAdvReports():
 
 @app.route("/view/acc", methods=["GET", "POST"])
 def ViewAcc():
-    data_curr = ConvRead("norm", "allcurr", True)
-    columns_curr = ["Currency", "Sum", "%"]
+    data_curr1 = ConvRead("norm", "allcurr", True)
+    data_curr2 = Read("allcurr")
+
+    # Combine the two data sets
+
+    data_curr = []
+    for curr1 in data_curr1:
+        for curr2 in data_curr2:
+            if curr1[0] == curr2[0]:  # Match on currency name
+                data_curr.append(
+                    (
+                        curr1[0],  # Currency name
+                        curr2[1],  # Original sum
+                        curr1[1],  # Converted sum
+                        curr1[2],  # Percent
+                    )
+                )
+                break
+
+    columns_curr = ["Currency", "Sum", "Sum RON", "%"]
     data_owner = ConvReadPlus("norm", "allmowner")
     columns_owner = ["Owner", "Currency", "Sum", "Sum RON"]
     data_type = ConvRead("norm", "allmtype", True)
@@ -671,6 +688,16 @@ def Currencies():
             )
 
         return redirect(url_for("Currencies"))
+
+
+@app.route("/reports", methods=["GET", "POST"])
+def ReportsPage():
+    if request.method == "GET":
+        return render_template("reportsPage.html")
+
+    else:
+        ## TODO: Finish reports page backend logic
+        pass
 
 
 @app.route("/api", methods=["GET"])
@@ -807,7 +834,9 @@ Make a POST request on this adress with in next format:
         if sum != None:
             to_send = pb + "," + sum + "," + currency
         else:
-            to_send = pb + "," + currency # TODO CBug: When using delpb command TypeError: unsupported operand type(s) for +: 'NoneType' and 'str'
+            to_send = (
+                pb + "," + currency
+            )  # TODO CBug: When using delpb command TypeError: unsupported operand type(s) for +: 'NoneType' and 'str'
 
         try:
             if (
