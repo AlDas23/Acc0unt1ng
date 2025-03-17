@@ -1349,7 +1349,7 @@ def Mark(marker, mode):
         (marker[0], marker[0]),
     )
     exists = c.fetchone()
-    if exists != None:
+    if exists is None:
         print("Account record does not exist!\n\n")
         return
 
