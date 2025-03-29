@@ -918,4 +918,5 @@ def api_start():
     print(f" * Ngrok tunnel available at: {public_url}")
 
     # Start the Flask app
+    app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 3600
     app.run()
