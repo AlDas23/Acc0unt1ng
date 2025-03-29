@@ -9,8 +9,8 @@
 </head>
 
 <body>
-  <header class="header">
-    <h1>Acc0unt1ng</h1>
+  <header>
+    <img class="banner" src="{{ url_for('static', filename='img/Banner.png') }}" alt="Banner" />
   </header>
   <nav>
     <button class="nav_button {% if request.path == '/add/expense' %}disabled{% endif %}"
