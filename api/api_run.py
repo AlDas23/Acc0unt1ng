@@ -686,12 +686,12 @@ def Currencies():
     else:
         date = request.form["Date"]
         ron = request.form["RON"]
-        eur = request.form["EUR"]
-        usd = request.form["USD"]
-        gbp = request.form["GBP"]
-        chf = request.form["CHF"]
-        huf = request.form["HUF"]
-        aur = request.form["AUR"]
+        eur = request.form.get("EUR", " ")
+        usd = request.form.get("USD", " ")
+        gbp = request.form.get("GBP", " ")
+        chf = request.form.get("CHF", " ")
+        huf = request.form.get("HUF", " ")
+        aur = request.form.get("AUR", " ")
 
         final_str = f"{date},{ron},{eur},{usd},{gbp},{chf},{huf},{aur}"
 
