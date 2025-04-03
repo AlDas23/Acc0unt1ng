@@ -284,7 +284,7 @@ def Add(input_field, mode):
     elif mode == "currrate":
         values = input_field.split(",")
         for n in range(1, 7):
-            values[n] = round(float(values[n]), 4)
+            values[n] = round(float(values[n] if values[n].strip() != " " else 0), 4)
 
         values.insert(2, round(1 / values[1], 2))  # UAH = 1 / RON
 
@@ -1057,7 +1057,13 @@ def ConvertToRON(currency, amount, date, c):
     # Converting to RON
 
     if currency != "RON":
-        query = f"SELECT {currency} FROM exc_rate ORDER BY ABS(JULIANDAY(date) - JULIANDAY('{date}')) LIMIT 1"
+        query = f"""
+            SELECT {currency} 
+            FROM exc_rate 
+            WHERE {currency} != 0
+            ORDER BY ABS(JULIANDAY(date) - JULIANDAY('{date}'))
+            LIMIT 1
+        """
         c.execute(query)
         excRate_row = c.fetchone()
         if excRate_row != None:
