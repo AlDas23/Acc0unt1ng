@@ -8,6 +8,8 @@ from flask import (
 )
 import base64
 import io
+import matplotlib
+matplotlib.use("Agg") 
 import matplotlib.pyplot as plt
 from db_scripts.script import *
 from db_scripts.consts import *
@@ -15,21 +17,37 @@ from db_scripts.consts import *
 
 app = Flask(__name__)
 
-
 def plot_to_img_tag(df):
-    plt.figure(figsize=(10, 5))
+    plt.clf()
+    
+    plt.figure(figsize=(12, 6))
+    
     # Plot each currency's rate over time
     for currency in df.columns[1:]:  # Skip the 'date' column
         plt.plot(df["date"], df[currency], marker="o", label=currency)
+    
     plt.title("Currency Rates Over Time")
     plt.xlabel("Date")
     plt.ylabel("Rate")
     plt.legend()
     plt.grid(True)
+    
+    # Rotate and align the tick labels so they look better
+    plt.xticks(rotation=45, ha='right')
+    
+    # Use automatic layout adjustment to prevent label overlap
+    plt.tight_layout()
+    
+    # If still too crowded, show fewer x-axis ticks
+    if len(df) > 20:
+        # Show approximately 15 evenly spaced ticks
+        plt.gca().xaxis.set_major_locator(plt.MaxNLocator(15))
+    
     # Save plot to a BytesIO object
     img = io.BytesIO()
-    plt.savefig(img, format="png")
+    plt.savefig(img, format="png", bbox_inches='tight')
     img.seek(0)
+    
     # Encode image to base64 string
     img_tag = base64.b64encode(img.getvalue()).decode()
     plt.close()
@@ -667,12 +685,12 @@ def Currencies():
     else:
         date = request.form["Date"]
         ron = request.form["RON"]
-        eur = request.form["EUR"]
-        usd = request.form["USD"]
-        gbp = request.form["GBP"]
-        chf = request.form["CHF"]
-        huf = request.form["HUF"]
-        aur = request.form["AUR"]
+        eur = request.form.get("EUR", " ")
+        usd = request.form.get("USD", " ")
+        gbp = request.form.get("GBP", " ")
+        chf = request.form.get("CHF", " ")
+        huf = request.form.get("HUF", " ")
+        aur = request.form.get("AUR", " ")
 
         final_str = f"{date},{ron},{eur},{usd},{gbp},{chf},{huf},{aur}"
 
@@ -888,4 +906,5 @@ Possible values:
 
 
 def api_start():
+    app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 3600
     app.run(debug=True)
