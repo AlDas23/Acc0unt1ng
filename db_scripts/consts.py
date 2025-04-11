@@ -50,3 +50,21 @@ dp_keys = [
     "isOpen",
 ]
 curr_keys = ["date", "RON", "UAH", "EUR", "USD", "GBP", "CHF", "HUF", "AUR"]
+
+invest_keys = [
+    "id",
+    "date",
+    "PB",
+    "amount",
+    "currency",
+    "investPB",
+    "investAmount",
+    "stock",
+]
+investPB_keys = ["name", "stock"]
+investStockPrice_keys = [
+    "id",
+    "date",
+    "stock",
+    "price",
+]

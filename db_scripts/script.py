@@ -104,6 +104,34 @@ def NewDBase():
                 type text
             )"""
     )
+    # Invest tables
+    c.execute(
+        """CREATE TABLE investTransaction (
+                id integer PRIMARY KEY,
+                date text,
+                PB text,
+                amount real,
+                currency text,
+                investPB text,
+                investAmount real,
+                stock text
+            )"""
+    )
+    c.execute(
+        """CREATE TABLE investPB (
+                name text PRIMARY KEY,
+                stock text
+            )"""
+    )
+    c.execute(
+        """CREATE TABLE investStockPrice (
+                id integer PRIMARY KEY,
+                date text,
+                stock text,
+                price real
+            )"""
+    )
+    
     conn.commit()
     conn.close()
 
