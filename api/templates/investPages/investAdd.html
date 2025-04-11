@@ -1,0 +1,17 @@
+{% extends "investBase.html" %}
+{% block body %}
+  <h3>Add investment</h3>
+  <br>
+  <form action="/invest/add" method="post">
+    <table>
+        <tr>
+            <td><label for="investmentDate">Date</label></td>
+            <td><input type="date" id="date" name="investmentDate" required /></td>
+        </tr>
+        <!-- Add structure to investments and finish form -->
+        <tr>
+            <td colspan="2"><input type="submit" value="Add Investment" /></td>
+        </tr>
+    </table>
+  </form>
+{% endblock %}
