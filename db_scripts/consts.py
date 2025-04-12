@@ -61,7 +61,6 @@ invest_keys = [
     "investAmount",
     "stock",
 ]
-investPB_keys = ["name", "stock"]
 investStockPrice_keys = [
     "id",
     "date",
