@@ -5,7 +5,6 @@ SPVsubcatPath = ".\db\subcat.csv"
 SPVcurrPath = ".\db\curr.csv"
 
 keys = [
-    "id",
     "date",
     "category",
     "sub_category",
@@ -50,20 +49,3 @@ dp_keys = [
     "isOpen",
 ]
 curr_keys = ["date", "RON", "UAH", "EUR", "USD", "GBP", "CHF", "HUF", "AUR"]
-
-invest_keys = [
-    "id",
-    "date",
-    "PB",
-    "amount",
-    "currency",
-    "investPB",
-    "investAmount",
-    "stock",
-]
-investStockPrice_keys = [
-    "id",
-    "date",
-    "stock",
-    "price",
-]

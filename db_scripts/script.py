@@ -21,7 +21,7 @@ def NewDBase():
 
     c.execute(
         """CREATE TABLE main (
-                id integer,
+                id integer PRIMARY KEY,
                 date text,
                 category text,
                 sub_category text,
@@ -163,22 +163,12 @@ def Add(input_field, mode):
         if exists == None:
             raise Exception("Person_bank-currency pair does not exist!")
 
-        c.execute("SELECT MAX(id) FROM main")
-        max_id = c.fetchone()
-        max_id = max_id[0]
-        if max_id == None:  # Check if it exist and change to 0 if not
-            max_id = 0
-        max_id = (
-            max_id + 1
-        )  # Change so that inserted number is +1 from biggest existing id in DB
-        values.insert(0, max_id)
-
         records = {
             keys[i]: values[i] for i in range(len(keys))
         }  # Make dictionary with all values to add
 
         c.execute(
-            "INSERT INTO main VALUES (:id, :date, :category, :sub_category, :person_bank, :sum, :currency, :comment)",
+            "INSERT INTO main VALUES (NULL, :date, :category, :sub_category, :person_bank, :sum, :currency, :comment)",
             records,
         )
 
