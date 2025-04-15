@@ -5,7 +5,6 @@ SPVsubcatPath = "/content/drive/MyDrive/Acc0unt1ng/subcat.csv"
 SPVcurrPath = "/content/drive/MyDrive/Acc0unt1ng/curr.csv"
 
 keys = [
-    "id",
     "date",
     "category",
     "sub_category",
