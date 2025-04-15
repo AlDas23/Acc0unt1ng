@@ -103,6 +103,7 @@ def UpdateIPB(ipbName, fromAPI=False, line=None):
         print(
             f"Investment portfolio '{ipbName}' -> '{ipbNameNew}' updated successfully!"
         )
+    return 0
 
 
 def DeleteIPB(ipbName, fromApi=False):
@@ -116,6 +117,7 @@ def DeleteIPB(ipbName, fromApi=False):
 def AddInvestTransaction(line):
     if CheckDB() == -1:
         return -1
+
     tokens = line.split(",")
     date = tokens[0]
     pb = tokens[1]
@@ -123,5 +125,56 @@ def AddInvestTransaction(line):
     currency = tokens[3]
     ipbName = tokens[4]
     iAmount = round(float(tokens[5]), 6)
-    
-    # TODO: Finish addInvestTransaction function and send expense data to Add() function
+    stock = tokens[6]
+
+    with sqlite3.connect(dbPath) as conn:
+        c = conn.cursor()
+
+        # check if investment account exists
+        c.execute(
+            """SELECT EXISTS(
+            SELECT 1 FROM investPB 
+            WHERE name = ? AND stock = ?
+            )""",
+            (ipbName, stock),
+        )
+        investExists = c.fetchone()[0]
+        if investExists:
+            # check if standard account exists
+            c.execute(
+                """SELECT EXISTS(
+                SELECT 1 FROM Init_PB 
+                WHERE pb = ? AND currency = ?
+                )""",
+                (pb, currency),
+            )
+            standardExists = c.fetchone()[0]
+            if not standardExists:
+                raise Exception(
+                    f"Standard account '{pb}' with currency '{currency}' does not exist!"
+                )
+        else:
+            raise Exception(
+                f"Investment account '{ipbName}' with stock '{stock}' does not exist!"
+            )
+
+        # check if transaction is positive or negative
+        category = ""
+        if iAmount < 0:
+            category = "invest income"
+        else:
+            category = "invest expense"
+
+        # prepare statements for standard and invest transactions
+        standardQuery = """
+            INSERT INTO main VALUES (NULL, ?, ?, ?, ?, ?, ?, "")
+                         """
+        investQuery = """
+            INSERT INTO investTransaction VALUES (NULL, ?, ?, ?, ?, ?, ?, ?)
+                         """
+
+        c.execute(standardQuery, (date, category, category, pb, amount, currency))
+        c.execute(investQuery, (date, pb, amount, currency, ipbName, iAmount, stock))
+
+        conn.commit()
+    return 0
