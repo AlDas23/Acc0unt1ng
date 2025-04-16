@@ -3,6 +3,7 @@ SPVcatIncPath = ".\db\catInc.csv"
 SPVcatExpPath = ".\db\catExp.csv"
 SPVsubcatPath = ".\db\subcat.csv"
 SPVcurrPath = ".\db\curr.csv"
+SPVstockPath = ".\db\stock.csv"
 
 keys = [
     "date",

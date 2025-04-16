@@ -1,6 +1,6 @@
 import sqlite3
-from datetime import datetime
-from db_scripts.consts import *
+from db_scripts.consts import dbPath, SPVstockPath
+from db_scripts.script import read_csv
 
 
 def CheckDB():
@@ -178,3 +178,49 @@ def AddInvestTransaction(line):
 
         conn.commit()
     return 0
+
+
+def AddInvestStockPrice(line):
+    if CheckDB() == -1:
+        return -1
+
+    tokens = line.split(",")
+    date = tokens[0]
+    stock = tokens[1]
+    price = tokens[2]
+
+    with sqlite3.connect(dbPath) as conn:
+        c = conn.cursor()
+
+        # prepare statement for invest transactions
+        investQuery = """
+            INSERT INTO investStockPrice VALUES (NULL, ?, ?, ?)
+                         """
+
+        c.execute(investQuery, (date, stock, price))
+
+        conn.commit()
+    return 0
+
+
+def ReadInvest(flag):
+    if CheckDB() == -1:
+        return -1
+
+    with sqlite3.connect(dbPath) as conn:
+        c = conn.cursor()
+
+        if flag == "alli":
+            c.execute("SELECT * FROM investTransaction")
+            rows = c.fetchall()
+            return rows
+        elif flag == "ipb":
+            c.execute("SELECT * FROM investPB")
+            rows = c.fetchall()
+            return rows
+        elif flag == "stock":
+            c.execute("SELECT * FROM investStockPrice")
+            rows = c.fetchall()
+            return rows
+        else:
+            raise ValueError("Invalid flag value.")
