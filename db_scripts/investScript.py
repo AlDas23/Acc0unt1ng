@@ -1,6 +1,5 @@
 import sqlite3
 from db_scripts.consts import dbPath, SPVstockPath
-from db_scripts.script import read_csv
 
 
 def CheckDB():
@@ -12,7 +11,7 @@ def CheckDB():
             c.execute("SELECT * FROM investStockPrice")
             return 0
     except sqlite3.OperationalError:
-        print("Invest table not found! Update the database structure!")
+        print("Invest tables not found! Update the database structure!")
         return -1
 
 
@@ -212,15 +211,12 @@ def ReadInvest(flag):
 
         if flag == "alli":
             c.execute("SELECT * FROM investTransaction")
-            rows = c.fetchall()
-            return rows
+            return c.fetchall()
         elif flag == "ipb":
             c.execute("SELECT * FROM investPB")
-            rows = c.fetchall()
-            return rows
+            return c.fetchall()
         elif flag == "stock":
             c.execute("SELECT * FROM investStockPrice")
-            rows = c.fetchall()
-            return rows
+            return c.fetchall()
         else:
             raise ValueError("Invalid flag value.")
