@@ -15,8 +15,8 @@
   </header>
   <nav>
     <button class="nav_button" onclick="window.location.href='/'">Back to Acc0unt1ng</button>
-    <button class="nav_button" {% if request.path =='/invest/add' %} disabled {% endif %}
-      onclick="window.location.href='/invest/add'">Add investment</button>
+    <button class="nav_button" {% if request.path=='/invest/add/transaction' %} disabled {% endif %}
+      onclick="window.location.href='/invest/add/transaction'">Add investment</button>
   </nav>
   <br />
   <div class="belowbody">

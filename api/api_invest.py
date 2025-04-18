@@ -8,7 +8,7 @@ from flask import (
 from api_run import app
 from db_scripts.script import read_csv, Read
 from db_scripts.consts import SPVstockPath, SPVcurrPath
-from db_scripts.investScript import ReadInvest, AddInvestTransaction
+from db_scripts.investScript import *
 
 
 @app.route("/invest", methods=["GET"])
@@ -16,7 +16,7 @@ def investMainPage():
     return redirect("investPages/investAdd.html")
 
 
-@app.route("/invest/add", methods=["GET, POST"])
+@app.route("/invest/add/transaction", methods=["GET, POST"])
 def investAddPage():
     if request.method == "POST":
         content = request.get_json()
@@ -78,3 +78,53 @@ def investAddPage():
         )
 
     return render_template("investPages/investAdd.html")
+
+
+@app.route("/invest/add/stockPrice", methods=["GET", "POST"])
+def investAddStockPricePage():
+    if request.method == "POST":
+        content = request.get_json()
+        if content is None:
+            return "Error: No JSON data received", 400
+
+        # Parse JSON data into string line
+        line = ",".join([str(content[key]) for key in content.keys()])
+
+        try:
+            result = AddInvestStockPrice(line)
+            if result == -1:
+                return render_template_string(
+                    "Error: Database has missing tables or does not exist"
+                )
+            elif result == 0:
+                return url_for("investAddStockPricePage")
+        except Exception as e:
+            return render_template_string("Error: {{ error }}", error=str(e))
+
+    if request.method == "GET":
+        try:
+            stock = read_csv(SPVstockPath)
+        except Exception as e:
+            return render_template_string("Error: {{ error }}", error=str(e))
+
+        options = {
+            "stock": stock,
+        }
+
+        data = ReadInvest("stock")
+
+        history = []
+        for row in data:
+            history.append(
+                {
+                    "id": row[0],
+                    "date": row[1],
+                    "stock": row[2],
+                    "price": row[3],
+                }
+            )
+        return render_template(
+            "investPages/investStockPrice.html",
+            options=options,
+            history=history,
+        )

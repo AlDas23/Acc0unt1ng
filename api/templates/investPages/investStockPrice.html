@@ -1,0 +1,60 @@
+{% extends "investBase.html" %}
+{% block body %}
+<script src="{{ url_for('static', filename='js_scripts/investScripts.js') }}"></script>
+
+<h3>Stock price</h3>
+<br>
+<form action="invest/add/stockPrice" method="post" onsubmit="return false;">
+    <table>
+        <tr>
+            <td><label for="date">Date</label></td>
+            <td><input type="date" id="date" name="date" required /></td>
+        </tr>
+        <tr>
+            <td><label for="stock">Stock</label></td>
+            <td><select name="stock" id="stock" required>
+                    <option value="none" disabled selected>None</option>
+                    {% for stock in options.stock %}
+                    <option value="{{ stock }}">{{ stock }}</option>
+                    {% endfor %}
+                </select></td>
+        </tr>
+        <tr>
+            <td><label for="price">Price</label></td>
+            <td><input type="number" id="price" name="price" min="0" required /></td>
+        </tr>
+
+    </table>
+
+    <input type="button" value="Submit" onclick="validateStockForm()" />
+</form>
+
+<!-- History -->
+{% if options.history is not none %}
+<h3>History</h3>
+<table id="historyTable">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Date</th>
+            <th>Stock</th>
+            <th>Price</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for record in options.history %}
+        <tr>
+            <td>{{ record.id }}</td>
+            <td>{{ record.date }}</td>
+            <td>{{ record.stock }}</td>
+            <td>{{ record.price }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>No history available</p>
+{% endif %}
+
+{% endif %}
+{% endblock %}
