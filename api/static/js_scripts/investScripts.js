@@ -1,4 +1,4 @@
-function validateForm() {
+function validateTransactionForm() {
     // Get all form elements
     const type = document.getElementById('type').value;
     const date = document.getElementById('date').value;
@@ -14,9 +14,14 @@ function validateForm() {
         return false;
     }
 
+    if (type === 'buy') {
+        amount = amount * -1; // Convert to negative for buy transactions
+    } else if (type === 'sell') {
+        stockAmount = stockAmount * -1; // Convert to negative for sell transactions
+    }
+
     // Prepare form data
     const formData = {
-        type: type,
         investmentDate: date,
         pb: pb,
         amount: amount,

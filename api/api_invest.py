@@ -1,5 +1,4 @@
 from flask import (
-    Flask,
     request,
     render_template,
     redirect,
@@ -9,7 +8,7 @@ from flask import (
 from api_run import app
 from db_scripts.script import read_csv, Read
 from db_scripts.consts import SPVstockPath, SPVcurrPath
-from db_scripts.investScript import ReadInvest
+from db_scripts.investScript import ReadInvest, AddInvestTransaction
 
 
 @app.route("/invest", methods=["GET"])
@@ -20,8 +19,23 @@ def investMainPage():
 @app.route("/invest/add", methods=["GET, POST"])
 def investAddPage():
     if request.method == "POST":
-        pass
-        # TODO: Add the logic to handle the form submission here
+        content = request.get_json()
+        if content is None:
+            return "Error: No JSON data received", 400
+
+        # Parse JSON data into string line
+        line = ",".join([str(content[key]) for key in content.keys()])
+
+        try:
+            result = AddInvestTransaction(line)
+            if result == -1:
+                return render_template_string(
+                    "Error: Database has missing tables or does not exist"
+                )
+            elif result == 0:
+                return url_for("investAddPage")
+        except Exception as e:
+            return render_template_string("Error: {{ error }}", error=str(e))
 
     if request.method == "GET":
         try:
@@ -40,20 +54,22 @@ def investAddPage():
         }
 
         data = ReadInvest("alli")
-        
+
         # convert the data to a list of dictionaries for easier rendering in HTML
         history = []
         for row in data:
-            history.append({
-                "id": row[0],
-                "date": row[1],
-                "pb": row[2],
-                "amount": row[3],
-                "currency": row[4],
-                "ipbName": row[5],
-                "iAmount": row[6],
-                "stock": row[7],
-            })
+            history.append(
+                {
+                    "id": row[0],
+                    "date": row[1],
+                    "pb": row[2],
+                    "amount": row[3],
+                    "currency": row[4],
+                    "ipbName": row[5],
+                    "iAmount": row[6],
+                    "stock": row[7],
+                }
+            )
 
         render_template(
             "investPages/investAdd.html",

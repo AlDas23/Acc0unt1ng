@@ -1,6 +1,6 @@
 {% extends "investBase.html" %}
 {% block body %}
-<script src="{{ url_for('static', filename='js_scripts/investAddScript.js') }}"></script>
+<script src="{{ url_for('static', filename='js_scripts/investScripts.js') }}"></script>
 <h3>Add investment record</h3>
 <br>
 <form action="/invest/add" method="post" onsubmit="return false;">
@@ -63,7 +63,7 @@
         </select></td>
     </tr>
   </table>
-  <input type="button" value="Submit" onclick="validateForm()" />
+  <input type="button" value="Submit" onclick="validateTransactionForm()" />
 </form>
 
 <!-- History table -->
