@@ -304,7 +304,7 @@ def Add(input_field, mode):
         for n in range(1, 7):
             values[n] = round(float(values[n] if values[n].strip() != " " else 0), 4)
 
-        values.insert(2, round(1 / values[1], 2))  # UAH = 1 / RON
+        values.insert(2, round(1 / values[1], 4))  # UAH = 1 / RON
 
         records = {
             curr_keys[i]: values[i] for i in range(len(curr_keys))
