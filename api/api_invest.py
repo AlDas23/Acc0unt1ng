@@ -128,3 +128,17 @@ def investAddStockPricePage():
             options=options,
             history=history,
         )
+
+
+@app.route("/invest/balance", methods=["GET"])
+def investBalanceSheet():
+    if request.method == "GET":
+        try:
+            data = CalculateBalance()
+
+            return render_template(
+                "investPages/investBalance.html",
+                data=data,
+            )
+        except Exception as e:
+            return render_template_string("Error: {{ error }}", error=str(e))

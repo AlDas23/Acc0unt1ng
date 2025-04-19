@@ -1,0 +1,31 @@
+{% extends "investBase.html" %}
+{% block body %}
+<h3>Invest Balance Sheet</h3>
+<br>
+
+{% if data %}
+<table class="table table-bordered table-striped table-hover">
+    <thead>
+        <tr>
+            <th>Investment</th>
+            <th>Amount</th>
+            <th>Currency</th>
+            <th>Value in RON</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for record in data %}
+        <tr>
+            <td>{{ record.investPB }}</td>
+            <td>{{ record.stock }}</td>
+            <td>{{ record.investAmount }}</td>
+            <td>{{ record.balance }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>No investment balances found.</p>
+
+{% endif %}
+{% endblock %}

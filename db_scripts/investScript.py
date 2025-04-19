@@ -218,5 +218,68 @@ def ReadInvest(flag):
         elif flag == "stock":
             c.execute("SELECT * FROM investStockPrice")
             return c.fetchall()
+        elif flag == "ibal":
+            c.execute(
+                """
+                SELECT 
+                    investPB,
+                    SUM(investAmount),
+                    stock
+                FROM 
+                    investTransaction
+                GROUP BY 
+                    investPB, stock
+                ORDER BY 
+                    investPB, stock
+                      """
+            )
+            return c.fetchall()
         else:
             raise ValueError("Invalid flag value.")
+
+
+def CalculateBalance():
+    if CheckDB() == -1:
+        return -1
+
+    with sqlite3.connect(dbPath) as conn:
+        c = conn.cursor()
+
+        stockBalance = ReadInvest("ibal")
+        finalBalance = []
+
+        # Calculate balance for each stock
+        for row in stockBalance:
+            investPB = row[0]
+            investAmount = row[1]
+            stock = row[2]
+
+            # Find the price for the stock
+            c.execute(
+                """
+                SELECT price 
+                FROM investStockPrice 
+                WHERE stock = ? 
+                ORDER BY date DESC 
+                LIMIT 1
+                """,
+                (stock,),
+            )
+            priceRow = c.fetchone()
+            if priceRow:
+                price = priceRow[0]
+                balance = investAmount * price
+
+                finalBalance.append(
+                    {
+                        "investPB": investPB,
+                        "stock": stock,
+                        "investAmount": investAmount,
+                        "balance": balance,
+                    }
+                )
+
+            else:
+                print(f"No price found for {stock}.")
+
+        return finalBalance
