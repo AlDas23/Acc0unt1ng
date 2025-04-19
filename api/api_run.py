@@ -709,16 +709,6 @@ def Currencies():
         return redirect(url_for("Currencies"))
 
 
-@app.route("/reports", methods=["GET", "POST"])
-def ReportsPage():
-    if request.method == "GET":
-        return render_template("reportsPage.html")
-
-    else:
-        ## TODO: Finish reports page backend logic
-        pass
-
-
 @app.route("/api", methods=["GET"])
 def APIHome():
     return redirect("/api/help")
