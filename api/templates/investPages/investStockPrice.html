@@ -1,60 +1,61 @@
-{% extends "investBase.html" %}
+{% extends "investPages/investBase.html" %}
 {% block body %}
-<script src="{{ url_for('static', filename='js_scripts/investScripts.js') }}"></script>
 
-<h3>Stock price</h3>
-<br>
-<form action="invest/add/stockPrice" method="post" onsubmit="return false;">
-    <table>
-        <tr>
-            <td><label for="date">Date</label></td>
-            <td><input type="date" id="date" name="date" required /></td>
-        </tr>
-        <tr>
-            <td><label for="stock">Stock</label></td>
-            <td><select name="stock" id="stock" required>
-                    <option value="none" disabled selected>None</option>
-                    {% for stock in options.stock %}
-                    <option value="{{ stock }}">{{ stock }}</option>
-                    {% endfor %}
-                </select></td>
-        </tr>
-        <tr>
-            <td><label for="price">Price</label></td>
-            <td><input type="number" id="price" name="price" min="0" required /></td>
-        </tr>
+<div class="container">
+    <div class="form-left">
+        <h3>Stock price</h3>
+        <br>
+        <form action="invest/add/stockPrice" method="post" onsubmit="return false;">
+            <table>
+                <tr>
+                    <td class="formLabels"><label for="date">Date</label></td>
+                    <td class="formFields"><input type="date" id="date" name="date" class="formContent" required /></td>
+                </tr>
+                <tr>
+                    <td class="formLabels"><label for="stock">Stock</label></td>
+                    <td class="formFields"><select name="stock" id="stock" class="formContent" required>
+                            <option value="none" disabled selected>None</option>
+                            {% for stock in options.stock %}
+                            <option value="{{ stock }}">{{ stock }}</option>
+                            {% endfor %}
+                        </select></td>
+                </tr>
+                <tr>
+                    <td class="formLabels"><label for="price">Price</label></td>
+                    <td class="formFields"><input type="number" id="price" name="price" min="0" class="formContent"
+                            required /></td>
+                </tr>
 
-    </table>
+            </table>
 
-    <input type="button" value="Submit" onclick="validateStockForm()" />
-</form>
+            <input type="button" value="Submit" class="submitButton" onclick="validateStockForm()" />
+        </form>
+    </div>
 
-<!-- History -->
-{% if options.history is not none %}
-<h3>History</h3>
-<table id="historyTable">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Date</th>
-            <th>Stock</th>
-            <th>Price</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for record in options.history %}
-        <tr>
-            <td>{{ record.id }}</td>
-            <td>{{ record.date }}</td>
-            <td>{{ record.stock }}</td>
-            <td>{{ record.price }}</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-{% else %}
-<p>No history available</p>
-{% endif %}
-
-{% endif %}
+    <!-- History -->
+    <div class="history-right">
+        <h3>History</h3>
+        <br>
+        <table id="historyTable" class="historytable">
+            <thead>
+                <tr>
+                    <th class="rep">ID</th>
+                    <th class="rep">Date</th>
+                    <th class="rep">Stock</th>
+                    <th class="rep">Price</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in history %}
+                <tr>
+                    <td class="rep">{{ record.id }}</td>
+                    <td class="rep">{{ record.date }}</td>
+                    <td class="rep">{{ record.stock }}</td>
+                    <td class="rep">{{ record.price }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
 {% endblock %}

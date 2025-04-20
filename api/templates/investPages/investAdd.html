@@ -1,103 +1,109 @@
-{% extends "investBase.html" %}
+{% extends "investPages/investBase.html" %}
 {% block body %}
-<script src="{{ url_for('static', filename='js_scripts/investScripts.js') }}"></script>
-<h3>Add investment record</h3>
-<br>
-<form action="/invest/add/transaction" method="post" onsubmit="return false;">
-  <table>
-    <tr>
-      <td><label for="type">Buy/sell</label></td>
-      <td>
-        <select name="type" id="type" required>
-          <option value="pos" selected>Buy</option>
-          <option value="neg">Sell</option>
-        </select>
-      </td>
-    </tr>
-    <tr>
-      <td><label for="investmentDate">Date</label></td>
-      <td><input type="date" id="date" name="investmentDate" required /></td>
-    </tr>
-    <tr>
-      <td><label for="pb">Person-bank</label></td>
-      <td><select name="pb" id="pb" required>
-          <option value="none" disabled selected>None</option>
-          {% for personBank in options.personBank %}
-          <option value="{{ personBank }}">{{ personBank }}</option>
-          {% endfor %}
-        </select></td>
-    </tr>
-    <tr>
-      <td><label for="amount">Amount</label></td>
-      <td><input type="number" id="amount" name="amount" min="1" required /></td>
-    </tr>
-    <tr>
-      <td><label for="currency">Currency</label></td>
-      <td><select name="currency" id="currency" required>
-          <option value="none" disabled selected>None</option>
-          {% for currency in options.currency %}
-          <option value="{{ currency }}">{{ currency }}</option>
-          {% endfor %}
-        </select></td>
-    </tr>
-    <tr>
-      <td><label for="ipb">Invest Person-bank</label></td>
-      <td><select name="ipb" id="ipb" required>
-          <option value="none" disabled selected>None</option>
-          {% for investPB in options.investPB %}
-          <option value="{{ investPB }}">{{ investPB }}</option>
-          {% endfor %}
-        </select></td>
-    </tr>
-    <tr>
-      <td><label for="stockAmount">Stock amount</label></td>
-      <td><input type="number" name="stockAmount" id="stockAmount" min="0" required></td>
-    </tr>
-    <tr>
-      <td><label for="stock">Stock</label></td>
-      <td><select name="stock" id="stock" required>
-          <option value="none" disabled selected>None</option>
-          {% for stock in options.stock %}
-          <option value="{{ stock }}">{{ stock }}</option>
-          {% endfor %}
-        </select></td>
-    </tr>
-  </table>
-  <input type="button" value="Submit" onclick="validateTransactionForm()" />
-</form>
 
-<!-- History table -->
-<h3>Investment history</h3>
-{% if history is empty %}
-<p>No investment history available.</p>
-{% else %}
-<table id="historyTable" class="table table-striped table-bordered table-hover table-sm">
-  <thead>
-    <tr>
-      <th>ID</th>
-      <th>Date</th>
-      <th>Person-bank</th>
-      <th>Amount</th>
-      <th>Currency</th>
-      <th>Invest Person-bank</th>
-      <th>Stock amount</th>
-      <th>Stock</th>
-    </tr>
-  </thead>
-  <tbody id="historyBody">
-    {% for record in history %}
-    <tr>
-      <td>{{ record.id }}</td>
-      <td>{{ record.date }}</td>
-      <td>{{ record.pb }}</td>
-      <td>{{ record.amount }}</td>
-      <td>{{ record.currency }}</td>
-      <td>{{ record.ipbName }}</td>
-      <td>{{ record.iAmount }}</td>
-      <td>{{ record.stock }}</td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
-{% endif %}
+
+<div class="container">
+  <div class="form-left">
+    <h3>Add investment record</h3>
+    <br>
+    <form action="/invest/add/transaction" method="post" onsubmit="return false;">
+      <table>
+        <tr>
+          <td class="formLabels"><label for="type">Buy/sell</label></td>
+          <td class="formFields">
+            <select name="type" id="type" class="formContent" required>
+              <option value="pos" selected>Buy</option>
+              <option value="neg">Sell</option>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td class="formLabels"><label for="investmentDate">Date</label></td>
+          <td class="formFields"><input type="date" id="date" name="investmentDate" class="formContent" required /></td>
+        </tr>
+        <tr>
+          <td class="formLabels"><label for="pb">Person-bank</label></td>
+          <td class="formFields"><select name="pb" id="pb" class="formContent" required>
+              <option value="none" disabled selected>None</option>
+              {% for personBank in options.personBank %}
+              <option value="{{ personBank }}">{{ personBank }}</option>
+              {% endfor %}
+            </select></td>
+        </tr>
+        <tr>
+          <td class="formLabels"><label for="amount">Amount</label></td>
+          <td class="formFields"><input type="number" id="amount" name="amount" min="1" class="formContent" required />
+          </td>
+        </tr>
+        <tr>
+          <td class="formLabels"><label for="currency">Currency</label></td>
+          <td class="formFields"><select name="currency" id="currency" class="formContent" required>
+              <option value="none" disabled selected>None</option>
+              {% for currency in options.currency %}
+              <option value="{{ currency }}">{{ currency }}</option>
+              {% endfor %}
+            </select></td>
+        </tr>
+        <tr>
+          <td class="formLabels"><label for="ipb">Invest PB</label></td>
+          <td class="formFields"><select name="ipb" id="ipb" class="formContent" required>
+              <option value="none" disabled selected>None</option>
+              {% for investPB in options.investPB %}
+              <option value="{{ investPB }}">{{ investPB }}</option>
+              {% endfor %}
+            </select></td>
+        </tr>
+        <tr>
+          <td class="formLabels"><label for="stockAmount">Stock amount</label></td>
+          <td class="formFields"><input type="number" name="stockAmount" id="stockAmount" min="0" class="formContent"
+              required></td>
+        </tr>
+        <tr>
+          <td class="formLabels"><label for="stock">Stock</label></td>
+          <td class="formFields"><select name="stock" id="stock" class="formContent" required>
+              <option value="none" disabled selected>None</option>
+              {% for stock in options.stock %}
+              <option value="{{ stock }}">{{ stock }}</option>
+              {% endfor %}
+            </select></td>
+        </tr>
+      </table>
+      <input type="submit" value="Submit" class="submitButton" onclick="validateTransactionForm()"  />
+    </form>
+  </div>
+
+  <!-- History table -->
+  <div class="history-right">
+    <h3>Investment history</h3>
+    <br>
+    <table id="historyTable" class="historytable">
+      <thead>
+        <tr>
+          <th class="rep">ID</th>
+          <th class="rep">Date</th>
+          <th class="rep">Person-bank</th>
+          <th class="rep">Amount</th>
+          <th class="rep">Currency</th>
+          <th class="rep">Invest Person-bank</th>
+          <th class="rep">Stock amount</th>
+          <th class="rep">Stock</th>
+        </tr>
+      </thead>
+      <tbody id="historyBody">
+        {% for record in history %}
+        <tr>
+          <td class="rep">{{ record.id }}</td>
+          <td class="rep">{{ record.date }}</td>
+          <td class="rep">{{ record.pb }}</td>
+          <td class="rep">{{ record.amount }}</td>
+          <td class="rep">{{ record.currency }}</td>
+          <td class="rep">{{ record.ipbName }}</td>
+          <td class="rep">{{ record.iAmount }}</td>
+          <td class="rep">{{ record.stock }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
 {% endblock %}

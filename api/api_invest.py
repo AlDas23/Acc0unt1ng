@@ -4,19 +4,21 @@ from flask import (
     redirect,
     url_for,
     render_template_string,
+    Blueprint,
 )
-from api_run import app
 from db_scripts.script import read_csv, Read
 from db_scripts.consts import SPVstockPath, SPVcurrPath
 from db_scripts.investScript import *
 
+investPage = Blueprint("investPage", __name__)
 
-@app.route("/invest", methods=["GET"])
+
+@investPage.route("/invest", methods=["GET"])
 def investMainPage():
-    return redirect("investPages/investAdd.html")
+    return redirect("/invest/add/transaction")
 
 
-@app.route("/invest/add/transaction", methods=["GET, POST"])
+@investPage.route("/invest/add/transaction", methods=["GET", "POST"])
 def investAddPage():
     if request.method == "POST":
         content = request.get_json()
@@ -27,24 +29,26 @@ def investAddPage():
         line = ",".join([str(content[key]) for key in content.keys()])
 
         try:
-            result = AddInvestTransaction(line)
-            if result == -1:
+            if AddInvestTransaction(line) == -1:
                 return render_template_string(
                     "Error: Database has missing tables or does not exist"
                 )
-            elif result == 0:
-                return url_for("investAddPage")
         except Exception as e:
-            return render_template_string("Error: {{ error }}", error=str(e))
+            print(f"Error occurred: {str(e)}")
+            return (
+                render_template("error.html", error=f"Transaction failed: {str(e)}"),
+                500,
+            )
+        return redirect(url_for("investPage.investAddPage"))
 
     if request.method == "GET":
         try:
             personBank = Read("retacc")
-            investPB = ReadInvest("ipb")
+            investPB = ReadInvest("retipb")
             currency = read_csv(SPVcurrPath)
             stock = read_csv(SPVstockPath)
         except Exception as e:
-            return render_template_string("Error: {{ error }}", error=str(e))
+            return render_template_string("Error: {{ error }}", error=str(e)), 500
 
         options = {
             "personBank": personBank,
@@ -71,16 +75,14 @@ def investAddPage():
                 }
             )
 
-        render_template(
+        return render_template(
             "investPages/investAdd.html",
             options=options,
             history=history,
         )
 
-    return render_template("investPages/investAdd.html")
 
-
-@app.route("/invest/add/stockPrice", methods=["GET", "POST"])
+@investPage.route("/invest/add/stockPrice", methods=["GET", "POST"])
 def investAddStockPricePage():
     if request.method == "POST":
         content = request.get_json()
@@ -91,15 +93,19 @@ def investAddStockPricePage():
         line = ",".join([str(content[key]) for key in content.keys()])
 
         try:
-            result = AddInvestStockPrice(line)
-            if result == -1:
+            if AddInvestStockPrice(line) == -1:
                 return render_template_string(
                     "Error: Database has missing tables or does not exist"
                 )
-            elif result == 0:
-                return url_for("investAddStockPricePage")
+
         except Exception as e:
-            return render_template_string("Error: {{ error }}", error=str(e))
+            print(f"Error occurred: {str(e)}")
+            return (
+                render_template("error.html", error=f"Transaction failed: {str(e)}"),
+                500,
+            )
+
+        return redirect(url_for("investPage.investAddStockPricePage"))
 
     if request.method == "GET":
         try:
@@ -130,8 +136,9 @@ def investAddStockPricePage():
         )
 
 
-@app.route("/invest/balance", methods=["GET"])
+@investPage.route("/invest/balance", methods=["GET"])
 def investBalanceSheet():
+    # TODO: Bug where balance is not calculated and table is empty
     if request.method == "GET":
         try:
             data = CalculateBalance()

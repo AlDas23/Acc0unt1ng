@@ -119,7 +119,7 @@ def NewDBase():
     )
     c.execute(
         """CREATE TABLE investPB (
-                name text PRIMARY KEY,
+                name text,
                 stock text
             )"""
     )

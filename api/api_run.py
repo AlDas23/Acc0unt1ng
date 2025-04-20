@@ -14,9 +14,10 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from db_scripts.script import *
 from db_scripts.consts import *
-
+from api.api_invest import investPage
 
 app = Flask(__name__)
+app.register_blueprint(investPage, url_prefix="/")
 
 
 def plot_to_img_tag(df):
@@ -898,5 +899,5 @@ Possible values:
 
 
 def api_start():
-    app.config["SEND_FILE_MAX_AGE_DEFAULT"] = 3600
+    # app.config["SEND_FILE_MAX_AGE_DEFAULT"] = 1200
     app.run(debug=True)

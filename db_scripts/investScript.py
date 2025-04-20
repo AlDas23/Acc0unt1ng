@@ -42,7 +42,7 @@ def AddIPB(fromAPI=False, line=None):
         c = conn.cursor()
         # Check if the investment account already exists
         c.execute(
-            """SELECT CASE(WHEN name = ? AND stock = ? THEN 1 ELSE 0 END)
+            """SELECT CASE WHEN name = ? AND stock = ? THEN 1 ELSE 0 END
             FROM investPB
             WHERE name = ?""",
             (ipbName, ipbStock, ipbName),
@@ -53,7 +53,7 @@ def AddIPB(fromAPI=False, line=None):
             return -2
         # Insert the investment account into the database
         c.execute(
-            """INSERT INTO investPB (name, stock
+            """INSERT INTO investPB (name, stock)
             VALUES (?, ?)""",
             (ipbName, ipbStock),
         )
@@ -107,10 +107,12 @@ def UpdateIPB(ipbName, fromAPI=False, line=None):
 
 def DeleteIPB(ipbName, fromApi=False):
     # TODO: Add delete process
-    if fromApi:
-        pass
-    else:
-        pass
+    # if fromApi:
+    #     pass
+    # else:
+    #     pass
+    print("Delete function not implemented yet!")
+    return 0
 
 
 def AddInvestTransaction(line):
@@ -143,7 +145,7 @@ def AddInvestTransaction(line):
             c.execute(
                 """SELECT EXISTS(
                 SELECT 1 FROM Init_PB 
-                WHERE pb = ? AND currency = ?
+                WHERE person_bank = ? AND currency = ?
                 )""",
                 (pb, currency),
             )
@@ -176,7 +178,8 @@ def AddInvestTransaction(line):
         c.execute(investQuery, (date, pb, amount, currency, ipbName, iAmount, stock))
 
         conn.commit()
-    return 0
+
+        return 0
 
 
 def AddInvestStockPrice(line):
@@ -199,7 +202,8 @@ def AddInvestStockPrice(line):
         c.execute(investQuery, (date, stock, price))
 
         conn.commit()
-    return 0
+
+        return 0
 
 
 def ReadInvest(flag):
@@ -215,6 +219,9 @@ def ReadInvest(flag):
         elif flag == "ipb":
             c.execute("SELECT * FROM investPB")
             return c.fetchall()
+        elif flag == "retipb":
+            c.execute("SELECT DISTINCT name FROM investPB ORDER BY name ASC")
+            return [row[0] for row in c.fetchall()]
         elif flag == "stock":
             c.execute("SELECT * FROM investStockPrice")
             return c.fetchall()
@@ -267,7 +274,7 @@ def CalculateBalance():
             )
             priceRow = c.fetchone()
             if priceRow:
-                price = priceRow[0]
+                price = priceRow[0] if priceRow else 1  # Default to 1 if no price found
                 balance = investAmount * price
 
                 finalBalance.append(
