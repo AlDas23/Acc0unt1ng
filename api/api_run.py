@@ -10,45 +10,48 @@ import base64
 import io
 from pyngrok import ngrok
 import matplotlib
-matplotlib.use("Agg") 
+
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from db_scripts.script import *
 from db_scripts.consts import *
-
+from api.api_invest import investPage
 
 app = Flask(__name__)
+app.register_blueprint(investPage, url_prefix="/")
+
 
 def plot_to_img_tag(df):
     plt.clf()
-    
+
     plt.figure(figsize=(12, 6))
-    
+
     # Plot each currency's rate over time
     for currency in df.columns[1:]:  # Skip the 'date' column
         plt.plot(df["date"], df[currency], marker="o", label=currency)
-    
+
     plt.title("Currency Rates Over Time")
     plt.xlabel("Date")
     plt.ylabel("Rate")
     plt.legend()
     plt.grid(True)
-    
+
     # Rotate and align the tick labels so they look better
-    plt.xticks(rotation=45, ha='right')
-    
+    plt.xticks(rotation=45, ha="right")
+
     # Use automatic layout adjustment to prevent label overlap
     plt.tight_layout()
-    
+
     # If still too crowded, show fewer x-axis ticks
     if len(df) > 20:
         # Show approximately 15 evenly spaced ticks
         plt.gca().xaxis.set_major_locator(plt.MaxNLocator(15))
-    
+
     # Save plot to a BytesIO object
     img = io.BytesIO()
-    plt.savefig(img, format="png", bbox_inches='tight')
+    plt.savefig(img, format="png", bbox_inches="tight")
     img.seek(0)
-    
+
     # Encode image to base64 string
     img_tag = base64.b64encode(img.getvalue()).decode()
     plt.close()

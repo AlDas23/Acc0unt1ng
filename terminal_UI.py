@@ -1,10 +1,11 @@
 from db_scripts.script import *
+from db_scripts.investScript import ManageIPB
 
 
 def Terminal():
     while True:
         print(
-            """TERMINAL UI\n\n1. Add field\n2. Read\n3. Delete field\nConf. Configure special field values\nNdb. New DataBase\nexit - Exit UI\n"""
+            "TERMINAL UI\n\n1. Add field\n2. Read\n3. Delete field\n4. Configure invest vriables\nConf. Configure special field values\nNdb. New DataBase\n"
         )
         inp = input()
 
@@ -54,6 +55,12 @@ def Terminal():
             print("Type of record to delete(main/transfer): ")
             type = input()
             Del(dele, type)
+
+        elif inp == "4":
+            print("Configure invest variables:\n")
+            print("add - add new investment account\nupdate - update existing\ndelete - delete existing\n")
+            command = input()
+            ManageIPB(command)
 
         elif inp == "conf" or inp == "Conf":
             print(" spv - special values\n mark - markers\n")

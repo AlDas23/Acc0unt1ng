@@ -1,0 +1,109 @@
+{% extends "investPages/investBase.html" %}
+{% block body %}
+
+
+<div class="container">
+  <div class="form-left">
+    <h3>Add investment record</h3>
+    <br>
+    <form action="/invest/add/transaction" method="post" onsubmit="return false;">
+      <table>
+        <tr>
+          <td class="formLabels"><label for="type">Buy/sell</label></td>
+          <td class="formFields">
+            <select name="type" id="type" class="formContent" required>
+              <option value="pos" selected>Buy</option>
+              <option value="neg">Sell</option>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td class="formLabels"><label for="investmentDate">Date</label></td>
+          <td class="formFields"><input type="date" id="date" name="investmentDate" class="formContent" required /></td>
+        </tr>
+        <tr>
+          <td class="formLabels"><label for="pb">Person-bank</label></td>
+          <td class="formFields"><select name="pb" id="pb" class="formContent" required>
+              <option value="none" disabled selected>None</option>
+              {% for personBank in options.personBank %}
+              <option value="{{ personBank }}">{{ personBank }}</option>
+              {% endfor %}
+            </select></td>
+        </tr>
+        <tr>
+          <td class="formLabels"><label for="amount">Amount</label></td>
+          <td class="formFields"><input type="number" id="amount" name="amount" min="1" class="formContent" required />
+          </td>
+        </tr>
+        <tr>
+          <td class="formLabels"><label for="currency">Currency</label></td>
+          <td class="formFields"><select name="currency" id="currency" class="formContent" required>
+              <option value="none" disabled selected>None</option>
+              {% for currency in options.currency %}
+              <option value="{{ currency }}">{{ currency }}</option>
+              {% endfor %}
+            </select></td>
+        </tr>
+        <tr>
+          <td class="formLabels"><label for="ipb">Invest PB</label></td>
+          <td class="formFields"><select name="ipb" id="ipb" class="formContent" required>
+              <option value="none" disabled selected>None</option>
+              {% for investPB in options.investPB %}
+              <option value="{{ investPB }}">{{ investPB }}</option>
+              {% endfor %}
+            </select></td>
+        </tr>
+        <tr>
+          <td class="formLabels"><label for="stockAmount">Stock amount</label></td>
+          <td class="formFields"><input type="number" name="stockAmount" id="stockAmount" min="0" class="formContent"
+              required></td>
+        </tr>
+        <tr>
+          <td class="formLabels"><label for="stock">Stock</label></td>
+          <td class="formFields"><select name="stock" id="stock" class="formContent" required>
+              <option value="none" disabled selected>None</option>
+              {% for stock in options.stock %}
+              <option value="{{ stock }}">{{ stock }}</option>
+              {% endfor %}
+            </select></td>
+        </tr>
+      </table>
+      <input type="submit" value="Submit" class="submitButton" onclick="validateTransactionForm()"  />
+    </form>
+  </div>
+
+  <!-- History table -->
+  <div class="history-right">
+    <h3>Investment history</h3>
+    <br>
+    <table id="historyTable" class="historytable">
+      <thead>
+        <tr>
+          <th class="rep">ID</th>
+          <th class="rep">Date</th>
+          <th class="rep">Person-bank</th>
+          <th class="rep">Amount</th>
+          <th class="rep">Currency</th>
+          <th class="rep">Invest Person-bank</th>
+          <th class="rep">Stock amount</th>
+          <th class="rep">Stock</th>
+        </tr>
+      </thead>
+      <tbody id="historyBody">
+        {% for record in history %}
+        <tr>
+          <td class="rep">{{ record.id }}</td>
+          <td class="rep">{{ record.date }}</td>
+          <td class="rep">{{ record.pb }}</td>
+          <td class="rep">{{ record.amount }}</td>
+          <td class="rep">{{ record.currency }}</td>
+          <td class="rep">{{ record.ipbName }}</td>
+          <td class="rep">{{ record.iAmount }}</td>
+          <td class="rep">{{ record.stock }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
