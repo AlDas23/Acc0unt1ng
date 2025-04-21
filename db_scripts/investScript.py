@@ -214,7 +214,7 @@ def ReadInvest(flag):
         c = conn.cursor()
 
         if flag == "alli":
-            c.execute("SELECT * FROM investTransaction")
+            c.execute("SELECT * FROM investTransaction ORDER BY date, id DESC")
             return c.fetchall()
         elif flag == "ipb":
             c.execute("SELECT * FROM investPB")
@@ -274,19 +274,21 @@ def CalculateBalance():
             )
             priceRow = c.fetchone()
             if priceRow:
-                price = priceRow[0] if priceRow else 1  # Default to 1 if no price found
-                balance = investAmount * price
-
-                finalBalance.append(
-                    {
-                        "investPB": investPB,
-                        "stock": stock,
-                        "investAmount": investAmount,
-                        "balance": balance,
-                    }
-                )
+                price = priceRow[0]
 
             else:
                 print(f"No price found for {stock}.")
+                price = 1
+
+            balance = investAmount * price
+
+            finalBalance.append(
+                {
+                    "investPB": investPB,
+                    "stock": stock,
+                    "investAmount": investAmount,
+                    "balance": balance,
+                }
+            )
 
         return finalBalance

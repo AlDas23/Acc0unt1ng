@@ -45,20 +45,20 @@ function validateTransactionForm() {
         },
         body: JSON.stringify(formData)
     })
-    .then(response => {
-        if (response.ok) {
-            alert('Investment record added successfully');
-            window.location.href = '/invest/add/transaction';
-        } else {
-            response.json().then(data => {
-                alert('Error: ' + (data.message || 'Failed to add investment record'));
-            });
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('Error occurred while submitting the form');
-    });
+        .then(response => {
+            if (response.ok) {
+                alert('Investment record sent successfully');
+                window.location.href = '/invest/add/transaction';
+            } else {
+                response.json().then(data => {
+                    alert('Error: ' + (data.message || 'Failed to add investment record'));
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error occurred while submitting the form');
+        });
 }
 
 function validateStockForm() {
@@ -81,9 +81,9 @@ function validateStockForm() {
 
     // Prepare form data
     const formData = {
+        date: date,
         stock: stock,
         price: price,
-        date: date
     };
 
     // Send POST request
@@ -94,14 +94,14 @@ function validateStockForm() {
         },
         body: JSON.stringify(formData)
     })
-    .then(response => {
-        if (response.ok) {
-            alert('Stock price added successfully');
-            window.location.href = '/invest/add/stockPrice';
-        } else {
-            response.json().then(data => {
-                alert('Error: ' + (data.message || 'Failed to add stock price'));
-            });
-        }
-    })
+        .then(response => {
+            if (response.ok) {
+                alert('Stock price sent successfully');
+                window.location.href = '/invest/add/stockPrice';
+            } else {
+                response.json().then(data => {
+                    alert('Error: ' + (data.message || 'Failed to add stock price'));
+                });
+            }
+        })
 }

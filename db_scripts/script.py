@@ -964,8 +964,13 @@ def ReadAdv(type, month):
         return c.fetchall()
 
     elif type == "catincrep":
-        categories_df = pd.read_csv(SPVcatIncPath, header=None)
-        categories_list = categories_df[0].tolist()
+        catQuery = """
+            SELECT DISTINCT category
+            FROM main
+            WHERE sum > 0"""
+        c.execute(catQuery)
+        categories_list = c.fetchall()
+        categories_list = [cat[0] for cat in categories_list]
 
         query = """
         SELECT category, currency, sum, date
@@ -1014,8 +1019,13 @@ def ReadAdv(type, month):
         return modified_list
 
     elif type == "catexprep":
-        categories_df = pd.read_csv(SPVcatExpPath, header=None)
-        categories_list = categories_df[0].tolist()
+        catQuery = """
+            SELECT DISTINCT category
+            FROM main
+            WHERE sum < 0"""
+        c.execute(catQuery)
+        categories_list = c.fetchall()
+        categories_list = [cat[0] for cat in categories_list]
 
         query = """
         SELECT category, currency, sum, date
