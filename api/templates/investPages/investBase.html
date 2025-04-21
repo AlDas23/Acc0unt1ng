@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='investStyle.css') }}" />
+  <script src="{{ url_for('static', filename='js_scripts/investScripts.js') }}"></script>
+  <title>Acc0unt1ng invest</title>
+</head>
+
+<body>
+  <header class="header-banner">
+    <h1>Acc0unt1ng</h1>
+    <h2><i>Invest</i></h2>
+  </header>
+  <nav>
+    <button class="nav_button" onclick="window.location.href='/'">Back to Acc0unt1ng</button>
+    <button class="nav_button" {% if request.path=='/invest/add/transaction' %} disabled {% endif %}
+      onclick="window.location.href='/invest/add/transaction'">Add investment</button>
+    <button class="nav_button" {% if request.path=='/invest/add/stockPrice' %} disabled {% endif %}
+      onclick="window.location.href='/invest/add/stockPrice'">Stock price</button>
+    <button class="nav_button" {% if request.path=='/invest/balance' %} disabled {% endif %}
+      onclick="window.location.href='/invest/balance'">Invest balance sheet</button>
+  </nav>
+  <br />
+  <div class="belowbody">
+    <br />
+    {% block body %}
+    {% endblock %}
+  </div>
+</body>
+
+</html>

@@ -21,7 +21,7 @@ def NewDBase():
 
     c.execute(
         """CREATE TABLE main (
-                id integer,
+                id integer PRIMARY KEY,
                 date text,
                 category text,
                 sub_category text,
@@ -104,6 +104,34 @@ def NewDBase():
                 type text
             )"""
     )
+    # Invest tables
+    c.execute(
+        """CREATE TABLE investTransaction (
+                id integer PRIMARY KEY,
+                date text,
+                PB text,
+                amount real,
+                currency text,
+                investPB text,
+                investAmount real,
+                stock text
+            )"""
+    )
+    c.execute(
+        """CREATE TABLE investPB (
+                name text,
+                stock text
+            )"""
+    )
+    c.execute(
+        """CREATE TABLE investStockPrice (
+                id integer PRIMARY KEY,
+                date text,
+                stock text,
+                price real
+            )"""
+    )
+
     conn.commit()
     conn.close()
 
@@ -135,22 +163,12 @@ def Add(input_field, mode):
         if exists == None:
             raise Exception("Person_bank-currency pair does not exist!")
 
-        c.execute("SELECT MAX(id) FROM main")
-        max_id = c.fetchone()
-        max_id = max_id[0]
-        if max_id == None:  # Check if it exist and change to 0 if not
-            max_id = 0
-        max_id = (
-            max_id + 1
-        )  # Change so that inserted number is +1 from biggest existing id in DB
-        values.insert(0, max_id)
-
         records = {
             keys[i]: values[i] for i in range(len(keys))
         }  # Make dictionary with all values to add
 
         c.execute(
-            "INSERT INTO main VALUES (:id, :date, :category, :sub_category, :person_bank, :sum, :currency, :comment)",
+            "INSERT INTO main VALUES (NULL, :date, :category, :sub_category, :person_bank, :sum, :currency, :comment)",
             records,
         )
 
@@ -286,7 +304,7 @@ def Add(input_field, mode):
         for n in range(1, 7):
             values[n] = round(float(values[n] if values[n].strip() != " " else 0), 4)
 
-        values.insert(2, round(1 / values[1], 2))  # UAH = 1 / RON
+        values.insert(2, round(1 / values[1], 4))  # UAH = 1 / RON
 
         records = {
             curr_keys[i]: values[i] for i in range(len(curr_keys))
@@ -729,9 +747,11 @@ def Read(x):
         # Prepare the result for each month with the total per currency and total in RON
         for month in sorted(monthly_data.keys()):
             month_tuple = (
-            (month,)
-            + tuple(round(monthly_data[month][currency], 2) for currency in currencies)
-            + (round(monthly_data[month]["total_in_RON"], 2),)
+                (month,)
+                + tuple(
+                    round(monthly_data[month][currency], 2) for currency in currencies
+                )
+                + (round(monthly_data[month]["total_in_RON"], 2),)
             )  # Append RON total
             result.append(month_tuple)
 
@@ -782,7 +802,9 @@ def Read(x):
         for month in sorted(monthly_data.keys()):
             month_tuple = (
                 (month,)
-                + tuple(round(monthly_data[month][currency], 2) for currency in currencies)
+                + tuple(
+                    round(monthly_data[month][currency], 2) for currency in currencies
+                )
                 + (round(monthly_data[month]["total_in_RON"], 2),)
             )  # Append RON total
             result.append(month_tuple)
@@ -832,11 +854,11 @@ def read_and_convert_data(x, mode, cursor):
             row_list = list(row)
             currency = row_list[0]
             amount = row_list[1]
-            
+
             converted_amount = ConvertToRON(currency, amount, current_date, cursor)
 
-            modified_dict[currency] = converted_amount  
-            
+            modified_dict[currency] = converted_amount
+
     else:
         for row in data:
             row_list = list(row)
@@ -844,7 +866,9 @@ def read_and_convert_data(x, mode, cursor):
             amount = row_list[1]
             currency_column = row_list[2]
 
-            converted_amount = ConvertToRON(currency_column, amount, current_date, cursor)
+            converted_amount = ConvertToRON(
+                currency_column, amount, current_date, cursor
+            )
 
             if owner in modified_dict:
                 modified_dict[owner] += converted_amount
@@ -852,6 +876,7 @@ def read_and_convert_data(x, mode, cursor):
                 modified_dict[owner] = converted_amount
 
     return modified_dict
+
 
 def ConvRead(x, mode, include_percentage=False):
     conn = sqlite3.connect(dbPath)
@@ -939,8 +964,13 @@ def ReadAdv(type, month):
         return c.fetchall()
 
     elif type == "catincrep":
-        categories_df = pd.read_csv(SPVcatIncPath, header=None)
-        categories_list = categories_df[0].tolist()
+        catQuery = """
+            SELECT DISTINCT category
+            FROM main
+            WHERE sum > 0"""
+        c.execute(catQuery)
+        categories_list = c.fetchall()
+        categories_list = [cat[0] for cat in categories_list]
 
         query = """
         SELECT category, currency, sum, date
@@ -975,7 +1005,11 @@ def ReadAdv(type, month):
 
         # Convert the grouped data back into a list of tuples with percentage
         modified_list = [
-            (category, round(total_amount, 2), round((total_amount / total_income) * 100, 2)) 
+            (
+                category,
+                round(total_amount, 2),
+                round((total_amount / total_income) * 100, 2),
+            )
             for category, total_amount in modified_dict.items()
         ]
 
@@ -985,8 +1019,13 @@ def ReadAdv(type, month):
         return modified_list
 
     elif type == "catexprep":
-        categories_df = pd.read_csv(SPVcatExpPath, header=None)
-        categories_list = categories_df[0].tolist()
+        catQuery = """
+            SELECT DISTINCT category
+            FROM main
+            WHERE sum < 0"""
+        c.execute(catQuery)
+        categories_list = c.fetchall()
+        categories_list = [cat[0] for cat in categories_list]
 
         query = """
         SELECT category, currency, sum, date
@@ -1023,7 +1062,11 @@ def ReadAdv(type, month):
 
         # Convert the grouped data back into a list of tuples
         modified_list = [
-            (category, round(total_amount, 2), f"{(total_amount / total_expense) * 100:.0f}%")
+            (
+                category,
+                round(total_amount, 2),
+                f"{(total_amount / total_expense) * 100:.0f}%",
+            )
             for category, total_amount in modified_dict.items()
         ]
 
@@ -1214,7 +1257,7 @@ def Re_Calculate_deposit():
         FROM deposit 
         WHERE isOpen = 1 AND (date_out <= ? OR date_out = ' ')
         """,
-        (current_date,)
+        (current_date,),
     )
     open_deposits = c.fetchall()
 
@@ -1228,7 +1271,7 @@ def Re_Calculate_deposit():
             SET isOpen = 0
             WHERE name = ?
             """,
-            (name,)
+            (name,),
         )
         c.execute(
             """
@@ -1237,7 +1280,7 @@ def Re_Calculate_deposit():
                     Marker_type
                 WHERE bank_rec = ?
                   """,
-            (name,)
+            (name,),
         )
 
     conn.commit()
