@@ -3,6 +3,7 @@ SPVcatIncPath = "/content/drive/MyDrive/Acc0unt1ng/catInc.csv"
 SPVcatExpPath = "/content/drive/MyDrive/Acc0unt1ng/catExp.csv"
 SPVsubcatPath = "/content/drive/MyDrive/Acc0unt1ng/subcat.csv"
 SPVcurrPath = "/content/drive/MyDrive/Acc0unt1ng/curr.csv"
+SPVstockPath = "/content/drive/MyDrive/Acc0unt1ng/stock.csv"
 
 keys = [
     "date",
