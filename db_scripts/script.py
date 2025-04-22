@@ -40,8 +40,7 @@ def NewDBase():
                 USD real,
                 GBP real,
                 CHF real,
-                HUF real,
-                AUR real
+                HUF real
             )"""
     )
     c.execute(
@@ -301,7 +300,7 @@ def Add(input_field, mode):
 
     elif mode == "currrate":
         values = input_field.split(",")
-        for n in range(1, 7):
+        for n in range(1, 6):
             values[n] = round(float(values[n] if values[n].strip() != " " else 0), 4)
 
         values.insert(2, round(1 / values[1], 4))  # UAH = 1 / RON
@@ -311,7 +310,7 @@ def Add(input_field, mode):
         }  # Make dictionary with all values to add
 
         c.execute(
-            "INSERT INTO exc_rate VALUES (:date, :RON, :UAH, :EUR, :USD, :GBP, :CHF, :HUF, :AUR)",
+            "INSERT INTO exc_rate VALUES (:date, :RON, :UAH, :EUR, :USD, :GBP, :CHF, :HUF)",
             records,
         )
 
@@ -828,11 +827,6 @@ def Read(x):
 
     elif x == "retcurrr":
         query = "SELECT Date, RON, EUR, USD, GBP, CHF FROM exc_rate ORDER BY date"
-        df = pd.read_sql_query(query, conn)
-        return df
-
-    elif x == "retcurraur":
-        query = "SELECT Date, AUR FROM exc_rate ORDER BY date"
         df = pd.read_sql_query(query, conn)
         return df
 

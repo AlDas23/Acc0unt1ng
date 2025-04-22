@@ -4,14 +4,14 @@
 
 <div class="container">
   <div class="form-left">
-    <h3>Add investment record</h3>
+    <h3>Add investment transaction</h3>
     <br>
     <form action="/invest/add/transaction" method="post" onsubmit="return false;">
       <table>
         <tr>
           <td class="formLabels"><label for="type">Buy/sell</label></td>
           <td class="formFields">
-            <select name="type" id="type" class="formContent" required>
+            <select name="type" id="type" class="formContent">
               <option value="pos" selected>Buy</option>
               <option value="neg">Sell</option>
             </select>
@@ -19,11 +19,11 @@
         </tr>
         <tr>
           <td class="formLabels"><label for="investmentDate">Date</label></td>
-          <td class="formFields"><input type="date" id="date" name="investmentDate" class="formContent" required /></td>
+          <td class="formFields"><input type="date" id="date" name="investmentDate" class="formContent" /></td>
         </tr>
         <tr>
           <td class="formLabels"><label for="pb">Person-bank</label></td>
-          <td class="formFields"><select name="pb" id="pb" class="formContent" required>
+          <td class="formFields"><select name="pb" id="pb" class="formContent">
               <option value="none" disabled selected>None</option>
               {% for personBank in options.personBank %}
               <option value="{{ personBank }}">{{ personBank }}</option>
@@ -32,12 +32,12 @@
         </tr>
         <tr>
           <td class="formLabels"><label for="amount">Amount</label></td>
-          <td class="formFields"><input type="number" id="amount" name="amount" min="1" class="formContent" required />
+          <td class="formFields"><input type="number" id="amount" name="amount" class="formContent" />
           </td>
         </tr>
         <tr>
           <td class="formLabels"><label for="currency">Currency</label></td>
-          <td class="formFields"><select name="currency" id="currency" class="formContent" required>
+          <td class="formFields"><select name="currency" id="currency" class="formContent">
               <option value="none" disabled selected>None</option>
               {% for currency in options.currency %}
               <option value="{{ currency }}">{{ currency }}</option>
@@ -46,7 +46,7 @@
         </tr>
         <tr>
           <td class="formLabels"><label for="ipb">Invest PB</label></td>
-          <td class="formFields"><select name="ipb" id="ipb" class="formContent" required>
+          <td class="formFields"><select name="ipb" id="ipb" class="formContent">
               <option value="none" disabled selected>None</option>
               {% for investPB in options.investPB %}
               <option value="{{ investPB }}">{{ investPB }}</option>
@@ -55,12 +55,12 @@
         </tr>
         <tr>
           <td class="formLabels"><label for="stockAmount">Stock amount</label></td>
-          <td class="formFields"><input type="number" name="stockAmount" id="stockAmount" min="0" class="formContent"
-              required></td>
+          <td class="formFields"><input type="number" name="stockAmount" id="stockAmount" class="formContent">
+          </td>
         </tr>
         <tr>
           <td class="formLabels"><label for="stock">Stock</label></td>
-          <td class="formFields"><select name="stock" id="stock" class="formContent" required>
+          <td class="formFields"><select name="stock" id="stock" class="formContent">
               <option value="none" disabled selected>None</option>
               {% for stock in options.stock %}
               <option value="{{ stock }}">{{ stock }}</option>
@@ -68,7 +68,7 @@
             </select></td>
         </tr>
       </table>
-      <input type="submit" value="Submit" class="submitButton" onclick="validateTransactionForm()"  />
+      <input type="submit" value="Submit" class="submitButton" onclick="validateTransactionForm()" />
     </form>
   </div>
 
@@ -87,6 +87,7 @@
           <th class="rep">Invest Person-bank</th>
           <th class="rep">Stock amount</th>
           <th class="rep">Stock</th>
+          <th class="rep">Stock price</th>
         </tr>
       </thead>
       <tbody id="historyBody">
@@ -100,6 +101,7 @@
           <td class="rep">{{ record.ipbName }}</td>
           <td class="rep">{{ record.iAmount }}</td>
           <td class="rep">{{ record.stock }}</td>
+          <td class="rep">{{ record.stockPrice }}</td>
         </tr>
         {% endfor %}
       </tbody>

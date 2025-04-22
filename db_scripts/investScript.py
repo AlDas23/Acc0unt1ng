@@ -1,5 +1,11 @@
 import sqlite3
+import base64
+import io
+import matplotlib
+import matplotlib.pyplot as plt
 from db_scripts.consts import dbPath, SPVstockPath
+
+matplotlib.use("Agg")
 
 
 def CheckDB():
@@ -127,6 +133,10 @@ def AddInvestTransaction(line):
     ipbName = tokens[4]
     iAmount = round(float(tokens[5]), 6)
     stock = tokens[6]
+    stockPrice = 0
+
+    if currency == "RON":
+        stockPrice = amount / iAmount
 
     with sqlite3.connect(dbPath) as conn:
         c = conn.cursor()
@@ -173,9 +183,14 @@ def AddInvestTransaction(line):
         investQuery = """
             INSERT INTO investTransaction VALUES (NULL, ?, ?, ?, ?, ?, ?, ?)
                          """
+        stockpriceQuery = """
+            INSERT INTO investStockPrice VALUES (NULL, ?, ?, ?)"""
 
         c.execute(standardQuery, (date, category, category, pb, amount, currency))
         c.execute(investQuery, (date, pb, amount, currency, ipbName, iAmount, stock))
+
+        if stockPrice != 0:
+            c.execute(stockpriceQuery, (date, stock, stockPrice))
 
         conn.commit()
 
@@ -214,7 +229,7 @@ def ReadInvest(flag):
         c = conn.cursor()
 
         if flag == "alli":
-            c.execute("SELECT * FROM investTransaction ORDER BY date, id DESC")
+            c.execute("SELECT * FROM investTransaction ORDER BY date DESC, id DESC")
             return c.fetchall()
         elif flag == "ipb":
             c.execute("SELECT * FROM investPB")
@@ -223,7 +238,7 @@ def ReadInvest(flag):
             c.execute("SELECT DISTINCT name FROM investPB ORDER BY name ASC")
             return [row[0] for row in c.fetchall()]
         elif flag == "stock":
-            c.execute("SELECT * FROM investStockPrice")
+            c.execute("SELECT * FROM investStockPrice ORDER BY date DESC, id DESC")
             return c.fetchall()
         elif flag == "ibal":
             c.execute(
@@ -243,6 +258,41 @@ def ReadInvest(flag):
             return c.fetchall()
         else:
             raise ValueError("Invalid flag value.")
+
+
+def GetTransactionHistory():
+    if CheckDB() == -1:
+        return -1
+
+    data = ReadInvest("alli")
+    finalHistory = []
+
+    for row in data:
+        id = row[0]
+        date = row[1]
+        pb = row[2]
+        amount = row[3] if row[3] > 0 else -row[3]
+        currency = row[4]
+        ipb = row[5]
+        iAmount = row[6] if row[6] > 0 else -row[6]
+        stock = row[7]
+
+        stockPrice = amount / iAmount
+
+        fRow = (
+            id,
+            date,
+            pb,
+            amount,
+            currency,
+            ipb,
+            iAmount,
+            stock,
+            round(stockPrice, 6),
+        )
+        finalHistory.append(fRow)
+
+    return tuple(finalHistory)
 
 
 def CalculateBalance():
@@ -267,7 +317,7 @@ def CalculateBalance():
                 SELECT price 
                 FROM investStockPrice 
                 WHERE stock = ? 
-                ORDER BY date DESC 
+                ORDER BY date DESC, id DESC 
                 LIMIT 1
                 """,
                 (stock,),
@@ -280,7 +330,7 @@ def CalculateBalance():
                 print(f"No price found for {stock}.")
                 price = 1
 
-            balance = investAmount * price
+            balance = round(investAmount * price, 2)
 
             finalBalance.append(
                 {
@@ -292,3 +342,35 @@ def CalculateBalance():
             )
 
         return finalBalance
+
+
+def GraphStockPrice():
+    data = ReadInvest("stock")
+    dates = []
+    stock = []
+    prices = []
+    for row in data:
+        dates.append(row[1])
+        stock.append(row[2])
+        prices.append(row[3])
+
+    plt.clf()
+
+    plt.figure(figsize=(12, 6))
+    plt.plot(dates, prices, marker="o", linestyle="-")
+    plt.title("Stock Price Over Time")
+    plt.xlabel("Date")
+    plt.ylabel("Price")
+    plt.xticks(rotation=45)
+    plt.grid()
+    plt.tight_layout()
+
+    # Save plot to a BytesIO object
+    img = io.BytesIO()
+    plt.savefig(img, format="png", bbox_inches="tight")
+    img.seek(0)
+
+    # Encode image to base64 string
+    img_tag = base64.b64encode(img.getvalue()).decode()
+    plt.close()
+    return img_tag

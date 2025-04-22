@@ -47,7 +47,6 @@ function validateTransactionForm() {
     })
         .then(response => {
             if (response.ok) {
-                alert('Investment record sent successfully');
                 window.location.href = '/invest/add/transaction';
             } else {
                 response.json().then(data => {
@@ -96,7 +95,6 @@ function validateStockForm() {
     })
         .then(response => {
             if (response.ok) {
-                alert('Stock price sent successfully');
                 window.location.href = '/invest/add/stockPrice';
             } else {
                 response.json().then(data => {

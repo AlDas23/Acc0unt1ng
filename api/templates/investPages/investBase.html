@@ -17,11 +17,11 @@
   <nav>
     <button class="nav_button" onclick="window.location.href='/'">Back to Acc0unt1ng</button>
     <button class="nav_button" {% if request.path=='/invest/add/transaction' %} disabled {% endif %}
-      onclick="window.location.href='/invest/add/transaction'">Add investment</button>
+      onclick="window.location.href='/invest/add/transaction'">Add transaction</button>
     <button class="nav_button" {% if request.path=='/invest/add/stockPrice' %} disabled {% endif %}
       onclick="window.location.href='/invest/add/stockPrice'">Stock price</button>
     <button class="nav_button" {% if request.path=='/invest/balance' %} disabled {% endif %}
-      onclick="window.location.href='/invest/balance'">Invest balance sheet</button>
+      onclick="window.location.href='/invest/balance'">Balance sheet</button>
   </nav>
   <br />
   <div class="belowbody">

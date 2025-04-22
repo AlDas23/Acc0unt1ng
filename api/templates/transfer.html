@@ -110,11 +110,11 @@
 <div class="container">
     <div class="table-container">
         <h3>Transfer records</h3>
-        <table class="reptable">
+        <table class="reptable" style=" width: max-content;">
             <thead>
                 <tr>
                     {% for column in columns %}
-                    <th class="rep">{{ column }}</th>
+                    <th class="rep" style=" width: max-content;">{{ column }}</th>
                     {% endfor %}
                 </tr>
             </thead>
@@ -122,7 +122,7 @@
                 {% for row in data %}
                 <tr>
                     {% for cell in row %}
-                    <td class="rep">{{ cell }}</td>
+                    <td class="rep" style=" width: max-content;">{{ cell }}</td>
                     {% endfor %}
                 </tr>
                 {% endfor %}
@@ -134,11 +134,11 @@
     {% if columnsA and dataA %}
     <div class="table-container">
         <h3>Advanced transfer records</h3>
-        <table class="reptable">
+        <table class="reptable" style=" width: max-content;">
             <thead>
                 <tr>
                     {% for column in columnsA %}
-                    <th class="rep">{{ column }}</th>
+                    <th class="rep" style=" width: max-content;">{{ column }}</th>
                     {% endfor %}
                 </tr>
             </thead>
@@ -146,7 +146,7 @@
                 {% for row in dataA %}
                 <tr>
                     {% for cell in row %}
-                    <td class="rep">{{ cell }}</td>
+                    <td class="rep" style=" width: max-content;">{{ cell }}</td>
                     {% endfor %}
                 </tr>
                 {% endfor %}
