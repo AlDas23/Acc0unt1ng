@@ -676,14 +676,12 @@ def ViewAcc():
 def Currencies():
     if request.method == "GET":
         data = Read("allcurrrate")
-        columns = ["Date", "RON", "UAH", "EUR", "USD", "GBP", "CHF", "HUF", "AUR"]
+        columns = ["Date", "RON", "UAH", "EUR", "USD", "GBP", "CHF", "HUF"]
         df = Read("retcurrr")
         plot1 = plot_to_img_tag(df)
-        df = Read("retcurraur")
-        plot2 = plot_to_img_tag(df)
 
         return render_template(
-            "currencies.html", columns=columns, data=data, plot1=plot1, plot2=plot2
+            "currencies.html", columns=columns, data=data, plot1=plot1
         )
 
     else:
@@ -694,9 +692,8 @@ def Currencies():
         gbp = request.form.get("GBP", " ")
         chf = request.form.get("CHF", " ")
         huf = request.form.get("HUF", " ")
-        aur = request.form.get("AUR", " ")
 
-        final_str = f"{date},{ron},{eur},{usd},{gbp},{chf},{huf},{aur}"
+        final_str = f"{date},{ron},{eur},{usd},{gbp},{chf},{huf}"
 
         try:
             Add(final_str, "currrate")

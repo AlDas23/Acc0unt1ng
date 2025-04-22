@@ -9,11 +9,11 @@
             <table>
                 <tr>
                     <td class="formLabels"><label for="date">Date</label></td>
-                    <td class="formFields"><input type="date" id="date" name="date" class="formContent" required /></td>
+                    <td class="formFields"><input type="date" id="date" name="date" class="formContent" /></td>
                 </tr>
                 <tr>
                     <td class="formLabels"><label for="stock">Stock</label></td>
-                    <td class="formFields"><select name="stock" id="stock" class="formContent" required>
+                    <td class="formFields"><select name="stock" id="stock" class="formContent">
                             <option value="none" disabled selected>None</option>
                             {% for stock in options.stock %}
                             <option value="{{ stock }}">{{ stock }}</option>
@@ -22,18 +22,17 @@
                 </tr>
                 <tr>
                     <td class="formLabels"><label for="price">Price</label></td>
-                    <td class="formFields"><input type="number" id="price" name="price" min="0" class="formContent"
-                            required /></td>
+                    <td class="formFields"><input type="number" id="price" name="price" class="formContent" />
+                    </td>
                 </tr>
 
             </table>
 
             <input type="button" value="Submit" class="submitButton" onclick="validateStockForm()" />
         </form>
-    </div>
-
-    <!-- History -->
-    <div class="history-right">
+        <br>
+        <br>
+        <!-- History -->
         <h3>History</h3>
         <br>
         <table id="historyTable" class="historytable">
@@ -56,6 +55,10 @@
                 {% endfor %}
             </tbody>
         </table>
+    </div>
+    <!-- Graph -->
+    <div class="history-right">
+        <img src="data:image/png;base64,{{ graph }}" alt="Stock price graph" width="800px" height="450px" style="margin-left: 70px;" />
     </div>
 </div>
 {% endblock %}
