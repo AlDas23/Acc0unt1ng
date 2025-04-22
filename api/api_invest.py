@@ -57,9 +57,9 @@ def investAddPage():
             "stock": stock,
         }
 
-        data = ReadInvest("alli")
+        data = GetTransactionHistory()
 
-        # convert the data to a list of dictionaries for easier rendering in HTML
+        # convert the data to a list of dictionaries
         history = []
         for row in data:
             history.append(
@@ -72,6 +72,7 @@ def investAddPage():
                     "ipbName": row[5],
                     "iAmount": row[6],
                     "stock": row[7],
+                    "stockPrice": row[8],
                 }
             )
 
@@ -117,6 +118,8 @@ def investAddStockPricePage():
             "stock": stock,
         }
 
+        plot = GraphStockPrice()
+
         data = ReadInvest("stock")
 
         history = []
@@ -133,6 +136,7 @@ def investAddStockPricePage():
             "investPages/investStockPrice.html",
             options=options,
             history=history,
+            graph=plot,
         )
 
 

@@ -49,4 +49,4 @@ dp_keys = [
     "comment",
     "isOpen",
 ]
-curr_keys = ["date", "RON", "UAH", "EUR", "USD", "GBP", "CHF", "HUF", "AUR"]
+curr_keys = ["date", "RON", "UAH", "EUR", "USD", "GBP", "CHF", "HUF"]
