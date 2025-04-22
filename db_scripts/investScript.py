@@ -133,6 +133,7 @@ def AddInvestTransaction(line):
     ipbName = tokens[4]
     iAmount = round(float(tokens[5]), 6)
     stock = tokens[6]
+    fee = tokens[7]
     stockPrice = 0
 
     if currency == "RON":
@@ -180,14 +181,25 @@ def AddInvestTransaction(line):
         standardQuery = """
             INSERT INTO main VALUES (NULL, ?, ?, ?, ?, ?, ?, "")
                          """
+        standardFeeQuery = """
+            INSERT INTO main VALUES (NULL, ?, ?, ?, ?, ?, ?, "")
+                         """
         investQuery = """
-            INSERT INTO investTransaction VALUES (NULL, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO investTransaction VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?)
                          """
         stockpriceQuery = """
             INSERT INTO investStockPrice VALUES (NULL, ?, ?, ?)"""
 
         c.execute(standardQuery, (date, category, category, pb, amount, currency))
-        c.execute(investQuery, (date, pb, amount, currency, ipbName, iAmount, stock))
+        c.execute(
+            investQuery, (date, pb, amount, currency, ipbName, iAmount, stock, fee)
+        )
+
+        if fee != 0:
+            c.execute(
+                standardFeeQuery,
+                (date, "bank taxes", "invest taxes", pb, fee, currency),
+            )
 
         if stockPrice != 0:
             c.execute(stockpriceQuery, (date, stock, stockPrice))
@@ -204,7 +216,7 @@ def AddInvestStockPrice(line):
     tokens = line.split(",")
     date = tokens[0]
     stock = tokens[1]
-    price = tokens[2]
+    price = round(tokens[2], 2)
 
     with sqlite3.connect(dbPath) as conn:
         c = conn.cursor()
@@ -240,6 +252,9 @@ def ReadInvest(flag):
         elif flag == "stock":
             c.execute("SELECT * FROM investStockPrice ORDER BY date DESC, id DESC")
             return c.fetchall()
+        elif flag == "graphstock":
+            c.execute("SELECT * FROM investStockPrice ORDER BY date ASC, id ASC")
+            return c.fetchall()
         elif flag == "ibal":
             c.execute(
                 """
@@ -271,13 +286,14 @@ def GetTransactionHistory():
         id = row[0]
         date = row[1]
         pb = row[2]
-        amount = row[3] if row[3] > 0 else -row[3]
+        amount = row[3]
         currency = row[4]
         ipb = row[5]
-        iAmount = row[6] if row[6] > 0 else -row[6]
+        iAmount = row[6]
         stock = row[7]
+        fee = row[8]
 
-        stockPrice = amount / iAmount
+        stockPrice = (amount if amount > 0 else -amount) / (iAmount if iAmount > 0 else -iAmount)
 
         fRow = (
             id,
@@ -288,7 +304,8 @@ def GetTransactionHistory():
             ipb,
             iAmount,
             stock,
-            round(stockPrice, 6),
+            fee,
+            round(stockPrice, 2),
         )
         finalHistory.append(fRow)
 
@@ -345,24 +362,36 @@ def CalculateBalance():
 
 
 def GraphStockPrice():
-    data = ReadInvest("stock")
-    dates = []
-    stock = []
-    prices = []
+    data = ReadInvest("graphstock")
+    stock_data = {}
+
+    # Group data by stock
     for row in data:
-        dates.append(row[1])
-        stock.append(row[2])
-        prices.append(row[3])
+        stock_name = row[2]
+        if stock_name not in stock_data:
+            stock_data[stock_name] = {"dates": [], "prices": []}
+        stock_data[stock_name]["dates"].append(row[1])
+        stock_data[stock_name]["prices"].append(row[3])
 
     plt.clf()
-
     plt.figure(figsize=(12, 6))
-    plt.plot(dates, prices, marker="o", linestyle="-")
+
+    # Plot each stock separately
+    for stock_name, values in stock_data.items():
+        plt.plot(
+            values["dates"],
+            values["prices"],
+            marker="o",
+            linestyle="-",
+            label=stock_name,
+        )
+
     plt.title("Stock Price Over Time")
     plt.xlabel("Date")
     plt.ylabel("Price")
     plt.xticks(rotation=45)
     plt.grid()
+    plt.legend()
     plt.tight_layout()
 
     # Save plot to a BytesIO object

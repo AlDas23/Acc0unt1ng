@@ -67,6 +67,10 @@
               {% endfor %}
             </select></td>
         </tr>
+        <tr>
+          <td class="formLabels"><label for="fee">Fee</label></td>
+          <td class="formFields"><input type="number" id="fee" name="fee" class="formContent" /></td>
+        </tr>
       </table>
       <input type="submit" value="Submit" class="submitButton" onclick="validateTransactionForm()" />
     </form>
@@ -87,12 +91,13 @@
           <th class="rep">Invest Person-bank</th>
           <th class="rep">Stock amount</th>
           <th class="rep">Stock</th>
+          <th class="rep">Fee</th>
           <th class="rep">Stock price</th>
         </tr>
       </thead>
       <tbody id="historyBody">
         {% for record in history %}
-        <tr>
+        <tr class="{{ 'buy-row' if record.iAmount > 0 else 'sell-row' }}">
           <td class="rep">{{ record.id }}</td>
           <td class="rep">{{ record.date }}</td>
           <td class="rep">{{ record.pb }}</td>
@@ -101,6 +106,7 @@
           <td class="rep">{{ record.ipbName }}</td>
           <td class="rep">{{ record.iAmount }}</td>
           <td class="rep">{{ record.stock }}</td>
+          <td class="rep">{{ record.fee }}</td>
           <td class="rep">{{ record.stockPrice }}</td>
         </tr>
         {% endfor %}
