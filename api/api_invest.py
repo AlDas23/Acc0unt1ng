@@ -72,7 +72,9 @@ def investAddPage():
                     "ipbName": row[5],
                     "iAmount": row[6],
                     "stock": row[7],
-                    "stockPrice": row[8],
+                    "fee": row[8],
+                    "stockPrice": row[9],
+                    
                 }
             )
 

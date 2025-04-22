@@ -8,15 +8,23 @@ function validateTransactionForm() {
     const ipb = document.getElementById('ipb').value;
     let stockAmount = parseFloat(document.getElementById('stockAmount').value).toFixed(6);
     const stock = document.getElementById('stock').value;
+    let fee = document.getElementById('fee').value;
 
     // Validate required fields
     if (date === '' || pb === 'none' || amount === NaN || currency === 'none' || ipb === 'none' || stockAmount === NaN || stock === 'none') {
-        alert("All fields are required!");
+        alert("All fields except fee are required!");
         return false;
     }
 
     if (stockAmount <= 0 || amount <= 0) {
         alert('Buy/sell amount must be greater than 0');
+        return false;
+    }
+    if (fee === NAN) {
+        fee = 0; // Default fee to 0 if not provided
+    }
+    else if (fee < 0) {
+        alert('Fee must be greater than 0');
         return false;
     }
 
@@ -34,7 +42,8 @@ function validateTransactionForm() {
         currency: currency,
         ipb: ipb,
         stockAmount: stockAmount,
-        stock: stock
+        stock: stock,
+        fee: fee
     };
 
     // Send POST request
