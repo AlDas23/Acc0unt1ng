@@ -113,7 +113,8 @@ def NewDBase():
                 currency text,
                 investPB text,
                 investAmount real,
-                stock text
+                stock text, 
+                fee real
             )"""
     )
     c.execute(
