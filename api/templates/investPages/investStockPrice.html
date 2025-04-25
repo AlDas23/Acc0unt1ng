@@ -22,7 +22,8 @@
                 </tr>
                 <tr>
                     <td class="formLabels"><label for="price">Price</label></td>
-                    <td class="formFields"><input type="text" id="price" name="price" class="formContent" />
+                    <td class="formFields"><input type="text" id="price" name="price" class="formContent"
+                            autocomplete="off" />
                     </td>
                 </tr>
 
@@ -58,7 +59,8 @@
     </div>
     <!-- Graph -->
     <div class="history-right">
-        <img src="data:image/png;base64,{{ graph }}" alt="Stock price graph" width="800px" height="450px" style="margin-left: 70px;" />
+        <img src="data:image/png;base64,{{ graph }}" alt="Stock price graph" width="800px" height="450px"
+            style="margin-left: 70px;" />
     </div>
 </div>
 {% endblock %}
