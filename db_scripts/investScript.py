@@ -133,11 +133,15 @@ def AddInvestTransaction(line):
     ipbName = tokens[4]
     iAmount = round(float(tokens[5]), 6)
     stock = tokens[6]
-    fee = tokens[7]
+    fee = round(float(tokens[7]), 2)
     stockPrice = 0
 
     if currency == "RON":
-        stockPrice = amount / iAmount
+        stockPrice = round(
+            (amount if amount > 0 else -amount)
+            / (iAmount if iAmount > 0 else -iAmount),
+            2,
+        )
 
     with sqlite3.connect(dbPath) as conn:
         c = conn.cursor()
@@ -181,14 +185,10 @@ def AddInvestTransaction(line):
         standardQuery = """
             INSERT INTO main VALUES (NULL, ?, ?, ?, ?, ?, ?, "")
                          """
-        standardFeeQuery = """
-            INSERT INTO main VALUES (NULL, ?, ?, ?, ?, ?, ?, "")
-                         """
         investQuery = """
             INSERT INTO investTransaction VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?)
                          """
-        stockpriceQuery = """
-            INSERT INTO investStockPrice VALUES (NULL, ?, ?, ?)"""
+        stockpriceLine = date + "," + stock + "," + str(stockPrice)
 
         c.execute(standardQuery, (date, category, category, pb, amount, currency))
         c.execute(
@@ -197,12 +197,12 @@ def AddInvestTransaction(line):
 
         if fee != 0:
             c.execute(
-                standardFeeQuery,
-                (date, "bank taxes", "invest taxes", pb, fee, currency),
+                standardQuery,
+                (date, "bank taxes", "invest taxes", pb, -fee, currency),
             )
 
         if stockPrice != 0:
-            c.execute(stockpriceQuery, (date, stock, stockPrice))
+            AddInvestStockPrice(stockpriceLine)
 
         conn.commit()
 
@@ -216,7 +216,7 @@ def AddInvestStockPrice(line):
     tokens = line.split(",")
     date = tokens[0]
     stock = tokens[1]
-    price = round(tokens[2], 2)
+    price = round(float(tokens[2]), 2)
 
     with sqlite3.connect(dbPath) as conn:
         c = conn.cursor()
@@ -293,7 +293,9 @@ def GetTransactionHistory():
         stock = row[7]
         fee = row[8]
 
-        stockPrice = (amount if amount > 0 else -amount) / (iAmount if iAmount > 0 else -iAmount)
+        stockPrice = (amount if amount > 0 else -amount) / (
+            iAmount if iAmount > 0 else -iAmount
+        )
 
         fRow = (
             id,

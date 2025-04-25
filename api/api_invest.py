@@ -5,6 +5,7 @@ from flask import (
     url_for,
     render_template_string,
     Blueprint,
+    jsonify,
 )
 from db_scripts.script import read_csv, Read
 from db_scripts.consts import SPVstockPath, SPVcurrPath
@@ -30,16 +31,30 @@ def investAddPage():
 
         try:
             if AddInvestTransaction(line) == -1:
-                return render_template_string(
-                    "Error: Database has missing tables or does not exist"
+                return (
+                    jsonify(
+                        {
+                            "success": False,
+                            "message": "Database has missing tables or does not exist",
+                        }
+                    ),
+                    400,
                 )
+            return jsonify(
+                {"success": True, "redirect_url": url_for("investPage.investAddPage")}
+            )
         except Exception as e:
             print(f"Error occurred: {str(e)}")
+            error_message = str(e)
             return (
-                render_template("error.html", error=f"Transaction failed: {str(e)}"),
-                500,
+                jsonify(
+                    {
+                        "success": False,
+                        "message": error_message,
+                    }
+                ),
+                400,
             )
-        return redirect(url_for("investPage.investAddPage"))
 
     if request.method == "GET":
         try:
@@ -48,7 +63,17 @@ def investAddPage():
             currency = read_csv(SPVcurrPath)
             stock = read_csv(SPVstockPath)
         except Exception as e:
-            return render_template_string("Error: {{ error }}", error=str(e)), 500
+            print(f"Error occurred: {str(e)}")
+            error_message = str(e)
+            return (
+                jsonify(
+                    {
+                        "success": False,
+                        "message": error_message,
+                    }
+                ),
+                400,
+            )
 
         options = {
             "personBank": personBank,
@@ -74,7 +99,6 @@ def investAddPage():
                     "stock": row[7],
                     "fee": row[8],
                     "stockPrice": row[9],
-                    
                 }
             )
 
@@ -97,24 +121,49 @@ def investAddStockPricePage():
 
         try:
             if AddInvestStockPrice(line) == -1:
-                return render_template_string(
-                    "Error: Database has missing tables or does not exist"
+                return (
+                    jsonify(
+                        {
+                            "success": False,
+                            "message": "Database has missing tables or does not exist",
+                        }
+                    ),
+                    400,
                 )
-
+            return jsonify(
+                {
+                    "success": True,
+                    "redirect_url": url_for("investPage.investAddStockPricePage"),
+                }
+            )
         except Exception as e:
             print(f"Error occurred: {str(e)}")
+            error_message = str(e)
             return (
-                render_template("error.html", error=f"Transaction failed: {str(e)}"),
-                500,
+                jsonify(
+                    {
+                        "success": False,
+                        "message": error_message,
+                    }
+                ),
+                400,
             )
-
-        return redirect(url_for("investPage.investAddStockPricePage"))
 
     if request.method == "GET":
         try:
             stock = read_csv(SPVstockPath)
         except Exception as e:
-            return render_template_string("Error: {{ error }}", error=str(e))
+            print(f"Error occurred: {str(e)}")
+            error_message = str(e)
+            return (
+                jsonify(
+                    {
+                        "success": False,
+                        "message": error_message,
+                    }
+                ),
+                400,
+            )
 
         options = {
             "stock": stock,
@@ -144,7 +193,6 @@ def investAddStockPricePage():
 
 @investPage.route("/invest/balance", methods=["GET"])
 def investBalanceSheet():
-    # TODO: Bug where balance is not calculated and table is empty
     if request.method == "GET":
         try:
             data = CalculateBalance()
@@ -154,4 +202,14 @@ def investBalanceSheet():
                 data=data,
             )
         except Exception as e:
-            return render_template_string("Error: {{ error }}", error=str(e))
+            print(f"Error occurred: {str(e)}")
+            error_message = str(e)
+            return (
+                jsonify(
+                    {
+                        "success": False,
+                        "message": error_message,
+                    }
+                ),
+                400,
+            )
