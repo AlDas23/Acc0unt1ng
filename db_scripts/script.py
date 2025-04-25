@@ -751,7 +751,7 @@ def Read(x):
                 + tuple(
                     round(monthly_data[month][currency], 2) for currency in currencies
                 )
-                + (round(monthly_data[month]["total_in_RON"], 2),)
+                + (round(monthly_data[month]["total_in_RON"], 0),)
             )  # Append RON total
             result.append(month_tuple)
 
@@ -805,7 +805,7 @@ def Read(x):
                 + tuple(
                     round(monthly_data[month][currency], 2) for currency in currencies
                 )
-                + (round(monthly_data[month]["total_in_RON"], 2),)
+                + (round(monthly_data[month]["total_in_RON"], 0),)
             )  # Append RON total
             result.append(month_tuple)
 
@@ -984,10 +984,11 @@ def ReadAdv(type, month):
 
         # Convert to RON using dynamic table
         for row in data:
-            category = row[0]
-            currency = row[1]
-            amount = row[2]
-            date = row[3]
+            row_list = list(row)
+            category = row_list[0]
+            currency = row_list[1]
+            amount = row_list[2]
+            date = row_list[3]
 
             converted_amount = ConvertToRON(currency, amount, date, c)
 
@@ -996,14 +997,15 @@ def ReadAdv(type, month):
             else:
                 modified_dict[category] = converted_amount
 
+        # Calculate the total income in RON
         total_income = sum(modified_dict.values())
 
-        # Convert the grouped data back into a list of tuples with percentage
+        # Convert the grouped data back into a list of tuples
         modified_list = [
             (
                 category,
-                round(total_amount, 2),
-                round((total_amount / total_income) * 100, 2),
+                round(total_amount, 0),
+                f"{(total_amount / total_income) * 100:.0f}%",
             )
             for category, total_amount in modified_dict.items()
         ]
@@ -1059,7 +1061,7 @@ def ReadAdv(type, month):
         modified_list = [
             (
                 category,
-                round(total_amount, 2),
+                round(total_amount, 0),
                 f"{(total_amount / total_expense) * 100:.0f}%",
             )
             for category, total_amount in modified_dict.items()
