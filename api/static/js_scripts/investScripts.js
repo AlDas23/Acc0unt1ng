@@ -8,7 +8,7 @@ function validateTransactionForm() {
     const ipb = document.getElementById('ipb').value;
     let stockAmount = parseFloat(document.getElementById('stockAmount').value).toFixed(6);
     const stock = document.getElementById('stock').value;
-    let fee = document.getElementById('fee').value;
+    let fee = parseFloat(document.getElementById('fee').value).toFixed(2);
 
     // Validate required fields
     if (date === '' || pb === 'none' || amount === NaN || currency === 'none' || ipb === 'none' || stockAmount === NaN || stock === 'none') {
@@ -54,18 +54,17 @@ function validateTransactionForm() {
         },
         body: JSON.stringify(formData)
     })
-        .then(response => {
-            if (response.ok) {
-                window.location.href = '/invest/add/transaction';
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.href = data.redirect_url;
             } else {
-                response.json().then(data => {
-                    alert('Error: ' + (data.message || 'Failed to add investment record'));
-                });
+                alert('Error: ' + (data.message || 'Failed to add transaction'));
             }
         })
         .catch(error => {
-            console.error('Error:', error);
-            alert('Error occurred while submitting the form');
+            console.error('Unexpected error:', error);
+            alert('Unexpected error occurred');
         });
 }
 
@@ -102,13 +101,16 @@ function validateStockForm() {
         },
         body: JSON.stringify(formData)
     })
-        .then(response => {
-            if (response.ok) {
-                window.location.href = '/invest/add/stockPrice';
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.href = data.redirect_url;
             } else {
-                response.json().then(data => {
-                    alert('Error: ' + (data.message || 'Failed to add stock price'));
-                });
+                alert('Error: ' + (data.message || 'Failed to add stock price'));
             }
         })
+        .catch(error => {
+            console.error('Unexpected error:', error);
+            alert('Unexpected error occurred');
+        });
 }
