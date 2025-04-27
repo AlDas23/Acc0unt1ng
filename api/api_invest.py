@@ -120,7 +120,7 @@ def investAddStockPricePage():
         line = ",".join([str(content[key]) for key in content.keys()])
 
         try:
-            if AddInvestTransaction(line) == -1:
+            if AddInvestStockPrice(line) == -1:
                 return (
                     jsonify(
                         {
