@@ -188,8 +188,7 @@ def AddInvestTransaction(line):
         investQuery = """
             INSERT INTO investTransaction VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?)
                          """
-        stockpriceQuery = """
-            INSERT INTO investStockPrice VALUES (NULL, ?, ?, ?)"""
+        stockpriceLine = date + "," + stock + "," + str(stockPrice)
 
         c.execute(standardQuery, (date, category, category, pb, amount, currency))
         c.execute(
@@ -203,7 +202,7 @@ def AddInvestTransaction(line):
             )
 
         if stockPrice != 0:
-            c.execute(stockpriceQuery, (date, stock, stockPrice))
+            AddInvestStockPrice(stockpriceLine)
 
         conn.commit()
 
@@ -217,7 +216,7 @@ def AddInvestStockPrice(line):
     tokens = line.split(",")
     date = tokens[0]
     stock = tokens[1]
-    price = round(tokens[2], 2)
+    price = round(float(tokens[2]), 2)
 
     with sqlite3.connect(dbPath) as conn:
         c = conn.cursor()
