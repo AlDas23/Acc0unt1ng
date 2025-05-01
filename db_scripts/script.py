@@ -835,6 +835,72 @@ def Read(x):
     conn.close()
 
 
+def GenerateTable(flag):
+    with sqlite3.connect(dbPath) as conn:
+        c = conn.cursor()
+        if flag == "currType":
+            query = """
+            SELECT 
+                p.currency,
+                mt.type,
+                ROUND(SUM(p.sum), 2) as total_amount,
+                ROUND(SUM(p.sum) * 100.0 / SUM(SUM(p.sum)) OVER (PARTITION BY p.currency), 2) as percentage
+            FROM (
+                -- Main accounts and transfers
+                SELECT person_bank, currency, sum FROM main
+                UNION ALL
+                SELECT person_bank, currency, sum FROM Init_PB
+                UNION ALL
+                SELECT person_bank_from AS person_bank, currency, -sum FROM transfer
+                UNION ALL
+                SELECT person_bank_from AS person_bank, currency_from AS currency, -sum_from AS sum FROM advtransfer
+                UNION ALL
+                SELECT person_bank_to AS person_bank, currency_to AS currency, sum_to AS sum FROM advtransfer
+                UNION ALL
+                SELECT person_bank_to AS person_bank, currency, sum FROM transfer
+                -- PBD logic
+                UNION ALL
+                SELECT owner AS person_bank, currency, -sum FROM deposit WHERE isOpen = 1
+            ) p 
+            JOIN Marker_type mt ON p.person_bank = mt.bank_rec
+            GROUP BY mt.type, p.currency
+            ORDER BY mt.type, p.currency
+        """
+        
+        elif flag == "currType+%":
+            query = """
+            SELECT 
+                p.currency,
+                mt.type,
+                ROUND(SUM(p.sum), 2) as total_amount,
+                ROUND(SUM(p.sum) * 100.0 / SUM(SUM(p.sum)) OVER (PARTITION BY p.currency), 2) as percentage
+            FROM (
+                -- Main accounts and transfers
+                SELECT person_bank, currency, sum FROM main
+                UNION ALL
+                SELECT person_bank, currency, sum FROM Init_PB
+                UNION ALL
+                SELECT person_bank_from AS person_bank, currency, -sum FROM transfer
+                UNION ALL
+                SELECT person_bank_from AS person_bank, currency_from AS currency, -sum_from AS sum FROM advtransfer
+                UNION ALL
+                SELECT person_bank_to AS person_bank, currency_to AS currency, sum_to AS sum FROM advtransfer
+                UNION ALL
+                SELECT person_bank_to AS person_bank, currency, sum FROM transfer
+                -- PBD logic
+                UNION ALL
+                SELECT owner AS person_bank, currency, -sum FROM deposit WHERE isOpen = 1
+            ) p 
+            JOIN Marker_type mt ON p.person_bank = mt.bank_rec
+            GROUP BY mt.type, p.currency
+            ORDER BY mt.type, p.currency
+        """
+        
+        else:
+            return [] 
+
+        return c.execute(query).fetchall()
+
 def read_and_convert_data(x, mode, cursor):
     current_date = datetime.now().strftime("%Y-%m-%d")
 

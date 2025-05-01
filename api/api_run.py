@@ -619,30 +619,37 @@ def ViewAcc():
                     )
                 )
                 break
-
     columns_curr = ["Currency", "Sum", "Sum RON", "%"]
-    data_owner = ConvReadPlus("norm", "allmowner")
+    owners = ConvReadPlus("norm", "allmowner")
     columns_owner = ["Owner", "Currency", "Sum", "Sum RON"]
-    data_type = ConvRead("norm", "allmtype", True)
+    types = ConvRead("norm", "allmtype", True)
     columns_type = ["Type", "Sum RON", "%"]
-    owners = Read("retmowner")
-    types = Read("retmtype")
-    options = {"owners": owners, "types": types}
+    currType = GenerateTable("currType+%")
+    currType_columns = ["Currency", "Type", "Sum", "%"]
+    ownersList = Read("retmowner")
+    typesList = Read("retmtype")
+    options = {"owners": ownersList, "types": typesList}
+
+    tables = {
+        "owner": owners,
+        "owner_columns": columns_owner,
+        "type": types,
+        "type_columns": columns_type,
+        "curr": data_curr,
+        "curr_columns": columns_curr,
+        "currType": currType,
+        "currType_columns": currType_columns,
+    }
 
     if request.method == "GET":
         return render_template(
             "viewacc.html",
-            data_curr=data_curr,
-            columns_curr=columns_curr,
-            data_owner=data_owner,
-            columns_owner=columns_owner,
-            data_type=data_type,
-            columns_type=columns_type,
+            tables=tables,
             columns=["Person bank", "Currency", "Sum"],
             data=data,
             options=options,
         )
-    else:
+    elif request.method == "POST":
         owner = request.form["Acc owner"]
         type = request.form["Acc type"]
 
@@ -660,12 +667,7 @@ def ViewAcc():
 
         return render_template(
             "viewacc.html",
-            data_curr=data_curr,
-            columns_curr=columns_curr,
-            data_owner=data_owner,
-            columns_owner=columns_owner,
-            data_type=data_type,
-            columns_type=columns_type,
+            tables=tables,
             options=options,
             columns=["Person bank", "Currency", "Sum"],
             data=data,

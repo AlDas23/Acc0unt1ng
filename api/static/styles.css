@@ -83,6 +83,15 @@ nav {
   text-align: right;
 }
 
+.clikable {
+  cursor: pointer;
+  display: inline-block;
+  padding: 2px 4px;
+}
+.clikable:hover {
+  background-color: #b7b7b7;
+}
+
 .disabled {
   background-color: grey;
   pointer-events: none;
