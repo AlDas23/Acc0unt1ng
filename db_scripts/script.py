@@ -835,13 +835,79 @@ def Read(x):
     conn.close()
 
 
+def GenerateTable(flag):
+    with sqlite3.connect(dbPath) as conn:
+        c = conn.cursor()
+        if flag == "currType":
+            query = """
+            SELECT 
+                p.currency,
+                mt.type,
+                ROUND(SUM(p.sum), 2) as total_amount,
+                ROUND(SUM(p.sum) * 100.0 / SUM(SUM(p.sum)) OVER (PARTITION BY p.currency), 2) as percentage
+            FROM (
+                -- Main accounts and transfers
+                SELECT person_bank, currency, sum FROM main
+                UNION ALL
+                SELECT person_bank, currency, sum FROM Init_PB
+                UNION ALL
+                SELECT person_bank_from AS person_bank, currency, -sum FROM transfer
+                UNION ALL
+                SELECT person_bank_from AS person_bank, currency_from AS currency, -sum_from AS sum FROM advtransfer
+                UNION ALL
+                SELECT person_bank_to AS person_bank, currency_to AS currency, sum_to AS sum FROM advtransfer
+                UNION ALL
+                SELECT person_bank_to AS person_bank, currency, sum FROM transfer
+                -- PBD logic
+                UNION ALL
+                SELECT owner AS person_bank, currency, -sum FROM deposit WHERE isOpen = 1
+            ) p 
+            JOIN Marker_type mt ON p.person_bank = mt.bank_rec
+            GROUP BY mt.type, p.currency
+            ORDER BY mt.type, p.currency
+        """
+        
+        elif flag == "currType+%":
+            query = """
+            SELECT 
+                p.currency,
+                mt.type,
+                ROUND(SUM(p.sum), 2) as total_amount,
+                ROUND(SUM(p.sum) * 100.0 / SUM(SUM(p.sum)) OVER (PARTITION BY p.currency), 2) as percentage
+            FROM (
+                -- Main accounts and transfers
+                SELECT person_bank, currency, sum FROM main
+                UNION ALL
+                SELECT person_bank, currency, sum FROM Init_PB
+                UNION ALL
+                SELECT person_bank_from AS person_bank, currency, -sum FROM transfer
+                UNION ALL
+                SELECT person_bank_from AS person_bank, currency_from AS currency, -sum_from AS sum FROM advtransfer
+                UNION ALL
+                SELECT person_bank_to AS person_bank, currency_to AS currency, sum_to AS sum FROM advtransfer
+                UNION ALL
+                SELECT person_bank_to AS person_bank, currency, sum FROM transfer
+                -- PBD logic
+                UNION ALL
+                SELECT owner AS person_bank, currency, -sum FROM deposit WHERE isOpen = 1
+            ) p 
+            JOIN Marker_type mt ON p.person_bank = mt.bank_rec
+            GROUP BY mt.type, p.currency
+            ORDER BY mt.type, p.currency
+        """
+        
+        else:
+            return [] 
+
+        return c.execute(query).fetchall()
+
 def read_and_convert_data(x, mode, cursor):
     current_date = datetime.now().strftime("%Y-%m-%d")
 
     if x == "norm":
         data = Read(mode)
     else:
-        data = MarkerRead(x, mode)
+        data = MarkerRead(mode, x)
     modified_dict = {}
 
     if mode == "allcurr":
@@ -910,7 +976,7 @@ def ConvReadPlus(x, mode):
     if x == "norm":
         data = Read(mode)
     else:
-        data = MarkerRead(x, mode)
+        data = MarkerRead(mode, x)
     modified_list = []
 
     for row in data:
@@ -1091,6 +1157,60 @@ def ReadAdv(type, month):
         c.execute(query, params)
 
         return c.fetchall()
+    
+    elif type == "subcatrep":
+        subcatQuery = "SELECT DISTINCT sub_category FROM main WHERE sum < 0"
+        subcatList = c.execute(subcatQuery).fetchall()
+        subcatList = [subcat[0] for subcat in subcatList]
+        
+        query = """
+        SELECT sub_category, currency, sum, date
+        FROM main
+        WHERE sub_category IN ({})
+        AND strftime("%m", date) = ?
+        ORDER BY sub_category DESC
+        """.format(
+            ",".join("?" for _ in subcatList)
+        )
+
+        params = subcatList + [month]
+        c.execute(query, params)
+        data = c.fetchall()
+        modified_dict = {}
+
+        # Convert to RON using dynamic table
+        for row in data:
+            row_list = list(row)
+            subCategory = row_list[0]
+            currency = row_list[1]
+            amount = row_list[2]
+            date = row_list[3]
+
+            converted_amount = ConvertToRON(currency, amount, date, c)
+
+            if subCategory in modified_dict:
+                modified_dict[subCategory] += converted_amount
+            else:
+                modified_dict[subCategory] = converted_amount
+
+        # Calculate the total in RON
+        total_expense = sum(modified_dict.values())
+
+        # Convert the grouped data back into a list of tuples
+        modified_list = [
+            (
+                subCategory,
+                round(total_amount, 0),
+                f"{(total_amount / total_expense) * 100:.0f}%",
+            )
+            for subCategory, total_amount in modified_dict.items()
+        ]
+
+        conn.commit()
+        conn.close()
+
+        return modified_list
+
 
 
 def ConvertToRON(currency, amount, date, c):
@@ -1117,7 +1237,7 @@ def ConvertToRON(currency, amount, date, c):
     return converted_amount
 
 
-def MarkerRead(markers, mode):
+def MarkerRead(mode, markers=None):
     # Function for returning markers sums for type/owner/both markers
     conn = sqlite3.connect(dbPath)
     c = conn.cursor()
@@ -1169,6 +1289,11 @@ def MarkerRead(markers, mode):
                 """,
             (values[0], values[1]),
         )
+        person_banks = c.fetchall()
+
+    elif mode == "none":
+        # If no markers are provided, return all person banks
+        c.execute("SELECT DISTINCT person_bank FROM Init_PB")
         person_banks = c.fetchall()
 
     if person_banks:
