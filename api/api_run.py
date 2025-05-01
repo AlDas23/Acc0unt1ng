@@ -540,6 +540,9 @@ def ViewAdvReports():
             if report_type == "catexprep":
                 data = ReadAdv(report_type, month)
                 columns = ["Category", "Sum RON", "%"]
+            if report_type == "subcatrep":
+                data = ReadAdv(report_type, month)
+                columns = ["Sub-category", "Sum RON", "%"]
             if report_type == "catincbankrep":
                 data = ReadAdv(report_type, month)
                 columns = ["Category", "Person bank", "Currency", "Sum"]
@@ -556,6 +559,9 @@ def ViewAdvReports():
             if report_type2 == "catexprep":
                 data2 = ReadAdv(report_type2, month2)
                 columns2 = ["Category", "Sum RON", "%"]
+            if report_type2 == "subcatrep":
+                data = ReadAdv(report_type, month)
+                columns = ["Sub-category", "Sum RON", "%"]
             if report_type2 == "catincbankrep":
                 data2 = ReadAdv(report_type2, month2)
                 columns2 = ["Category", "Person bank", "Currency", "Sum"]

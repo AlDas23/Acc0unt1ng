@@ -1157,6 +1157,60 @@ def ReadAdv(type, month):
         c.execute(query, params)
 
         return c.fetchall()
+    
+    elif type == "subcatrep":
+        subcatQuery = "SELECT DISTINCT sub_category FROM main WHERE sum < 0"
+        subcatList = c.execute(subcatQuery).fetchall()
+        subcatList = [subcat[0] for subcat in subcatList]
+        
+        query = """
+        SELECT sub_category, currency, sum, date
+        FROM main
+        WHERE sub_category IN ({})
+        AND strftime("%m", date) = ?
+        ORDER BY sub_category DESC
+        """.format(
+            ",".join("?" for _ in subcatList)
+        )
+
+        params = subcatList + [month]
+        c.execute(query, params)
+        data = c.fetchall()
+        modified_dict = {}
+
+        # Convert to RON using dynamic table
+        for row in data:
+            row_list = list(row)
+            subCategory = row_list[0]
+            currency = row_list[1]
+            amount = row_list[2]
+            date = row_list[3]
+
+            converted_amount = ConvertToRON(currency, amount, date, c)
+
+            if subCategory in modified_dict:
+                modified_dict[subCategory] += converted_amount
+            else:
+                modified_dict[subCategory] = converted_amount
+
+        # Calculate the total in RON
+        total_expense = sum(modified_dict.values())
+
+        # Convert the grouped data back into a list of tuples
+        modified_list = [
+            (
+                subCategory,
+                round(total_amount, 0),
+                f"{(total_amount / total_expense) * 100:.0f}%",
+            )
+            for subCategory, total_amount in modified_dict.items()
+        ]
+
+        conn.commit()
+        conn.close()
+
+        return modified_list
+
 
 
 def ConvertToRON(currency, amount, date, c):
