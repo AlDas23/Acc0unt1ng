@@ -540,6 +540,9 @@ def ViewAdvReports():
             if report_type == "catexprep":
                 data = ReadAdv(report_type, month)
                 columns = ["Category", "Sum RON", "%"]
+            if report_type == "subcatrep":
+                data = ReadAdv(report_type, month)
+                columns = ["Sub-category", "Sum RON", "%"]
             if report_type == "catincbankrep":
                 data = ReadAdv(report_type, month)
                 columns = ["Category", "Person bank", "Currency", "Sum"]
@@ -556,6 +559,9 @@ def ViewAdvReports():
             if report_type2 == "catexprep":
                 data2 = ReadAdv(report_type2, month2)
                 columns2 = ["Category", "Sum RON", "%"]
+            if report_type2 == "subcatrep":
+                data = ReadAdv(report_type, month)
+                columns = ["Sub-category", "Sum RON", "%"]
             if report_type2 == "catincbankrep":
                 data2 = ReadAdv(report_type2, month2)
                 columns2 = ["Category", "Person bank", "Currency", "Sum"]
@@ -602,6 +608,7 @@ def ViewAdvReports():
 def ViewAcc():
     data_curr1 = ConvRead("norm", "allcurr", True)
     data_curr2 = Read("allcurr")
+    data = MarkerRead("none")
 
     # Combine the two data sets
 
@@ -618,51 +625,55 @@ def ViewAcc():
                     )
                 )
                 break
-
     columns_curr = ["Currency", "Sum", "Sum RON", "%"]
-    data_owner = ConvReadPlus("norm", "allmowner")
+    owners = ConvReadPlus("norm", "allmowner")
     columns_owner = ["Owner", "Currency", "Sum", "Sum RON"]
-    data_type = ConvRead("norm", "allmtype", True)
+    types = ConvRead("norm", "allmtype", True)
     columns_type = ["Type", "Sum RON", "%"]
-    owners = Read("retmowner")
-    types = Read("retmtype")
-    options = {"owners": owners, "types": types}
+    currType = GenerateTable("currType+%")
+    currType_columns = ["Currency", "Type", "Sum", "%"]
+    ownersList = Read("retmowner")
+    typesList = Read("retmtype")
+    options = {"owners": ownersList, "types": typesList}
+
+    tables = {
+        "owner": owners,
+        "owner_columns": columns_owner,
+        "type": types,
+        "type_columns": columns_type,
+        "curr": data_curr,
+        "curr_columns": columns_curr,
+        "currType": currType,
+        "currType_columns": currType_columns,
+    }
 
     if request.method == "GET":
         return render_template(
             "viewacc.html",
-            data_curr=data_curr,
-            columns_curr=columns_curr,
-            data_owner=data_owner,
-            columns_owner=columns_owner,
-            data_type=data_type,
-            columns_type=columns_type,
+            tables=tables,
+            columns=["Person bank", "Currency", "Sum"],
+            data=data,
             options=options,
         )
-    else:
+    elif request.method == "POST":
         owner = request.form["Acc owner"]
         type = request.form["Acc type"]
 
         if type == " " and owner != " ":
-            data = MarkerRead(owner, "byowner")
+            data = MarkerRead("byowner", owner)
 
         elif owner == " " and type != " ":
-            data = MarkerRead(type, "bytype")
+            data = MarkerRead("bytype", type)
 
         elif owner != " " and type != " ":
             all = owner + "," + type
-            data = MarkerRead(all, "byall")
+            data = MarkerRead("byall", all)
         else:
-            return redirect(url_for("ViewAcc"))
+            data = MarkerRead("none")
 
         return render_template(
             "viewacc.html",
-            data_curr=data_curr,
-            columns_curr=columns_curr,
-            data_owner=data_owner,
-            columns_owner=columns_owner,
-            data_type=data_type,
-            columns_type=columns_type,
+            tables=tables,
             options=options,
             columns=["Person bank", "Currency", "Sum"],
             data=data,
