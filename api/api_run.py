@@ -602,6 +602,7 @@ def ViewAdvReports():
 def ViewAcc():
     data_curr1 = ConvRead("norm", "allcurr", True)
     data_curr2 = Read("allcurr")
+    data = MarkerRead("none")
 
     # Combine the two data sets
 
@@ -637,6 +638,8 @@ def ViewAcc():
             columns_owner=columns_owner,
             data_type=data_type,
             columns_type=columns_type,
+            columns=["Person bank", "Currency", "Sum"],
+            data=data,
             options=options,
         )
     else:
@@ -644,16 +647,16 @@ def ViewAcc():
         type = request.form["Acc type"]
 
         if type == " " and owner != " ":
-            data = MarkerRead(owner, "byowner")
+            data = MarkerRead("byowner", owner)
 
         elif owner == " " and type != " ":
-            data = MarkerRead(type, "bytype")
+            data = MarkerRead("bytype", type)
 
         elif owner != " " and type != " ":
             all = owner + "," + type
-            data = MarkerRead(all, "byall")
+            data = MarkerRead("byall", all)
         else:
-            return redirect(url_for("ViewAcc"))
+            data = MarkerRead("none")
 
         return render_template(
             "viewacc.html",

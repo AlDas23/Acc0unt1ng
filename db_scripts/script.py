@@ -841,7 +841,7 @@ def read_and_convert_data(x, mode, cursor):
     if x == "norm":
         data = Read(mode)
     else:
-        data = MarkerRead(x, mode)
+        data = MarkerRead(mode, x)
     modified_dict = {}
 
     if mode == "allcurr":
@@ -910,7 +910,7 @@ def ConvReadPlus(x, mode):
     if x == "norm":
         data = Read(mode)
     else:
-        data = MarkerRead(x, mode)
+        data = MarkerRead(mode, x)
     modified_list = []
 
     for row in data:
@@ -1117,7 +1117,7 @@ def ConvertToRON(currency, amount, date, c):
     return converted_amount
 
 
-def MarkerRead(markers, mode):
+def MarkerRead(mode, markers=None):
     # Function for returning markers sums for type/owner/both markers
     conn = sqlite3.connect(dbPath)
     c = conn.cursor()
@@ -1169,6 +1169,11 @@ def MarkerRead(markers, mode):
                 """,
             (values[0], values[1]),
         )
+        person_banks = c.fetchall()
+
+    elif mode == "none":
+        # If no markers are provided, return all person banks
+        c.execute("SELECT DISTINCT person_bank FROM Init_PB")
         person_banks = c.fetchall()
 
     if person_banks:
