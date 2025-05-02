@@ -355,7 +355,7 @@ def CalculateBalance():
                 {
                     "investPB": investPB,
                     "stock": stock,
-                    "investAmount": investAmount,
+                    "investAmount": round(investAmount, 6),
                     "balance": balance,
                 }
             )
