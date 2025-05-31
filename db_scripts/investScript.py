@@ -201,12 +201,12 @@ def AddInvestTransaction(line):
                 (date, "bank taxes", "invest taxes", pb, -fee, currency),
             )
 
-        if stockPrice != 0:
-            AddInvestStockPrice(stockpriceLine)
-
         conn.commit()
 
-        return 0
+    if stockPrice != 0:
+        AddInvestStockPrice(stockpriceLine)
+
+    return 0
 
 
 def AddInvestStockPrice(line):
@@ -355,7 +355,7 @@ def CalculateBalance():
                 {
                     "investPB": investPB,
                     "stock": stock,
-                    "investAmount": investAmount,
+                    "investAmount": round(investAmount, 6),
                     "balance": balance,
                 }
             )

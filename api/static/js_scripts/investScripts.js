@@ -20,7 +20,7 @@ function validateTransactionForm() {
         alert('Buy/sell amount must be greater than 0');
         return false;
     }
-    if (fee === NaN) {
+    if (fee === "NaN") {
         fee = 0; // Default fee to 0 if not provided
     }
     else if (fee < 0) {
