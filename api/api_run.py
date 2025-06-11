@@ -187,7 +187,7 @@ def Income():
 
         try:
             Add(line, "main")
-            return jsonify({"success": True, "redirect_url": url_for("Expense")})
+            return jsonify({"success": True, "redirect_url": url_for("Income")})
         except Exception as e:
             print(f"Error occurred: {str(e)}")
             error_message = str(e)
@@ -215,7 +215,7 @@ def EditIncome(id):
 
         try:
             UpdateRecord(line)
-            return jsonify({"success": True, "redirect_url": url_for("Expense")})
+            return jsonify({"success": True, "redirect_url": url_for("Income")})
         except Exception as e:
             print(f"Error occurred: {str(e)}")
             error_message = str(e)
@@ -233,93 +233,72 @@ def EditIncome(id):
 @app.route("/transfer", methods=["POST", "GET"])
 def Transfer():
     if request.method == "GET":
-        currencies = read_csv(SPVcurrPath)
-        person_banks = Read("retacc")
+        try:
+            currencies = read_csv(SPVcurrPath)
+            person_banks = Read("retacc")
+        except Exception as e:
+            print(f"Error occurred: {str(e)}")
+            error_message = str(e)
+            return (
+                jsonify(
+                    {
+                        "success": False,
+                        "message": error_message,
+                    }
+                ),
+                400,
+            )
 
         options = {"person_banks": person_banks, "currencies": currencies}
 
-        data = Read("alltran")
-        columns = ["ID", "Date", "Sender", "Receiver", "Sum", "Currency", "Comment"]
-        dataA = Read("alladvtran")
-        columnsA = [
-            "ID",
-            "Date",
-            "Sender",
-            "Sum",
-            "Currency",
-            "Receiver",
-            "Sum",
-            "Currency",
-            "Currency rate",
-            "Comment",
-        ]
+        data = GetTransactionHistory("transfer")
 
         return render_template(
             "transfer.html",
             options=options,
-            columns=columns,
             data=data,
-            dataA=dataA,
-            columnsA=columnsA,
         )
-    else:
-        form_id = request.form.get("form_type")
-        if form_id == "transfer":
-            date = request.form.get("Date", "")
-            sender = request.form.get("Sender", "")
-            receiver = request.form.get("Receiver", "")
-            comment = request.form.get("Comment", "")
-            sum = request.form.get("Sum", "")
-            currency = request.form.get("Currency", "")
+    elif request.method == "POST":
+        content = request.get_json()
+        if content is None:
+            return "Error: No JSON data received", 400
 
-            # Check if comment is empty and assign a whitespace if it is
-            if not comment:
-                comment = " "
-
-            final_str = f"{date},{sender},{receiver},{sum},{currency},{comment}"
-
+        transferType = content.pop("transferType", "")
+        # Parse JSON data into string line
+        line = ",".join([str(content[key]) for key in content.keys()])
+        if transferType == "standard":
             try:
-                Add(final_str, "transfer")
+                Add(line, "transfer")
+                return jsonify({"success": True, "redirect_url": url_for("Transfer")})
             except Exception as e:
-                # Capture the exception message
+                print(f"Error occurred: {str(e)}")
                 error_message = str(e)
-                # Return the error message in the response
-                return render_template_string(
-                    "<h1>Failed to add record!</h1><p>{{ error_message }}</p>",
-                    error_message=error_message,
+                return (
+                    jsonify(
+                        {
+                            "success": False,
+                            "message": error_message,
+                        }
+                    ),
+                    400,
                 )
 
-            return redirect(url_for("Transfer"))
-
-        elif form_id == "advtransfer":
-            date = request.form.get("Date", "")
-            sender = request.form.get("Sender", "")
-            ssum = request.form.get("SSum", "")
-            scurr = request.form.get("SCurrency", "")
-            receiver = request.form.get("Receiver", "")
-            rsum = request.form.get("RSum", "")
-            rcurr = request.form.get("RCurrency", "")
-            curr_rate = request.form.get("Currency rate", "")
-            comment = request.form.get("Comment", "")
-
-            # Check if comment is empty and assign a whitespace if it is
-            if not comment:
-                comment = " "
-
-            final_str = f"{date},{sender},{ssum},{scurr},{receiver},{rsum},{rcurr},{curr_rate},{comment}"
-
+        elif transferType == "advanced":
             try:
-                Add(final_str, "advtransfer")
+                Add(line, "advtransfer")
+                return jsonify({"success": True, "redirect_url": url_for("Transfer")})
             except Exception as e:
-                # Capture the exception message
+                print(f"Error occurred: {str(e)}")
                 error_message = str(e)
-                # Return the error message in the response
-                return render_template_string(
-                    "<h1>Failed to add record!</h1><p>{{ error_message }}</p>",
-                    error_message=error_message,
+                return (
+                    jsonify(
+                        {
+                            "success": False,
+                            "message": error_message,
+                        }
+                    ),
+                    400,
                 )
-
-            return redirect(url_for("Transfer"))
 
 
 @app.route("/add/deposit", methods=["POST", "GET"])

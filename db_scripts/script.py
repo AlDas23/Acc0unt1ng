@@ -903,7 +903,7 @@ def GetTransactionHistory(type):
                     "ADV_pb_to": row_list[5],
                     "ADV_sum_to": round(row_list[6], 2),
                     "ADV_currency_to": row_list[7],
-                    "ADV_currency_rate": round(row_list[8], 4),
+                    "ADV_currency_rate": round(row_list[8], 4) if row_list[8] != "" else "",
                     "ADV_comment": row_list[9],
                 }
             )

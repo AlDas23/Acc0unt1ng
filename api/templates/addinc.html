@@ -2,7 +2,7 @@
 
 {% block body %}
 <h2>Income records</h2>
-<form action="/add/income" method="post" onclick="return false;">
+<form action="/add/income" method="post" onsubmit="return false;">
   <table>
     <tr>
       <th>Date</th>
@@ -14,7 +14,7 @@
     </tr>
     <tr>
       <td class="fields_big">
-        <input type="date" id="Date" name="Date" class="standardWidth" />
+        <input type="date" id="Date" name="Date" class="standardWidth"/>
       </td>
       <td class="fields_big">
         <select id="Category" name="Category" class="standardWidth">
@@ -24,7 +24,7 @@
           {% endfor %}
         </select>
       </td class="fields_big">
-      <td class="fields">
+      <td class="fields_big">
         <select id="Person-Bank" name="Person-Bank" class="standardWidth">
           <option value="" disabled selected></option>
           {% for person_bank in options.person_banks %}

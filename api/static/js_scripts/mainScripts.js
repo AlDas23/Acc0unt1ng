@@ -114,6 +114,81 @@ function ValidateInc(Edit = false, id = null) {
         });
 }
 
+function ValidateTransfer(isAdvanced) {
+    let FormObject;
+    if (isAdvanced) {
+        const form = document.getElementById("FormStandard");
+        const FormData = new FormData(form);
+        FormObject = Object.fromEntries(formData.entries());
+    } else {
+        const form = document.getElementById("FormAdvanced");
+        const FormData = new FormData(form);
+        FormObject = Object.fromEntries(formData.entries());
+    }
+
+    if (isAdvanced) {
+        if (FormObject.Date === "" || FormObject.Sender === "" || FormObject.Receiver === "" || FormObject.Sum === "" || FormObject.Currency === "") {
+            alert("Please fill in all fields.");
+            return false;
+        }
+
+        if (isNaN(FormObject.Sum) || parseFloat(FormObject.Sum) <= 0) {
+            alert("Please enter a valid sum.");
+            return false;
+        }
+
+    } else {
+        if (FormObject.Date === "" || FormObject.Sender === "" || FormObject.SSum === "" || FormObject.SCurrency === "" || FormObject.Receiver === "" || FormObject.RSum === "" || FormObject.RCurrency === "") {
+            alert("Please fill in all fields.");
+            return false;
+        }
+
+        if (isNaN(FormObject.SSum) || parseFloat(FormObject.SSum) <= 0 || isNaN(FormObject.RSum) || parseFloat(FormObject.RSum) <= 0) {
+            alert("Please enter valid sums.");
+            return false;
+        }
+
+        if (FormObject.SCurrency === FormObject.RCurrency) {
+            alert("Sender and Receiver currencies cannot be the same. Use standard transfer instead.");
+            return false;
+        }
+
+        if (parseFloat(FormObject.CurrencyRate) <= 0) {
+            alert("Please enter a valid currency rate.");
+            return false;
+        }
+    }
+
+    if (FormObject.Sender === FormObject.Receiver) {
+        alert("Sender and Receiver cannot be the same.");
+        return false;
+    }
+
+    // Append transfer type to the FormObject
+    FormObject.transferType = isAdvanced ? 'advanced' : 'standard';
+
+    // Send POST request
+    fetch('/add/transfer', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(FormObject)
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.href = data.redirect_url;
+            } else {
+                alert('Error: ' + (data.message || 'Failed to add transfer'));
+            }
+        })
+        .catch(error => {
+            console.error('Unexpected error:', error);
+            alert('Unexpected error occurred');
+        });
+}
+
 
 function EditRecordExp(element) {
     const id = element.getAttribute('id').substring(3);
@@ -162,10 +237,10 @@ function EditRecordInc(element) {
     const cells = clickedRow.querySelectorAll('td');
     document.getElementById("Date").value = cells[1].textContent.trim();
     document.getElementById("Category").value = cells[2].textContent.trim();
-    document.getElementById("Person-Bank").value = cells[4].textContent.trim();
-    document.getElementById("Sum").value = Math.abs(cells[5].textContent.trim());
-    document.getElementById("Currency").value = cells[6].textContent.trim();
-    document.getElementById("Comment").value = cells[7].textContent.trim();
+    document.getElementById("Person-Bank").value = cells[3].textContent.trim();
+    document.getElementById("Sum").value = Math.abs(cells[4].textContent.trim());
+    document.getElementById("Currency").value = cells[5].textContent.trim();
+    document.getElementById("Comment").value = cells[6].textContent.trim();
 
     // Change the form's submit button to call ValidateInc with Edit=true
     const submitButton = document.querySelector('.submitrec');
