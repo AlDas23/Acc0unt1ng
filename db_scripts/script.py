@@ -846,7 +846,7 @@ def GetTransactionHistory(type):
         data = Read("alltran")
         dataAdv = Read("alladvtran")
 
-    if type == "expense" or type == "income":
+    if type == "expense":
         for row in data:
             row_list = list(row)
             Finalhistory.append(
@@ -859,6 +859,21 @@ def GetTransactionHistory(type):
                     "sum": round(row_list[5], 2),
                     "currency": row_list[6],
                     "comment": row_list[7],
+                }
+            )
+            
+    elif type == "income":
+        for row in data:
+            row_list = list(row)
+            Finalhistory.append(
+                {
+                    "id": row_list[0],
+                    "date": row_list[1],
+                    "category": row_list[2],
+                    "pb": row_list[3],
+                    "sum": round(row_list[4], 2),
+                    "currency": row_list[5],
+                    "comment": row_list[6],
                 }
             )
 
