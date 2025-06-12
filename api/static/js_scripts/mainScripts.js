@@ -116,23 +116,25 @@ function ValidateInc(Edit = false, id = null) {
 
 function ValidateTransfer(isAdvanced) {
     let FormObject;
-    if (isAdvanced) {
+    let formData;
+
+    if (!isAdvanced) {
         const form = document.getElementById("FormStandard");
-        const FormData = new FormData(form);
-        FormObject = Object.fromEntries(formData.entries());
+        formData = new FormData(form);
     } else {
         const form = document.getElementById("FormAdvanced");
-        const FormData = new FormData(form);
-        FormObject = Object.fromEntries(formData.entries());
+        formData = new FormData(form);
     }
 
-    if (isAdvanced) {
+    FormObject = Object.fromEntries(formData.entries());
+
+    if (!isAdvanced) {
         if (FormObject.Date === "" || FormObject.Sender === "" || FormObject.Receiver === "" || FormObject.Sum === "" || FormObject.Currency === "") {
             alert("Please fill in all fields.");
             return false;
         }
 
-        if (isNaN(FormObject.Sum) || parseFloat(FormObject.Sum) <= 0) {
+        if (isNaN(parseFloat(FormObject.Sum)) || parseFloat(FormObject.Sum) <= 0) {
             alert("Please enter a valid sum.");
             return false;
         }
@@ -143,7 +145,7 @@ function ValidateTransfer(isAdvanced) {
             return false;
         }
 
-        if (isNaN(FormObject.SSum) || parseFloat(FormObject.SSum) <= 0 || isNaN(FormObject.RSum) || parseFloat(FormObject.RSum) <= 0) {
+        if (isNaN(parseFloat(FormObject.SSum)) || parseFloat(FormObject.SSum) <= 0 || isNaN(parseFloat(FormObject.RSum)) || parseFloat(FormObject.RSum) <= 0) {
             alert("Please enter valid sums.");
             return false;
         }
@@ -168,7 +170,7 @@ function ValidateTransfer(isAdvanced) {
     FormObject.transferType = isAdvanced ? 'advanced' : 'standard';
 
     // Send POST request
-    fetch('/add/transfer', {
+    fetch('/transfer', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
