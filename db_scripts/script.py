@@ -866,6 +866,10 @@ def GetTransactionHistory(type):
     elif type == "transfer":
         data = Read("alltran")
         dataAdv = Read("alladvtran")
+    elif type == "depositO":
+        data = Read("opendep")
+    elif type == "depositC":
+        data = Read("closeddep")
 
     if type == "expense":
         for row in data:
@@ -928,6 +932,25 @@ def GetTransactionHistory(type):
                         round(row_list[8], 4) if row_list[8] != "" else ""
                     ),
                     "ADV_comment": row_list[9],
+                }
+            )
+            
+    elif (type == "depositO" or type == "depositC"):
+        for row in data:
+            row_list = list(row)
+            Finalhistory.append(
+                {
+                    "date_in": row_list[0],
+                    "name": row_list[1],
+                    "owner": row_list[2],
+                    "sum": round(row_list[3], 2),
+                    "currency": row_list[4],
+                    "months": row_list[5],
+                    "date_out": row_list[6],
+                    "percent": round(row_list[7], 2),
+                    "currency_rate": round(row_list[8], 4),
+                    "expect": round(row_list[9], 2),
+                    "comment": row_list[10],
                 }
             )
 

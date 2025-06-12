@@ -350,75 +350,57 @@ def EditTransfer(id):
 @app.route("/add/deposit", methods=["POST", "GET"])
 def AddDeposit():
     if request.method == "GET":
-
-        currencies = read_csv(SPVcurrPath)
-        person_banks = Read("retacc")
+        try:
+            currencies = read_csv(SPVcurrPath)
+            person_banks = Read("retacc")
+        except Exception as e:
+            print(f"Error occurred: {str(e)}")
+            error_message = str(e)
+            return (
+                jsonify(
+                    {
+                        "success": False,
+                        "message": error_message,
+                    }
+                ),
+                400,
+            )
 
         options = {"person_banks": person_banks, "currencies": currencies}
 
-        # data = Read("alldepacc")
-        # columns = ["Name", "Owner", "Sum", "Currency"]
-
-        dataA = Read("opendep")
-        columnsH = [
-            "Deposit Date",
-            "Name",
-            "Person-bank",
-            "Sum",
-            "Currency",
-            "Months",
-            "Closing Date",
-            "%",
-            "Currency rate",
-            "Expected amount",
-            "Comment",
-        ]
-        dataC = Read("closeddep")
+        openDep = GetTransactionHistory("depositO")
+        closedDep = GetTransactionHistory("depositC")
 
         return render_template(
             "adddeposit.html",
             options=options,
-            columnsA=columnsH,
-            dataA=dataA,
-            columnsC=columnsH,
-            dataC=dataC,
+            openDep=openDep,
+            closedDep=closedDep,
         )
-    else:
-        dateIn = request.form.get("DateIn", "")
-        name = request.form.get("Name", "")
-        owner = request.form.get("Owner", "")
-        comment = request.form.get("Comment", "")
-        sum = request.form.get("Sum", "")
-        currency = request.form.get("Currency", "")
-        months = request.form.get("Months", "")
-        dateOut = request.form.get("DateOut", "")
-        percent = request.form.get("Percent", "")
-        currRate = request.form.get("Currency rate", "")
+        
+    if request.method == "POST":
+        content = request.get_json()
+        if content is None:
+            return "Error: No JSON data received", 400
 
-        # Check fields if empty and assign a whitespace if they are
-        if not comment:
-            comment = " "
-        if not months:
-            months = " "
-        if not dateOut:
-            dateOut = " "
-        if not currRate:
-            currRate = " "
-
-        final_str = f"{dateIn},{name},{owner},{sum},{currency},{months},{dateOut},{percent},{currRate},{comment}"
+        # Parse JSON data into string line
+        line = ",".join([str(content[key]) for key in content.keys()])
 
         try:
-            Add(final_str, "deposit")
+            Add(line, "deposit")
+            return jsonify({"success": True, "redirect_url": url_for("AddDeposit")})
         except Exception as e:
-            # Capture the exception message
+            print(f"Error occurred: {str(e)}")
             error_message = str(e)
-            # Return the error message in the response
-            return render_template_string(
-                "<h1>Failed to add record!</h1><p>{{ error_message }}</p>",
-                error_message=error_message,
+            return (
+                jsonify(
+                    {
+                        "success": False,
+                        "message": error_message,
+                    }
+                ),
+                400,
             )
-
-        return redirect(url_for("AddDeposit"))
 
 
 @app.route("/view/rep", methods=["GET"])

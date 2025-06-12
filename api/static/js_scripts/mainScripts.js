@@ -197,6 +197,78 @@ function ValidateTransfer(isAdvanced, Edit = false, id = null) {
         });
 }
 
+function ValidateDeposit() {
+    const date_in = document.getElementById("DateIn").value;
+    const name = document.getElementById("Name").value;
+    const owner = document.getElementById("Owner").value;
+    const sum = document.getElementById("Sum").value;
+    const curr = document.getElementById("Currency").value;
+    const months = document.getElementById("Months").value;
+    const date_out = document.getElementById("DateOut").value;
+    const percent = document.getElementById("Percent").value;
+    const curr_rate = document.getElementById("CurrencyRate").value;
+    const comment = document.getElementById("Comment").value;
+
+    if (date_in === "" || name === "" || owner === "" || isNaN(sum) || curr === "" || date_out === "") {
+        alert("Please fill in all reqired fields.\n Deposit date, name, owner, sum, currency, percent are required.");
+        return false;
+    }
+
+    if (isNaN(sum) || sum <= 0) {
+        alert("Please enter a valid sum.");
+        return false;
+    }
+
+    if (months !== "" && (isNaN(months) || months <= 0)) {
+        alert("Please enter a valid number of months.");
+        return false;
+    }
+
+    if (isNaN(percent) || percent < 0 || percent > 100) {
+        alert("Please enter a valid percent.");
+        return false;
+    }
+
+    if (curr_rate !== "" && (isNaN(curr_rate) || curr_rate <= 0)) {
+        alert("Please enter a valid currency rate.");
+        return false;
+    }
+
+    const FormData = {
+        dateIn: date_in,
+        name: name,
+        owner: owner,
+        sum: parseFloat(sum).toFixed(2),
+        currency: curr,
+        months: months ? parseFloat(months).toFixed(0) : " ",
+        dateOut: date_out,
+        percent: parseFloat(percent).toFixed(2),
+        currencyRate: curr_rate ? parseFloat(curr_rate).toFixed(2) : " ",
+        comment: comment
+    };
+
+    // Send POST request
+    fetch('/add/deposit', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(FormData)
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.href = data.redirect_url;
+            } else {
+                alert('Error: ' + (data.message || 'Failed to add deposit'));
+            }
+        })
+        .catch(error => {
+            console.error('Unexpected error:', error);
+            alert('Unexpected error occurred');
+        });
+}
+
 
 function EditRecordExp(element) {
     const id = element.getAttribute('id').substring(3);

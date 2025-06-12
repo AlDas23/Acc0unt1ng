@@ -2,7 +2,7 @@
 
 {% block body %}
 <h2>Deposit record</h2>
-<form action="/add/deposit" method="post">
+<form action="/add/deposit" method="post" onsubmit="return false;">
   <table>
     <tr>
       <th>Deposit Date</th>
@@ -17,95 +17,127 @@
       <th>Comment</th>
     </tr>
     <tr>
-      <td>
-        <input type="date" id="DateIn" name="DateIn" class="date" required />
+      <td class="fields_big">
+        <input type="date" id="DateIn" name="DateIn" class="standardWidth" />
       </td>
-      <td class="fields">
-        <input type="text" id="Name" name="Name" autocomplete="off" required />
+      <td class="fields_big">
+        <input type="text" id="Name" name="Name" autocomplete="off" class="standardWidth" />
       </td>
-      <td class="fields">
-        <select id="Owner" name="Owner" class="select" required>
+      <td class="fields_small">
+        <select id="Owner" name="Owner" class="standardWidth">
           <option value="" disabled selected></option>
           {% for person_bank in options.person_banks %}
           <option value="{{ person_bank }}">{{ person_bank }}</option>
           {% endfor %}
         </select>
       </td>
-      <td class="SPfields">
-        <input type="text" id="Sum" name="Sum" autocomplete="off" class="SPfields" required />
+      <td class="fields_small">
+        <input type="text" id="Sum" name="Sum" autocomplete="off" class="standardWidth" />
       </td>
-      <td>
-        <select id="Currency" name="Currency" class="select_curr" required>
+      <td class="fields_small">
+        <select id="Currency" name="Currency" class="standardWidth">
           <option value="" disabled selected></option>
           {% for currency in options.currencies %}
           <option value="{{ currency }}">{{ currency }}</option>
           {% endfor %}
         </select>
       </td>
-      <td class="SPfields">
-        <input type="text" id="Months" name="Months" autocomplete="off" class="SPfields" />
+      <td class="fields_small">
+        <input type="text" id="Months" name="Months" autocomplete="off" class="standardWidth" />
       </td>
-      <td>
-        <input type="date" id="DateOut" name="DateOut" class="date" />
+      <td class="fields_big">
+        <input type="date" id="DateOut" name="DateOut" class="standardWidth" />
       </td>
-      <td>
-        <input type="text" id="Percent" name="Percent" class="percent" autocomplete="off" required />
+      <td class="fields_small">
+        <input type="text" id="Percent" name="Percent" class="standardWidth" autocomplete="off" />
       </td>
-      <td class="SPfields">
-        <input type="text" id="CurrencyRate" name="Currency rate" autocomplete="off" class="SPfields" />
+      <td class="fields_small">
+        <input type="text" id="CurrencyRate" name="Currency rate" autocomplete="off" class="standardWidth" />
       </td>
-      <td class="fields">
-        <input type="text" id="Comment" name="Comment" autocomplete="off" />
+      <td class="fields_comment">
+        <input type="text" id="Comment" name="Comment" autocomplete="off" class="standardWidth" />
       </td>
     </tr>
   </table><br />
-  <input type="submit" value="Add" class="submitrec" />
+  <input type="submit" value="Add" class="submitrec" onclick="ValidateDeposit()" />
 </form>
 <br />
 
 <h2>Deposit history</h2>
-{% if columnsA and dataA %}
 <br />
 <h3>Active deposits</h3>
 <table class="reptable">
   <thead>
     <tr>
-      {% for column in columnsA %}
-      <th class="rep">{{ column }}</th>
-      {% endfor %}
+      <th class="rep">Deposit Date</th>
+      <th class="rep">Name</th>
+      <th class="rep">Person-bank</th>
+      <th class="rep">Sum</th>
+      <th class="rep">Currency</th>
+      <th class="rep">Months</th>
+      <th class="rep">Closing Date</th>
+      <th class="rep">%</th>
+      <th class="rep">Currency rate</th>
+      <th class="rep">Expected amount</th>
+      <th class="rep">Comment</th>
     </tr>
   </thead>
+  {% if openDep %}
   <tbody>
-    {% for row in dataA %}
+    {% for record in openDep %}
     <tr>
-      {% for cell in row %}
-      <td class="rep">{{ cell }}</td>
-      {% endfor %}
+      <td class="rep">{{ record.date_in }}</td>
+      <td class="rep">{{ record.name }}</td>
+      <td class="rep">{{ record.owner }}</td>
+      <td class="rep">{{ record.sum }}</td>
+      <td class="rep">{{ record.currency }}</td>
+      <td class="rep">{{ record.months }}</td>
+      <td class="rep">{{ record.date_out }}</td>
+      <td class="rep">{{ record.percent }}</td>
+      <td class="rep">{{ record.currency_rate }}</td>
+      <td class="rep">{{ record.expect }}</td>
+      <td class="rep">{{ record.comment }}</td>
     </tr>
     {% endfor %}
   </tbody>
+  {% endif %}
 </table>
-{% endif %}
-{% if columnsC and dataC %}
 <br />
 <h3>Closed deposits</h3>
 <table class="reptable">
   <thead>
     <tr>
-      {% for column in columnsC %}
-      <th class="rep">{{ column }}</th>
-      {% endfor %}
+      <th class="rep">Deposit Date</th>
+      <th class="rep">Name</th>
+      <th class="rep">Person-bank</th>
+      <th class="rep">Sum</th>
+      <th class="rep">Currency</th>
+      <th class="rep">Months</th>
+      <th class="rep">Closing Date</th>
+      <th class="rep">%</th>
+      <th class="rep">Currency rate</th>
+      <th class="rep">Expected amount</th>
+      <th class="rep">Comment</th>
     </tr>
   </thead>
+  {% if closedDep %}
   <tbody>
-    {% for row in dataC %}
+    {% for record in closedDep %}
     <tr>
-      {% for cell in row %}
-      <td class="rep">{{ cell }}</td>
-      {% endfor %}
+      <td class="rep">{{ record.date_in }}</td>
+      <td class="rep">{{ record.name }}</td>
+      <td class="rep">{{ record.owner }}</td>
+      <td class="rep">{{ record.sum }}</td>
+      <td class="rep">{{ record.currency }}</td>
+      <td class="rep">{{ record.months }}</td>
+      <td class="rep">{{ record.date_out }}</td>
+      <td class="rep">{{ record.percent }}</td>
+      <td class="rep">{{ record.currency_rate }}</td>
+      <td class="rep">{{ record.expect }}</td>
+      <td class="rep">{{ record.comment }}</td>
     </tr>
     {% endfor %}
   </tbody>
+  {% endif %}
 </table>
-{% endif %}
 {% endblock %}
