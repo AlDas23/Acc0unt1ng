@@ -321,19 +321,40 @@ def Add(input_field, mode):
     Re_Calculate_deposit()
 
 
-def UpdateRecord(inp):
+def UpdateRecord(inp, mode):
     # Update record with received input
-    conn = sqlite3.connect(dbPath)
-    c = conn.cursor()
+    with sqlite3.connect(dbPath) as conn:
+        c = conn.cursor()
 
-    inp = inp.split(",")
-    c.execute(
-        "UPDATE main SET date = ?, category = ?, sub_category = ?, person_bank = ?, sum = ?, currency = ?, comment = ? WHERE id = ?",
-        (inp[1], inp[2], inp[3], inp[4], inp[5], inp[6], inp[7], int(inp[0])),
-    )
+        inp = inp.split(",")
+        if mode == "main":
+            c.execute(
+                "UPDATE main SET date = ?, category = ?, sub_category = ?, person_bank = ?, sum = ?, currency = ?, comment = ? WHERE id = ?",
+                (inp[1], inp[2], inp[3], inp[4], inp[5], inp[6], inp[7], int(inp[0])),
+            )
+        elif mode == "transfer":
+            c.execute(
+                "UPDATE transfer SET date = ?, person_bank_from = ?, person_bank_to = ?, sum = ?, currency = ?, comment = ? WHERE id = ?",
+                (inp[1], inp[2], inp[3], inp[4], inp[5], inp[6], int(inp[0])),
+            )
+        elif mode == "advtransfer":
+            c.execute(
+                "UPDATE advtransfer SET date = ?, person_bank_from = ?, sum_from = ?, currency_from = ?, person_bank_to = ?, sum_to = ?, currency_to = ?, currency_rate = ?, comment = ? WHERE id = ?",
+                (
+                    inp[1],
+                    inp[2],
+                    inp[3],
+                    inp[4],
+                    inp[5],
+                    inp[6],
+                    inp[7],
+                    inp[8],
+                    inp[9],
+                    int(inp[0]),
+                ),
+            )
 
-    conn.commit()
-    conn.close()
+        conn.commit()
 
 
 def Read(x):
@@ -861,7 +882,7 @@ def GetTransactionHistory(type):
                     "comment": row_list[7],
                 }
             )
-            
+
     elif type == "income":
         for row in data:
             row_list = list(row)
@@ -903,7 +924,9 @@ def GetTransactionHistory(type):
                     "ADV_pb_to": row_list[5],
                     "ADV_sum_to": round(row_list[6], 2),
                     "ADV_currency_to": row_list[7],
-                    "ADV_currency_rate": round(row_list[8], 4) if row_list[8] != "" else "",
+                    "ADV_currency_rate": (
+                        round(row_list[8], 4) if row_list[8] != "" else ""
+                    ),
                     "ADV_comment": row_list[9],
                 }
             )

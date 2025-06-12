@@ -114,7 +114,7 @@ function ValidateInc(Edit = false, id = null) {
         });
 }
 
-function ValidateTransfer(isAdvanced) {
+function ValidateTransfer(isAdvanced, Edit = false, id = null) {
     let FormObject;
     let formData;
 
@@ -169,8 +169,14 @@ function ValidateTransfer(isAdvanced) {
     // Append transfer type to the FormObject
     FormObject.transferType = isAdvanced ? 'advanced' : 'standard';
 
+    if (!Edit) {
+        endpoint = '/add/transfer';
+    } else {
+        endpoint = '/edit/transfer/' + id;
+    }
+
     // Send POST request
-    fetch('/transfer', {
+    fetch(endpoint, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -249,3 +255,57 @@ function EditRecordInc(element) {
     submitButton.setAttribute('onclick', 'ValidateInc(Edit=true, ' + id + ')');
 }
 
+function EditRecordTransfer(element, isAdvanced = false) {
+    const id = element.getAttribute('id').substring(3);
+
+    const clickedRow = element.closest('tr');
+    const parentTable = clickedRow.closest('table');
+    const rows = parentTable.querySelectorAll('tbody tr');
+
+    rows.forEach(row => {
+        if (row !== clickedRow) {
+            row.style.display = 'none';
+        } else {
+            row.style.display = ''; // Ensure the clicked row remains visible
+        }
+    });
+
+    if (!isAdvanced) {
+        document.getElementById("FormAdvanced").style.display = 'none';
+        document.getElementById("AdvancedHistory").style.display = 'none';
+
+        // Populate the form with the clicked row's data
+        const cells = clickedRow.querySelectorAll('td');
+        document.getElementById("Date").value = cells[1].textContent.trim();
+        document.getElementById("Sender").value = cells[2].textContent.trim();
+        document.getElementById("Receiver").value = cells[3].textContent.trim();
+        document.getElementById("Sum").value = Math.abs(cells[4].textContent.trim());
+        document.getElementById("Currency").value = cells[5].textContent.trim();
+        document.getElementById("Comment").value = cells[6].textContent.trim();
+
+        // Change the form's submit button to call ValidateTransfer with Edit=true
+        const submitButton = document.getElementById('Submit');
+        submitButton.setAttribute('onclick', 'ValidateTransfer(isAdvanced = false, Edit=true, ' + id + ')');
+    }
+
+    else {
+        document.getElementById("FormStandard").style.display = 'none';
+        document.getElementById("StandardHistory").style.display = 'none';
+
+        // Populate the form with the clicked row's data
+        const cells = clickedRow.querySelectorAll('td');
+        document.getElementById("ADVDate").value = cells[1].textContent.trim();
+        document.getElementById("ADVSender").value = cells[2].textContent.trim();
+        document.getElementById("ADVSSum").value = Math.abs(cells[3].textContent.trim());
+        document.getElementById("ADVSCurrency").value = cells[4].textContent.trim();
+        document.getElementById("ADVReceiver").value = cells[5].textContent.trim();
+        document.getElementById("ADVRSum").value = Math.abs(cells[6].textContent.trim());
+        document.getElementById("ADVRCurrency").value = cells[7].textContent.trim();
+        document.getElementById("ADVCurrencyRate").value = cells[8].textContent.trim();
+        document.getElementById("ADVComment").value = cells[8].textContent.trim();
+
+        // Change the form's submit button to call ValidateTransfer with Edit=true
+        const submitButton = document.getElementById('ADVSubmit');
+        submitButton.setAttribute('onclick', 'ValidateTransfer(isAdvanced = true, Edit=true, ' + id + ')');
+    }
+}

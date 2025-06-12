@@ -44,7 +44,7 @@
                     class="standardWidth"></td>
         </tr>
     </table><br>
-    <input type="submit" value="Add" class="submitrec" onclick="ValidateTransfer(isAdvanced = false)">
+    <input type="submit" value="Add" id="Submit" class="submitrec" onclick="ValidateTransfer(isAdvanced = false)">
 </form>
 <br>
 <h2>Advanced transfer</h2>
@@ -105,13 +105,13 @@
                     class="standardWidth"></td>
         </tr>
     </table><br>
-    <input type="submit" value="Add" class="submitrec" onclick="ValidateTransfer(isAdvanced = true)">
+    <input type="submit" value="Add" id="ADVSubmit" class="submitrec" onclick="ValidateTransfer(isAdvanced = true)">
 </form>
 <br>
 <div class="container">
     <div class="table-container">
         <h3>Transfer records</h3>
-        <table class="reptable" style=" width: max-content;">
+        <table class="reptable" id="StandardHistory" style=" width: max-content;">
             <thead>
                 <tr>
                     <th class="rep" style=" width: max-content;">ID</th>
@@ -128,7 +128,10 @@
                 {% for record in data %}
                 {% if record.id %}
                 <tr>
-                    <td class="rep" style=" width: max-content;">{{ record.id }}</td>
+                    <td class="rep">
+                        <a href="javascript:void(0);" id="id_{{ record.id }}" onclick="EditRecordTransfer(this)"> {{
+                            record.id }} </a>
+                    </td>
                     <td class="rep" style=" width: max-content;">{{ record.date }}</td>
                     <td class="rep" style=" width: max-content;">{{ record.pb_from }}</td>
                     <td class="rep" style=" width: max-content;">{{ record.pb_to }}</td>
@@ -145,7 +148,7 @@
     <br>
     <div class="table-container">
         <h3>Advanced transfer records</h3>
-        <table class="reptable" style=" width: max-content;">
+        <table class="reptable" id="AdvancedHistory" style=" width: max-content;">
             <thead>
                 <tr>
                     <th class="rep" style=" width: max-content;">ID</th>
@@ -165,7 +168,11 @@
                 {% for record in data %}
                 {% if record.ADV_id %}
                 <tr>
-                    <td class="rep" style=" width: max-content;">{{ record.ADV_id }}</td>
+                    <td class="rep">
+                        <a href="javascript:void(0);" id="id_{{ record.ADV_id }}"
+                            onclick="EditRecordTransfer(this, true)">{{
+                            record.ADV_id }}</a>
+                    </td>
                     <td class="rep" style=" width: max-content;">{{ record.ADV_date }}</td>
                     <td class="rep" style=" width: max-content;">{{ record.ADV_pb_from }}</td>
                     <td class="rep" style=" width: max-content;">{{ record.ADV_sum_from }}</td>

@@ -132,7 +132,7 @@ def EditExpense(id):
     line = f"{id}," + line  # Prepend the ID to the line
 
     try:
-        UpdateRecord(line)
+        UpdateRecord(line, "main")
         return jsonify({"success": True, "redirect_url": url_for("Expense")})
     except Exception as e:
         print(f"Error occurred: {str(e)}")
@@ -214,7 +214,7 @@ def EditIncome(id):
         line = f"{id}," + line  # Prepend the ID to the line
 
         try:
-            UpdateRecord(line)
+            UpdateRecord(line, "main")
             return jsonify({"success": True, "redirect_url": url_for("Income")})
         except Exception as e:
             print(f"Error occurred: {str(e)}")
@@ -230,7 +230,7 @@ def EditIncome(id):
             )
 
 
-@app.route("/transfer", methods=["POST", "GET"])
+@app.route("/add/transfer", methods=["POST", "GET"])
 def Transfer():
     if request.method == "GET":
         try:
@@ -286,6 +286,52 @@ def Transfer():
         elif transferType == "advanced":
             try:
                 Add(line, "advtransfer")
+                return jsonify({"success": True, "redirect_url": url_for("Transfer")})
+            except Exception as e:
+                print(f"Error occurred: {str(e)}")
+                error_message = str(e)
+                return (
+                    jsonify(
+                        {
+                            "success": False,
+                            "message": error_message,
+                        }
+                    ),
+                    400,
+                )
+
+
+@app.route("/edit/transfer/<int:id>", methods=["POST"])
+def EditTransfer(id):
+    if request.method == "POST":
+        content = request.get_json()
+        if content is None:
+            return "Error: No JSON data received", 400
+
+        transferType = content.pop("transferType", "")
+        # Parse JSON data into string line
+        line = ",".join([str(content[key]) for key in content.keys()])
+        line = f"{id}," + line
+
+        if transferType == "standard":
+            try:
+                UpdateRecord(line, "transfer")
+                return jsonify({"success": True, "redirect_url": url_for("Transfer")})
+            except Exception as e:
+                print(f"Error occurred: {str(e)}")
+                error_message = str(e)
+                return (
+                    jsonify(
+                        {
+                            "success": False,
+                            "message": error_message,
+                        }
+                    ),
+                    400,
+                )
+        elif transferType == "advanced":
+            try:
+                UpdateRecord(line, "advtransfer")
                 return jsonify({"success": True, "redirect_url": url_for("Transfer")})
             except Exception as e:
                 print(f"Error occurred: {str(e)}")
@@ -595,6 +641,7 @@ def Currencies():
         return redirect(url_for("Currencies"))
 
 
+# Functions from below are deprecated and will be removed in future.
 @app.route("/api", methods=["GET"])
 def APIHome():
     return redirect("/api/help")
