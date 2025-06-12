@@ -5,6 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+  <script src="{{ url_for('static', filename='js_scripts/mainScripts.js') }}"></script>
   <title>Acc0unt1ng</title>
 </head>
 
@@ -17,8 +18,8 @@
       onclick="window.location.href='/add/expense'">Expense records</button>
     <button class="nav_button {% if request.path == '/add/income' %}disabled{% endif %}"
       onclick="window.location.href='/add/income'">Income records</button>
-    <button class="nav_button {% if request.path == '/transfer' %}disabled{% endif %}"
-      onclick="window.location.href='/transfer'">Transfer records</button>
+    <button class="nav_button {% if request.path == '/add/transfer' %}disabled{% endif %}"
+      onclick="window.location.href='/add/transfer'">Transfer records</button>
     <button class="nav_button {% if request.path == '/add/deposit' %}disabled{% endif %}"
       onclick="window.location.href='/add/deposit'">Deposits</button>
     <button class="nav_button {% if request.path == '/currency' %}disabled{% endif %}"

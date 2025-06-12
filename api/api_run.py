@@ -1,5 +1,6 @@
 from flask import (
     Flask,
+    jsonify,
     request,
     render_template,
     redirect,
@@ -70,16 +71,20 @@ def Expense():
             categories = read_csv(SPVcatExpPath)
             sub_categories = read_csv(SPVsubcatPath)
             currencies = read_csv(SPVcurrPath)
-        except:
-            return render_template_string(
-                "<h1>Missing or inaccesible csv with special values!</h1><p>Please check csv files and try again</p>"
-            )
-        try:
             person_banks = Read("retacc")
-        except:
-            return render_template_string(
-                "<h1>Missing or inaccesible database file!</h1><p>Please check or re-create database and try again</p>"
+        except Exception as e:
+            print(f"Error occurred: {str(e)}")
+            error_message = str(e)
+            return (
+                jsonify(
+                    {
+                        "success": False,
+                        "message": error_message,
+                    }
+                ),
+                400,
             )
+
         options = {
             "categories": categories,
             "sub_categories": sub_categories,
@@ -87,136 +92,81 @@ def Expense():
             "currencies": currencies,
         }
 
-        data = Read("m-")
-        columns = [
-            "ID",
-            "Date",
-            "Category",
-            "Sub-category",
-            "Person bank",
-            "Sum",
-            "Currency",
-            "Comment",
-        ]
+        data = GetTransactionHistory("expense")
 
-        return render_template(
-            "addexp.html", options=options, columns=columns, data=data
-        )
+        return render_template("addexp.html", options=options, data=data)
 
-    else:
-        date = request.form.get("Date", "")
-        category = request.form.get("Category", "")
-        sub_category = request.form.get("Sub-category", "")
-        person_bank = request.form.get("Person-Bank", "")
-        comment = request.form.get("Comment", "")
-        sum = request.form.get("Sum", "")
-        currency = request.form.get("Currency", "")
+    elif request.method == "POST":
+        content = request.get_json()
+        if content is None:
+            return "Error: No JSON data received", 400
 
-        # Check if comment is empty and assign a whitespace if it is
-        if not comment:
-            comment = " "
-
-        # Insert minus to expense sum
-        sum = "-" + sum
-
-        final_str = (
-            f"{date},{category},{sub_category},{person_bank},{sum},{currency},{comment}"
-        )
+        # Parse JSON data into string line
+        line = ",".join([str(content[key]) for key in content.keys()])
 
         try:
-            Add(final_str, "main")
+            Add(line, "main")
+            return jsonify({"success": True, "redirect_url": url_for("Expense")})
         except Exception as e:
-            # Capture the exception message
+            print(f"Error occurred: {str(e)}")
             error_message = str(e)
-            # Return the error message in the response
-            return render_template_string(
-                "<h1>Failed to add record!</h1><p>{{ error_message }}</p>",
-                error_message=error_message,
+            return (
+                jsonify(
+                    {
+                        "success": False,
+                        "message": error_message,
+                    }
+                ),
+                400,
             )
 
-        return redirect(url_for("Expense"))
 
-
-@app.route("/edit/expense/<int:id>", methods=["GET", "POST"])
+@app.route("/edit/expense/<int:id>", methods=["POST"])
 def EditExpense(id):
-    if request.method == "GET":
-        # Fetch the existing record by ID
-        record = GrabRecordByID(id, "exp")
-        if record:
-            categories = read_csv(SPVcatExpPath)
-            sub_categories = read_csv(SPVsubcatPath)
-            person_banks = Read("retacc")
-            currencies = read_csv(SPVcurrPath)
-            options = {
-                "categories": categories,
-                "sub_categories": sub_categories,
-                "person_banks": person_banks,
-                "currencies": currencies,
-            }
-            columns = [
-                "ID",
-                "Date",
-                "Category",
-                "Sub-category",
-                "Person bank",
-                "Sum",
-                "Currency",
-                "Comment",
-            ]
-            data = record
+    content = request.get_json()
+    if content is None:
+        return "Error: No JSON data received", 400
 
-            return render_template(
-                "addexp.html",
-                options=options,
-                edit_record=record,
-                columns=columns,
-                data=data,
-            )
-        else:
-            return "Record not found", 404
+    # Parse JSON data into string line
+    line = ",".join([str(content[key]) for key in content.keys()])
+    line = f"{id}," + line  # Prepend the ID to the line
 
-    else:
-        # Update the existing record
-        date = request.form.get("Date", "")
-        category = request.form.get("Category", "")
-        sub_category = request.form.get("Sub-category", "")
-        person_bank = request.form.get("Person-Bank", "")
-        comment = request.form.get("Comment", "")
-        sum = request.form.get("Sum", "")
-        currency = request.form.get("Currency", "")
-
-        # Check if comment is empty and assign a whitespace if it is
-        if not comment:
-            comment = " "
-
-        if not sub_category:
-            sub_category = " "
-
-        # Insert minus to expense sum
-        sum = "-" + sum
-
-        final_str = f"{id},{date},{category},{sub_category},{person_bank},{sum},{currency},{comment}"
-
-        try:
-            UpdateRecord(final_str)
-        except Exception as e:
-            # Capture the exception message
-            error_message = str(e)
-            # Return the error message in the response
-            return render_template_string(
-                "<h1>Failed to update record!</h1><p>{{ error_message }}</p>",
-                error_message=error_message,
-            )
-
-        return redirect(url_for("Expense"))
+    try:
+        UpdateRecord(line, "main")
+        return jsonify({"success": True, "redirect_url": url_for("Expense")})
+    except Exception as e:
+        print(f"Error occurred: {str(e)}")
+        error_message = str(e)
+        return (
+            jsonify(
+                {
+                    "success": False,
+                    "message": error_message,
+                }
+            ),
+            400,
+        )
 
 
 @app.route("/add/income", methods=["POST", "GET"])
 def Income():
     if request.method == "GET":
-        categories = read_csv(SPVcatIncPath)
-        currencies = read_csv(SPVcurrPath)
-        person_banks = Read("retacc")
+        try:
+            categories = read_csv(SPVcatIncPath)
+            currencies = read_csv(SPVcurrPath)
+            person_banks = Read("retacc")
+        except Exception as e:
+            print(f"Error occurred: {str(e)}")
+            error_message = str(e)
+            return (
+                jsonify(
+                    {
+                        "success": False,
+                        "message": error_message,
+                    }
+                ),
+                400,
+            )
 
         options = {
             "categories": categories,
@@ -224,279 +174,233 @@ def Income():
             "currencies": currencies,
         }
 
-        data = Read("m+")
-        columns = [
-            "ID",
-            "Date",
-            "Category",
-            "Person bank",
-            "Sum",
-            "Currency",
-            "Comment",
-        ]
+        data = GetTransactionHistory("income")
 
-        return render_template(
-            "addinc.html", options=options, columns=columns, data=data
-        )
-    else:
-        date = request.form.get("Date", "")
-        category = request.form.get("Category", "")
-        sub_category = request.form.get("Sub-category", "")
-        person_bank = request.form.get("Person-Bank", "")
-        comment = request.form.get("Comment", "")
-        sum = request.form.get("Sum", "")
-        currency = request.form.get("Currency", "")
+        return render_template("addinc.html", options=options, data=data)
+    elif request.method == "POST":
+        content = request.get_json()
+        if content is None:
+            return "Error: No JSON data received", 400
 
-        # Check if comment is empty and assign a whitespace if it is
-        if not comment:
-            comment = " "
-
-        final_str = (
-            f"{date},{category},{sub_category},{person_bank},{sum},{currency},{comment}"
-        )
+        # Parse JSON data into string line
+        line = ",".join([str(content[key]) for key in content.keys()])
 
         try:
-            Add(final_str, "main")
+            Add(line, "main")
+            return jsonify({"success": True, "redirect_url": url_for("Income")})
         except Exception as e:
-            # Capture the exception message
+            print(f"Error occurred: {str(e)}")
             error_message = str(e)
-            # Return the error message in the response
-            return render_template_string(
-                "<h1>Failed to add record!</h1><p>{{ error_message }}</p>",
-                error_message=error_message,
+            return (
+                jsonify(
+                    {
+                        "success": False,
+                        "message": error_message,
+                    }
+                ),
+                400,
             )
 
-        return redirect(url_for("Income"))
 
-
-@app.route("/edit/income/<int:id>", methods=["GET", "POST"])
+@app.route("/edit/income/<int:id>", methods=["POST"])
 def EditIncome(id):
-    if request.method == "GET":
-        # Fetch the existing record by ID
-        record = GrabRecordByID(id, "inc")
-        if record:
-            categories = read_csv(SPVcatIncPath)
-            person_banks = Read("retacc")
-            currencies = read_csv(SPVcurrPath)
-            options = {
-                "categories": categories,
-                "person_banks": person_banks,
-                "currencies": currencies,
-            }
-            columns = [
-                "ID",
-                "Date",
-                "Category",
-                "Person bank",
-                "Sum",
-                "Currency",
-                "Comment",
-            ]
-            data = record
+    if request.method == "POST":
+        content = request.get_json()
+        if content is None:
+            return "Error: No JSON data received", 400
 
-            return render_template(
-                "addinc.html",
-                options=options,
-                edit_record=record,
-                columns=columns,
-                data=data,
-            )
-        else:
-            return "Record not found", 404
-
-    else:
-        # Update the existing record
-        date = request.form.get("Date", "")
-        category = request.form.get("Category", "")
-        person_bank = request.form.get("Person-Bank", "")
-        comment = request.form.get("Comment", "")
-        sum = request.form.get("Sum", "")
-        currency = request.form.get("Currency", "")
-
-        # Check if comment is empty and assign a whitespace if it is
-        if not comment:
-            comment = " "
-
-        final_str = f"{id},{date},{category}, ,{person_bank},{sum},{currency},{comment}"
+        # Parse JSON data into string line
+        line = ",".join([str(content[key]) for key in content.keys()])
+        line = f"{id}," + line  # Prepend the ID to the line
 
         try:
-            UpdateRecord(final_str)
+            UpdateRecord(line, "main")
+            return jsonify({"success": True, "redirect_url": url_for("Income")})
         except Exception as e:
-            # Capture the exception message
+            print(f"Error occurred: {str(e)}")
             error_message = str(e)
-            # Return the error message in the response
-            return render_template_string(
-                "<h1>Failed to update record!</h1><p>{{ error_message }}</p>",
-                error_message=error_message,
+            return (
+                jsonify(
+                    {
+                        "success": False,
+                        "message": error_message,
+                    }
+                ),
+                400,
             )
 
-        return redirect(url_for("Income"))
 
-
-@app.route("/transfer", methods=["POST", "GET"])
+@app.route("/add/transfer", methods=["POST", "GET"])
 def Transfer():
     if request.method == "GET":
-        currencies = read_csv(SPVcurrPath)
-        person_banks = Read("retacc")
+        try:
+            currencies = read_csv(SPVcurrPath)
+            person_banks = Read("retacc")
+        except Exception as e:
+            print(f"Error occurred: {str(e)}")
+            error_message = str(e)
+            return (
+                jsonify(
+                    {
+                        "success": False,
+                        "message": error_message,
+                    }
+                ),
+                400,
+            )
 
         options = {"person_banks": person_banks, "currencies": currencies}
 
-        data = Read("alltran")
-        columns = ["ID", "Date", "Sender", "Receiver", "Sum", "Currency", "Comment"]
-        dataA = Read("alladvtran")
-        columnsA = [
-            "ID",
-            "Date",
-            "Sender",
-            "Sum",
-            "Currency",
-            "Receiver",
-            "Sum",
-            "Currency",
-            "Currency rate",
-            "Comment",
-        ]
+        data = GetTransactionHistory("transfer")
 
         return render_template(
             "transfer.html",
             options=options,
-            columns=columns,
             data=data,
-            dataA=dataA,
-            columnsA=columnsA,
         )
-    else:
-        form_id = request.form.get("form_type")
-        if form_id == "transfer":
-            date = request.form.get("Date", "")
-            sender = request.form.get("Sender", "")
-            receiver = request.form.get("Receiver", "")
-            comment = request.form.get("Comment", "")
-            sum = request.form.get("Sum", "")
-            currency = request.form.get("Currency", "")
+    elif request.method == "POST":
+        content = request.get_json()
+        if content is None:
+            return "Error: No JSON data received", 400
 
-            # Check if comment is empty and assign a whitespace if it is
-            if not comment:
-                comment = " "
-
-            final_str = f"{date},{sender},{receiver},{sum},{currency},{comment}"
-
+        transferType = content.pop("transferType", "")
+        # Parse JSON data into string line
+        line = ",".join([str(content[key]) for key in content.keys()])
+        if transferType == "standard":
             try:
-                Add(final_str, "transfer")
+                Add(line, "transfer")
+                return jsonify({"success": True, "redirect_url": url_for("Transfer")})
             except Exception as e:
-                # Capture the exception message
+                print(f"Error occurred: {str(e)}")
                 error_message = str(e)
-                # Return the error message in the response
-                return render_template_string(
-                    "<h1>Failed to add record!</h1><p>{{ error_message }}</p>",
-                    error_message=error_message,
+                return (
+                    jsonify(
+                        {
+                            "success": False,
+                            "message": error_message,
+                        }
+                    ),
+                    400,
                 )
 
-            return redirect(url_for("Transfer"))
-
-        elif form_id == "advtransfer":
-            date = request.form.get("Date", "")
-            sender = request.form.get("Sender", "")
-            ssum = request.form.get("SSum", "")
-            scurr = request.form.get("SCurrency", "")
-            receiver = request.form.get("Receiver", "")
-            rsum = request.form.get("RSum", "")
-            rcurr = request.form.get("RCurrency", "")
-            curr_rate = request.form.get("Currency rate", "")
-            comment = request.form.get("Comment", "")
-
-            # Check if comment is empty and assign a whitespace if it is
-            if not comment:
-                comment = " "
-
-            final_str = f"{date},{sender},{ssum},{scurr},{receiver},{rsum},{rcurr},{curr_rate},{comment}"
-
+        elif transferType == "advanced":
             try:
-                Add(final_str, "advtransfer")
+                Add(line, "advtransfer")
+                return jsonify({"success": True, "redirect_url": url_for("Transfer")})
             except Exception as e:
-                # Capture the exception message
+                print(f"Error occurred: {str(e)}")
                 error_message = str(e)
-                # Return the error message in the response
-                return render_template_string(
-                    "<h1>Failed to add record!</h1><p>{{ error_message }}</p>",
-                    error_message=error_message,
+                return (
+                    jsonify(
+                        {
+                            "success": False,
+                            "message": error_message,
+                        }
+                    ),
+                    400,
                 )
 
-            return redirect(url_for("Transfer"))
+
+@app.route("/edit/transfer/<int:id>", methods=["POST"])
+def EditTransfer(id):
+    if request.method == "POST":
+        content = request.get_json()
+        if content is None:
+            return "Error: No JSON data received", 400
+
+        transferType = content.pop("transferType", "")
+        # Parse JSON data into string line
+        line = ",".join([str(content[key]) for key in content.keys()])
+        line = f"{id}," + line
+
+        if transferType == "standard":
+            try:
+                UpdateRecord(line, "transfer")
+                return jsonify({"success": True, "redirect_url": url_for("Transfer")})
+            except Exception as e:
+                print(f"Error occurred: {str(e)}")
+                error_message = str(e)
+                return (
+                    jsonify(
+                        {
+                            "success": False,
+                            "message": error_message,
+                        }
+                    ),
+                    400,
+                )
+        elif transferType == "advanced":
+            try:
+                UpdateRecord(line, "advtransfer")
+                return jsonify({"success": True, "redirect_url": url_for("Transfer")})
+            except Exception as e:
+                print(f"Error occurred: {str(e)}")
+                error_message = str(e)
+                return (
+                    jsonify(
+                        {
+                            "success": False,
+                            "message": error_message,
+                        }
+                    ),
+                    400,
+                )
 
 
 @app.route("/add/deposit", methods=["POST", "GET"])
 def AddDeposit():
     if request.method == "GET":
-
-        currencies = read_csv(SPVcurrPath)
-        person_banks = Read("retacc")
+        try:
+            currencies = read_csv(SPVcurrPath)
+            person_banks = Read("retacc")
+        except Exception as e:
+            print(f"Error occurred: {str(e)}")
+            error_message = str(e)
+            return (
+                jsonify(
+                    {
+                        "success": False,
+                        "message": error_message,
+                    }
+                ),
+                400,
+            )
 
         options = {"person_banks": person_banks, "currencies": currencies}
 
-        # data = Read("alldepacc")
-        # columns = ["Name", "Owner", "Sum", "Currency"]
-
-        dataA = Read("opendep")
-        columnsH = [
-            "Deposit Date",
-            "Name",
-            "Person-bank",
-            "Sum",
-            "Currency",
-            "Months",
-            "Closing Date",
-            "%",
-            "Currency rate",
-            "Expected amount",
-            "Comment",
-        ]
-        dataC = Read("closeddep")
+        openDep = GetTransactionHistory("depositO")
+        closedDep = GetTransactionHistory("depositC")
 
         return render_template(
             "adddeposit.html",
             options=options,
-            columnsA=columnsH,
-            dataA=dataA,
-            columnsC=columnsH,
-            dataC=dataC,
+            openDep=openDep,
+            closedDep=closedDep,
         )
-    else:
-        dateIn = request.form.get("DateIn", "")
-        name = request.form.get("Name", "")
-        owner = request.form.get("Owner", "")
-        comment = request.form.get("Comment", "")
-        sum = request.form.get("Sum", "")
-        currency = request.form.get("Currency", "")
-        months = request.form.get("Months", "")
-        dateOut = request.form.get("DateOut", "")
-        percent = request.form.get("Percent", "")
-        currRate = request.form.get("Currency rate", "")
+        
+    if request.method == "POST":
+        content = request.get_json()
+        if content is None:
+            return "Error: No JSON data received", 400
 
-        # Check fields if empty and assign a whitespace if they are
-        if not comment:
-            comment = " "
-        if not months:
-            months = " "
-        if not dateOut:
-            dateOut = " "
-        if not currRate:
-            currRate = " "
-
-        final_str = f"{dateIn},{name},{owner},{sum},{currency},{months},{dateOut},{percent},{currRate},{comment}"
+        # Parse JSON data into string line
+        line = ",".join([str(content[key]) for key in content.keys()])
 
         try:
-            Add(final_str, "deposit")
+            Add(line, "deposit")
+            return jsonify({"success": True, "redirect_url": url_for("AddDeposit")})
         except Exception as e:
-            # Capture the exception message
+            print(f"Error occurred: {str(e)}")
             error_message = str(e)
-            # Return the error message in the response
-            return render_template_string(
-                "<h1>Failed to add record!</h1><p>{{ error_message }}</p>",
-                error_message=error_message,
+            return (
+                jsonify(
+                    {
+                        "success": False,
+                        "message": error_message,
+                    }
+                ),
+                400,
             )
-
-        return redirect(url_for("AddDeposit"))
 
 
 @app.route("/view/rep", methods=["GET"])
@@ -719,6 +623,7 @@ def Currencies():
         return redirect(url_for("Currencies"))
 
 
+# Functions from below are deprecated and will be removed in future.
 @app.route("/api", methods=["GET"])
 def APIHome():
     return redirect("/api/help")

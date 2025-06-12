@@ -132,8 +132,12 @@ nav {
   height: 30px;
 }
 
-.fields {
+.fields_big {
   width: 165px;
+}
+
+.fields_small {
+  width: 80px;
 }
 
 .SPfields {
@@ -144,16 +148,19 @@ nav {
   width: 90px;
 }
 
-.date {
-  width: 130px;
+.standardWidth {
+  width: 100%;
 }
 
-.select {
-  width: 165px;
+.halfWidth {
+  width: 50%;
 }
 
-.select_curr {
-  width: 80px;
+.fields_comment {
+  width: 200px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  overflow: auto;
 }
 
 label {

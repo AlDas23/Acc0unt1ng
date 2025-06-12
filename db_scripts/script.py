@@ -321,19 +321,40 @@ def Add(input_field, mode):
     Re_Calculate_deposit()
 
 
-def UpdateRecord(inp):
+def UpdateRecord(inp, mode):
     # Update record with received input
-    conn = sqlite3.connect(dbPath)
-    c = conn.cursor()
+    with sqlite3.connect(dbPath) as conn:
+        c = conn.cursor()
 
-    inp = inp.split(",")
-    c.execute(
-        "UPDATE main SET date = ?, category = ?, sub_category = ?, person_bank = ?, sum = ?, currency = ?, comment = ? WHERE id = ?",
-        (inp[1], inp[2], inp[3], inp[4], inp[5], inp[6], inp[7], int(inp[0])),
-    )
+        inp = inp.split(",")
+        if mode == "main":
+            c.execute(
+                "UPDATE main SET date = ?, category = ?, sub_category = ?, person_bank = ?, sum = ?, currency = ?, comment = ? WHERE id = ?",
+                (inp[1], inp[2], inp[3], inp[4], inp[5], inp[6], inp[7], int(inp[0])),
+            )
+        elif mode == "transfer":
+            c.execute(
+                "UPDATE transfer SET date = ?, person_bank_from = ?, person_bank_to = ?, sum = ?, currency = ?, comment = ? WHERE id = ?",
+                (inp[1], inp[2], inp[3], inp[4], inp[5], inp[6], int(inp[0])),
+            )
+        elif mode == "advtransfer":
+            c.execute(
+                "UPDATE advtransfer SET date = ?, person_bank_from = ?, sum_from = ?, currency_from = ?, person_bank_to = ?, sum_to = ?, currency_to = ?, currency_rate = ?, comment = ? WHERE id = ?",
+                (
+                    inp[1],
+                    inp[2],
+                    inp[3],
+                    inp[4],
+                    inp[5],
+                    inp[6],
+                    inp[7],
+                    inp[8],
+                    inp[9],
+                    int(inp[0]),
+                ),
+            )
 
-    conn.commit()
-    conn.close()
+        conn.commit()
 
 
 def Read(x):
@@ -835,6 +856,107 @@ def Read(x):
     conn.close()
 
 
+def GetTransactionHistory(type):
+    Finalhistory = []
+
+    if type == "expense":
+        data = Read("m-")
+    elif type == "income":
+        data = Read("m+")
+    elif type == "transfer":
+        data = Read("alltran")
+        dataAdv = Read("alladvtran")
+    elif type == "depositO":
+        data = Read("opendep")
+    elif type == "depositC":
+        data = Read("closeddep")
+
+    if type == "expense":
+        for row in data:
+            row_list = list(row)
+            Finalhistory.append(
+                {
+                    "id": row_list[0],
+                    "date": row_list[1],
+                    "category": row_list[2],
+                    "sub_category": row_list[3],
+                    "pb": row_list[4],
+                    "sum": round(row_list[5], 2),
+                    "currency": row_list[6],
+                    "comment": row_list[7],
+                }
+            )
+
+    elif type == "income":
+        for row in data:
+            row_list = list(row)
+            Finalhistory.append(
+                {
+                    "id": row_list[0],
+                    "date": row_list[1],
+                    "category": row_list[2],
+                    "pb": row_list[3],
+                    "sum": round(row_list[4], 2),
+                    "currency": row_list[5],
+                    "comment": row_list[6],
+                }
+            )
+
+    elif type == "transfer":
+        for row in data:
+            row_list = list(row)
+            Finalhistory.append(
+                {
+                    "id": row_list[0],
+                    "date": row_list[1],
+                    "pb_from": row_list[2],
+                    "pb_to": row_list[3],
+                    "sum": round(row_list[4], 2),
+                    "currency": row_list[5],
+                    "comment": row_list[6],
+                }
+            )
+        for row in dataAdv:
+            row_list = list(row)
+            Finalhistory.append(
+                {
+                    "ADV_id": row_list[0],
+                    "ADV_date": row_list[1],
+                    "ADV_pb_from": row_list[2],
+                    "ADV_sum_from": round(row_list[3], 2),
+                    "ADV_currency_from": row_list[4],
+                    "ADV_pb_to": row_list[5],
+                    "ADV_sum_to": round(row_list[6], 2),
+                    "ADV_currency_to": row_list[7],
+                    "ADV_currency_rate": (
+                        round(row_list[8], 4) if row_list[8] != "" else ""
+                    ),
+                    "ADV_comment": row_list[9],
+                }
+            )
+            
+    elif (type == "depositO" or type == "depositC"):
+        for row in data:
+            row_list = list(row)
+            Finalhistory.append(
+                {
+                    "date_in": row_list[0],
+                    "name": row_list[1],
+                    "owner": row_list[2],
+                    "sum": round(row_list[3], 2),
+                    "currency": row_list[4],
+                    "months": row_list[5],
+                    "date_out": row_list[6],
+                    "percent": round(row_list[7], 2),
+                    "currency_rate": round(row_list[8], 4),
+                    "expect": round(row_list[9], 2),
+                    "comment": row_list[10],
+                }
+            )
+
+    return Finalhistory
+
+
 def GenerateTable(flag):
     with sqlite3.connect(dbPath) as conn:
         c = conn.cursor()
@@ -866,7 +988,7 @@ def GenerateTable(flag):
             GROUP BY mt.type, p.currency
             ORDER BY mt.type, p.currency
         """
-        
+
         elif flag == "currType+%":
             query = """
             SELECT 
@@ -895,11 +1017,12 @@ def GenerateTable(flag):
             GROUP BY mt.type, p.currency
             ORDER BY mt.type, p.currency
         """
-        
+
         else:
-            return [] 
+            return []
 
         return c.execute(query).fetchall()
+
 
 def read_and_convert_data(x, mode, cursor):
     current_date = datetime.now().strftime("%Y-%m-%d")
@@ -1157,12 +1280,12 @@ def ReadAdv(type, month):
         c.execute(query, params)
 
         return c.fetchall()
-    
+
     elif type == "subcatrep":
         subcatQuery = "SELECT DISTINCT sub_category FROM main WHERE sum < 0"
         subcatList = c.execute(subcatQuery).fetchall()
         subcatList = [subcat[0] for subcat in subcatList]
-        
+
         query = """
         SELECT sub_category, currency, sum, date
         FROM main
@@ -1210,7 +1333,6 @@ def ReadAdv(type, month):
         conn.close()
 
         return modified_list
-
 
 
 def ConvertToRON(currency, amount, date, c):

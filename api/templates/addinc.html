@@ -1,134 +1,86 @@
 {% extends 'base.html' %}
 
 {% block body %}
-  <h2>Income records</h2>
-  <form action="/add/income" method="post">
-    <table>
-      <tr>
-        <th>Date</th>
-        <th>Category</th>
-        <th>Person-Bank</th>
-        <th>Sum</th>
-        <th>Currency</th>
-        <th>Comment</th>
-      </tr>
-      <tr>
-        <td>
-          <input type="date" id="Date" name="Date" class="date" required />
-        </td>
-        <td class="fields">
-          <select id="Category" name="Category" class="select" required>
-            <option value="" disabled selected></option>
-            {% for category in options.categories %}
-              <option value="{{ category }}">{{ category }}</option>
-            {% endfor %}
-          </select>
-        </td>
-        <td class="fields">
-          <select id="Person-Bank" name="Person-Bank" class="select" required>
-            <option value="" disabled selected></option>
-            {% for person_bank in options.person_banks %}
-              <option value="{{ person_bank }}">{{ person_bank }}</option>
-            {% endfor %}
-          </select>
-        </td>
-        <td class="fields">
-          <input type="text" id="Sum" name="Sum" autocomplete="off" required />
-        </td>
-        <td>
-          <select id="Currency" name="Currency" class="select_curr" required>
-            <option value="" disabled selected></option>
-            {% for currency in options.currencies %}
-              <option value="{{ currency }}">{{ currency }}</option>
-            {% endfor %}
-          </select>
-        </td>
-        <td class="fields">
-          <input type="text" id="Comment" name="Comment" autocomplete="off" />
-        </td>
-      </tr>
-    </table><br />
-    <input type="submit" value="Add" class="submitrec" />
-  </form>
-  <br />
-  <br />
-  {% if columns and data %}
-    <h3>Income History</h3>
-    <table class="historytable">
-      <thead>
-        <tr>
-          {% for column in columns %}
-            <th class="rep">{{ column }}</th>
+<h2>Income records</h2>
+<form action="/add/income" method="post" onsubmit="return false;">
+  <table>
+    <tr>
+      <th>Date</th>
+      <th>Category</th>
+      <th>Person-Bank</th>
+      <th>Sum</th>
+      <th>Currency</th>
+      <th>Comment</th>
+    </tr>
+    <tr>
+      <td class="fields_big">
+        <input type="date" id="Date" name="Date" class="standardWidth"/>
+      </td>
+      <td class="fields_big">
+        <select id="Category" name="Category" class="standardWidth">
+          <option value="" disabled selected></option>
+          {% for category in options.categories %}
+          <option value="{{ category }}">{{ category }}</option>
           {% endfor %}
-        </tr>
-      </thead>
-      <tbody>
-        {% for row in data %}
-          <tr>
-            {% for cell in row %}
-              {% if loop.index0 == 0 %}
-                <td class="rep">
-                  <a href="{{ url_for('EditIncome', id=cell) }}">{{ cell }}</a>
-                </td>
-              {% else %}
-                <td class="rep">{{ cell }}</td>
-              {% endif %}
-            {% endfor %}
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+        </select>
+      </td class="fields_big">
+      <td class="fields_big">
+        <select id="Person-Bank" name="Person-Bank" class="standardWidth">
+          <option value="" disabled selected></option>
+          {% for person_bank in options.person_banks %}
+          <option value="{{ person_bank }}">{{ person_bank }}</option>
+          {% endfor %}
+        </select>
+      </td>
+      <td class="fields_small">
+        <input type="text" id="Sum" name="Sum" autocomplete="off" class="standardWidth" />
+      </td>
+      <td class="fields_small">
+        <select id="Currency" name="Currency" class="standardWidth">
+          <option value="" disabled selected></option>
+          {% for currency in options.currencies %}
+          <option value="{{ currency }}">{{ currency }}</option>
+          {% endfor %}
+        </select>
+      </td>
+      <td class="fields_comment">
+        <input type="text" id="Comment" name="Comment" autocomplete="off" class="standardWidth" />
+      </td>
+    </tr>
+  </table><br />
+  <input type="submit" value="Add" class="submitrec" onclick="ValidateInc()"/>
+</form>
+<br />
+<br />
+<h3>Income History</h3>
+<table class="historytable">
+  <thead>
+    <tr>
+      <th class="rep">ID</th>
+      <th class="rep">Date</th>
+      <th class="rep">Category</th>
+      <th class="rep">Person bank</th>
+      <th class="rep">Sum</th>
+      <th class="rep">Currency</th>
+      <th class="rep">Comment</th>
+    </tr>
+  </thead>
+  {% if data %}
+  <tbody>
+    {% for record in data %}
+    <tr>
+      <td class="rep">
+        <a href="javascript:void(0);" id="id_{{ record.id }}" onclick="EditRecordInc(this)">{{ record.id }}</a>
+      </td>
+      <td class="rep">{{ record.date }}</td>
+      <td class="rep">{{ record.category }}</td>
+      <td class="rep">{{ record.pb }}</td>
+      <td class="rep">{{ record.sum }}</td>
+      <td class="rep">{{ record.currency }}</td>
+      <td class="rep">{{ record.comment }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
   {% endif %}
-  {% if edit_record %}
-    <br />
-    <h2>Edit Income</h2>
-    <form action="{{ url_for('EditIncome', id=edit_record.0.0) }}" method="post">
-      <table>
-        <tr>
-          <th>Date</th>
-          <th>Category</th>
-          <th>Person-Bank</th>
-          <th>Sum</th>
-          <th>Currency</th>
-          <th>Comment</th>
-        </tr>
-        <tr>
-          <td>
-            <input type="date" id="Date" name="Date" class="date" required />
-          </td>
-          <td class="fields">
-            <select id="Category" name="Category" class="select" required>
-              <option value="" disabled selected></option>
-              {% for category in options.categories %}
-                <option value="{{ category }}">{{ category }}</option>
-              {% endfor %}
-            </select>
-          </td>
-          <td class="fields">
-            <select id="Person-Bank" name="Person-Bank" class="select" required>
-              <option value="" disabled selected></option>
-              {% for person_bank in options.person_banks %}
-                <option value="{{ person_bank }}">{{ person_bank }}</option>
-              {% endfor %}
-            </select>
-          </td>
-          <td class="fields">
-            <input type="text" id="Sum" name="Sum" autocomplete="off" required />
-          </td>
-          <td>
-            <select id="Currency" name="Currency" class="select_curr" required>
-              <option value="" disabled selected></option>
-              {% for currency in options.currencies %}
-                <option value="{{ currency }}">{{ currency }}</option>
-              {% endfor %}
-            </select>
-          </td>
-          <td class="fields">
-            <input type="text" id="Comment" name="Comment" autocomplete="off" />
-          </td>
-        </tr>
-      </table><br />
-      <input type="submit" value="Update" class="submitrec" />
-    </form>
-  {% endif %}
+</table>
 {% endblock %}

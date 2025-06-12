@@ -2,8 +2,7 @@
 
 {% block body %}
 <h2>Transfer</h2>
-<form action="/transfer" method="post">
-    <input type="hidden" name="form_type" value="transfer">
+<form action="/transfer" method="post" id="FormStandard" onsubmit="return false;">
     <table>
         <tr>
             <th>Date</th>
@@ -14,41 +13,42 @@
             <th>Comment</th>
         </tr>
         <tr>
-            <td><input type="date" id="Date" name="Date" class="date" required></td>
-            <td class="fields">
-                <select id="Sender" name="Sender" class="select" required>
+            <td class="fields_big"><input type="date" id="Date" name="Date" class="standardWidth"></td>
+            <td class="fields_big">
+                <select id="Sender" name="Sender" class="standardWidth">
                     <option value="" disabled selected> </option>
                     {% for person_bank in options.person_banks %}
                     <option value="{{ person_bank }}">{{ person_bank }}</option>
                     {% endfor %}
                 </select>
             </td>
-            <td class="fields">
-                <select id="Receiver" name="Receiver" class="select" required>
+            <td class="fields_big">
+                <select id="Receiver" name="Receiver" class="standardWidth">
                     <option value="" disabled selected> </option>
                     {% for person_bank in options.person_banks %}
                     <option value="{{ person_bank }}">{{ person_bank }}</option>
                     {% endfor %}
                 </select>
             </td>
-            <td class="fields"><input type="text" id="Sum" name="Sum" autocomplete="off" required></td>
-            <td>
-                <select id="Currency" name="Currency" class="select_curr" required>
+            <td class="fields_small"><input type="text" id="Sum" name="Sum" autocomplete="off" class="standardWidth">
+            </td>
+            <td class="fields_small">
+                <select id="Currency" name="Currency" class="standardWidth">
                     <option value="" disabled selected> </option>
                     {% for currency in options.currencies %}
                     <option value="{{ currency }}">{{ currency }}</option>
                     {% endfor %}
                 </select>
             </td>
-            <td class="fields"><input type="text" id="Comment" name="Comment" autocomplete="off"></td>
+            <td class="fields_comment"><input type="text" id="Comment" name="Comment" autocomplete="off"
+                    class="standardWidth"></td>
         </tr>
     </table><br>
-    <input type="submit" value="Add" class="submitrec">
+    <input type="submit" value="Add" id="Submit" class="submitrec" onclick="ValidateTransfer(isAdvanced = false)">
 </form>
 <br>
 <h2>Advanced transfer</h2>
-<form action="/transfer" method="post">
-    <input type="hidden" name="form_type" value="advtransfer">
+<form action="/transfer" method="post" id="FormAdvanced" onsubmit="return false;">
     <table>
         <tr>
             <th>Date</th>
@@ -62,97 +62,132 @@
             <th>Comment</th>
         </tr>
         <tr>
-            <td><input type="date" id="Date" name="Date" class="date" required></td>
+            <td class="fields_big"><input type="date" id="ADVDate" name="Date" class="standardWidth"></td>
             <td class="fields">
-                <select id="Sender" name="Sender" class="select" required>
+                <select id="ADVSender" name="Sender" class="standardWidth">
                     <option value="" disabled selected> </option>
                     {% for person_bank in options.person_banks %}
                     <option value="{{ person_bank }}">{{ person_bank }}</option>
                     {% endfor %}
                 </select>
             </td>
-            <td class="fields"><input type="text" id="SSum" name="SSum" autocomplete="off" required></td>
-            <td>
-                <select id="SCurrency" name="SCurrency" class="select_curr" required>
+            <td class="fields_small"><input type="text" id="ADVSSum" name="SSum" class="standardWidth" autocomplete="off"></td>
+            <td class="fields_big">
+                <select id="ADVSCurrency" name="SCurrency" class="standardWidth">
                     <option value="" disabled selected> </option>
                     {% for currency in options.currencies %}
                     <option value="{{ currency }}">{{ currency }}</option>
                     {% endfor %}
                 </select>
             </td>
-            <td class="fields">
-                <select id="Receiver" name="Receiver" class="select" required>
+            <td class="fields_big">
+                <select id="ADVReceiver" name="Receiver" class="standardWidth">
                     <option value="" disabled selected> </option>
                     {% for person_bank in options.person_banks %}
                     <option value="{{ person_bank }}">{{ person_bank }}</option>
                     {% endfor %}
                 </select>
             </td>
-            <td class="fields"><input type="text" id="RSum" name="RSum" autocomplete="off" required></td>
-            <td>
-                <select id="RCurrency" name="RCurrency" class="select_curr" required>
+            <td class="fields_small"><input type="text" id="ADVRSum" name="RSum" autocomplete="off"
+                    class="standardWidth"></td>
+            <td class="fields_small">
+                <select id="ADVRCurrency" name="RCurrency" class="standardWidth">
                     <option value="" disabled selected> </option>
                     {% for currency in options.currencies %}
                     <option value="{{ currency }}">{{ currency }}</option>
                     {% endfor %}
                 </select>
             </td>
-            <td class="SPfields">
-                <input type="text" id="CurrencyRate" name="Currency rate" autocomplete="off" class="SPfields" />
+            <td class="fields_small">
+                <input type="text" id="ADVCurrencyRate" name="Currency rate" autocomplete="off" class="standardWidth" />
             </td>
-            <td class="fields"><input type="text" id="Comment" name="Comment" autocomplete="off"></td>
+            <td class="fields_comment"><input type="text" id="ADVComment" name="Comment" autocomplete="off"
+                    class="standardWidth"></td>
         </tr>
     </table><br>
-    <input type="submit" value="Add" class="submitrec">
+    <input type="submit" value="Add" id="ADVSubmit" class="submitrec" onclick="ValidateTransfer(isAdvanced = true)">
 </form>
 <br>
-{% if columns and data %}
 <div class="container">
     <div class="table-container">
         <h3>Transfer records</h3>
-        <table class="reptable" style=" width: max-content;">
+        <table class="reptable" id="StandardHistory" style=" width: max-content;">
             <thead>
                 <tr>
-                    {% for column in columns %}
-                    <th class="rep" style=" width: max-content;">{{ column }}</th>
-                    {% endfor %}
+                    <th class="rep" style=" width: max-content;">ID</th>
+                    <th class="rep" style=" width: max-content;">Date</th>
+                    <th class="rep" style=" width: max-content;">Sender</th>
+                    <th class="rep" style=" width: max-content;">Receiver</th>
+                    <th class="rep" style=" width: max-content;">Sum</th>
+                    <th class="rep" style=" width: max-content;">Currency</th>
+                    <th class="rep" style=" width: max-content;">Comment</th>
                 </tr>
             </thead>
+            {% if data %}
             <tbody>
-                {% for row in data %}
+                {% for record in data %}
+                {% if record.id %}
                 <tr>
-                    {% for cell in row %}
-                    <td class="rep" style=" width: max-content;">{{ cell }}</td>
-                    {% endfor %}
+                    <td class="rep">
+                        <a href="javascript:void(0);" id="id_{{ record.id }}" onclick="EditRecordTransfer(this)"> {{
+                            record.id }} </a>
+                    </td>
+                    <td class="rep" style=" width: max-content;">{{ record.date }}</td>
+                    <td class="rep" style=" width: max-content;">{{ record.pb_from }}</td>
+                    <td class="rep" style=" width: max-content;">{{ record.pb_to }}</td>
+                    <td class="rep" style=" width: max-content;">{{ record.sum }}</td>
+                    <td class="rep" style=" width: max-content;">{{ record.currency }}</td>
+                    <td class="rep" style=" width: max-content;">{{ record.comment }}</td>
                 </tr>
+                {% endif %}
                 {% endfor %}
             </tbody>
+            {% endif %}
         </table>
     </div>
-    {% endif %}
     <br>
-    {% if columnsA and dataA %}
     <div class="table-container">
         <h3>Advanced transfer records</h3>
-        <table class="reptable" style=" width: max-content;">
+        <table class="reptable" id="AdvancedHistory" style=" width: max-content;">
             <thead>
                 <tr>
-                    {% for column in columnsA %}
-                    <th class="rep" style=" width: max-content;">{{ column }}</th>
-                    {% endfor %}
+                    <th class="rep" style=" width: max-content;">ID</th>
+                    <th class="rep" style=" width: max-content;">Date</th>
+                    <th class="rep" style=" width: max-content;">Sender</th>
+                    <th class="rep" style=" width: max-content;">Sum</th>
+                    <th class="rep" style=" width: max-content;">Currency</th>
+                    <th class="rep" style=" width: max-content;">Receiver</th>
+                    <th class="rep" style=" width: max-content;">Sum</th>
+                    <th class="rep" style=" width: max-content;">Currency</th>
+                    <th class="rep" style=" width: max-content;">Curr.Rate</th>
+                    <th class="rep">Comment</th>
                 </tr>
             </thead>
+            {% if data %}
             <tbody>
-                {% for row in dataA %}
+                {% for record in data %}
+                {% if record.ADV_id %}
                 <tr>
-                    {% for cell in row %}
-                    <td class="rep" style=" width: max-content;">{{ cell }}</td>
-                    {% endfor %}
+                    <td class="rep">
+                        <a href="javascript:void(0);" id="id_{{ record.ADV_id }}"
+                            onclick="EditRecordTransfer(this, true)">{{
+                            record.ADV_id }}</a>
+                    </td>
+                    <td class="rep" style=" width: max-content;">{{ record.ADV_date }}</td>
+                    <td class="rep" style=" width: max-content;">{{ record.ADV_pb_from }}</td>
+                    <td class="rep" style=" width: max-content;">{{ record.ADV_sum_from }}</td>
+                    <td class="rep" style=" width: max-content;">{{ record.ADV_currency_from }}</td>
+                    <td class="rep" style=" width: max-content;">{{ record.ADV_pb_to }}</td>
+                    <td class="rep" style=" width: max-content;">{{ record.ADV_sum_to }}</td>
+                    <td class="rep" style=" width: max-content;">{{ record.ADV_currency_to }}</td>
+                    <td class="rep" style=" width: max-content;">{{ record.ADV_currency_rate }}</td>
+                    <td class="rep">{{ record.ADV_comment }}</td>
                 </tr>
+                {% endif %}
                 {% endfor %}
             </tbody>
+            {% endif %}
         </table>
     </div>
 </div>
-{% endif %}
 {% endblock %}
