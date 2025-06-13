@@ -80,6 +80,7 @@ function ValidateInc(Edit = false, id = null) {
     const FormData = {
         date: date,
         category: cat,
+        subCategory: " ",
         personBank: pb,
         sum: parseFloat(sum).toFixed(2),
         currency: curr,
