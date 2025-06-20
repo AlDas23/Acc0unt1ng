@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block body %}
+
+<h2>Reports view</h2>
+<div class="report_menu">
+    <label for="rep_type">Report type</label>
+    <select name="rep_type" id="rep_type">
+        <!-- TODO: Add more reports types from original report page. -->
+        <option value="None" disabled selected> </option>
+        <option value="inccat">Income categories</option>
+        <option value="expcat">Expense categories</option>
+    </select>
+    <br>
+    <label for="rep_format">Output format</label>
+    <select name="rep_format" id="rep_format">
+        <option value="percent" selected>Converted to %</option>
+        <option value="ron">Converted to RON</option>
+    </select>
+    <br>
+    <!-- TODO: Checklist with categories to filter. Should be active only in certain report types. -->
+</div>
+
+<div class="report_table">
+    <!-- {% if table_data %}
+    <h3>{{ table_data.type }}</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Months</th>
+                {% for i in range(1, 13) %}
+                <th>{{ i }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Total</td>
+                {% for record in table_data.total %}
+                <td>{{ record }}</td>
+                {% endfor %}
+            </tr>
+            {% for row_name, row_data in table_data.table_dict.items() %}
+            <tr>
+                <td>{{ row_name }}</td>
+                {% for data in row_data %}
+                <td>{{ data }}</td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %} -->
+</div>
+
+{% endblock}
