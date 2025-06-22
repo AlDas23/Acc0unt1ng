@@ -693,7 +693,7 @@ def Read(x):
             currency = row[3]  # currency of the transaction
 
             # Convert the amount to RON
-            amount_in_ron = ConvertToRON(currency, amount, date, c)
+            amount_in_ron = ConvertToRON_OLD(currency, amount, date, c)
 
             # Initialize the month entry if not already present
             if month not in monthly_data:
@@ -762,7 +762,7 @@ def Read(x):
                 monthly_data[month][currency] = total
 
                 # Convert the total to RON using the conversion function
-                total_in_RON = ConvertToRON(currency, total, date, c)
+                total_in_RON = ConvertToRON_OLD(currency, total, date, c)
                 monthly_data[month]["total_in_RON"] += total_in_RON
 
         # Prepare the result for each month with the total per currency and total in RON
@@ -816,7 +816,7 @@ def Read(x):
                 monthly_data[month][currency] = total
 
                 # Convert the total to RON using the conversion function
-                total_in_RON = ConvertToRON(currency, total, date, c)
+                total_in_RON = ConvertToRON_OLD(currency, total, date, c)
                 monthly_data[month]["total_in_RON"] += total_in_RON
 
         # Prepare the result for each month with the total per currency and total in RON
@@ -851,6 +851,25 @@ def Read(x):
         query = "SELECT Date, RON, EUR, USD, GBP, CHF FROM exc_rate ORDER BY date"
         df = pd.read_sql_query(query, conn)
         return df
+
+    elif x == "retcat":
+        c.execute("SELECT DISTINCT category FROM main ORDER BY category DESC")
+        result = [row[0] for row in c.fetchall()]
+        return result
+
+    elif x == "retcat+":
+        c.execute(
+            "SELECT DISTINCT category FROM main WHERE sum > 0 ORDER BY category DESC"
+        )
+        result = [row[0] for row in c.fetchall()]
+        return result
+
+    elif x == "retcat-":
+        c.execute(
+            "SELECT DISTINCT category FROM main WHERE sum < 0 ORDER BY category DESC"
+        )
+        result = [row[0] for row in c.fetchall()]
+        return result
 
     conn.commit()
     conn.close()
@@ -934,8 +953,8 @@ def GetTransactionHistory(type):
                     "ADV_comment": row_list[9],
                 }
             )
-            
-    elif (type == "depositO" or type == "depositC"):
+
+    elif type == "depositO" or type == "depositC":
         for row in data:
             row_list = list(row)
             Finalhistory.append(
@@ -1039,7 +1058,7 @@ def read_and_convert_data(x, mode, cursor):
             currency = row_list[0]
             amount = row_list[1]
 
-            converted_amount = ConvertToRON(currency, amount, current_date, cursor)
+            converted_amount = ConvertToRON_OLD(currency, amount, current_date, cursor)
 
             modified_dict[currency] = converted_amount
 
@@ -1050,7 +1069,7 @@ def read_and_convert_data(x, mode, cursor):
             amount = row_list[1]
             currency_column = row_list[2]
 
-            converted_amount = ConvertToRON(
+            converted_amount = ConvertToRON_OLD(
                 currency_column, amount, current_date, cursor
             )
 
@@ -1108,7 +1127,7 @@ def ConvReadPlus(x, mode):
         amount = round(row_list[1], 2)
         currency_column = row_list[2]
 
-        converted_amount = ConvertToRON(currency_column, amount, current_date, c)
+        converted_amount = ConvertToRON_OLD(currency_column, amount, current_date, c)
 
         # Append the tuple with the converted amount
         modified_list.append((owner, currency_column, amount, converted_amount))
@@ -1117,6 +1136,71 @@ def ConvReadPlus(x, mode):
     conn.close()
 
     return modified_list
+
+
+def GenerateReport(params):
+    # Function for generating table_data for reports page
+    table_data = {"table_dict": {}, "total": []}
+    # Months lsit
+    months = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"]
+
+    temp = params.split(",")
+    rType = temp[0]
+    table_data.update({"report_type": rType})
+    rFormat = temp[1]
+
+    if rType == "inccat":
+        catList = Read("retcat+")
+
+        for cat in catList:
+            for month in months:
+                with sqlite3.connect(dbPath) as conn:
+                    c = conn.cursor()
+                    query = """
+                    SELECT 
+                        category, sum, currency
+                    FROM 
+                        main 
+                    WHERE 
+                        strftime('%m', date) = ?
+                        AND
+                        category = ?
+                    """, (
+                        month,
+                        cat,
+                    )
+                    c.execute(query)
+                    data = c.fetchall()
+                    converted = []
+
+                    if data:
+                        for row in data:
+                            row_list = list(row)
+                            category = row_list[0]
+                            amount = round(row_list[1], 2)
+                            currency = row_list[2]
+                            convertedAmount = ConvertToRON(currency, amount, c)
+                            converted.append(category, convertedAmount)
+                    else:
+                        converted.append(cat, 0)
+
+                    totalConverted = [converted[0], sum(row[1] for row in converted)]
+                    
+                    if totalConverted[0] in table_data["table_dict"]:
+                        table_data["table_dict"][totalConverted[0]].append(totalConverted[1])
+                    else:
+                        table_data["table_dict"][totalConverted[0]] = [totalConverted[1]]
+                        
+        total = [0] * 12
+        for values in table_data["table_dict"].values():
+            for i in range(12):
+                total[i] += values[i]
+        table_data.update["total"] = total
+
+    elif rType == "expcat":
+        catList = Read("retcat-")
+
+    return table_data
 
 
 def ReadAdv(type, month):
@@ -1179,7 +1263,7 @@ def ReadAdv(type, month):
             amount = row_list[2]
             date = row_list[3]
 
-            converted_amount = ConvertToRON(currency, amount, date, c)
+            converted_amount = ConvertToRON_OLD(currency, amount, date, c)
 
             if category in modified_dict:
                 modified_dict[category] += converted_amount
@@ -1236,7 +1320,7 @@ def ReadAdv(type, month):
             amount = row_list[2]
             date = row_list[3]
 
-            converted_amount = ConvertToRON(currency, amount, date, c)
+            converted_amount = ConvertToRON_OLD(currency, amount, date, c)
 
             if category in modified_dict:
                 modified_dict[category] += converted_amount
@@ -1309,7 +1393,7 @@ def ReadAdv(type, month):
             amount = row_list[2]
             date = row_list[3]
 
-            converted_amount = ConvertToRON(currency, amount, date, c)
+            converted_amount = ConvertToRON_OLD(currency, amount, date, c)
 
             if subCategory in modified_dict:
                 modified_dict[subCategory] += converted_amount
@@ -1335,7 +1419,7 @@ def ReadAdv(type, month):
         return modified_list
 
 
-def ConvertToRON(currency, amount, date, c):
+def ConvertToRON_OLD(currency, amount, date, c):
     # Converting to RON
 
     if currency != "RON":
@@ -1357,6 +1441,11 @@ def ConvertToRON(currency, amount, date, c):
     converted_amount = round(amount * excRate, 2)
 
     return converted_amount
+
+
+def ConvertToRON(currency, amount, c):
+
+    return convertedAmount
 
 
 def MarkerRead(mode, markers=None):
