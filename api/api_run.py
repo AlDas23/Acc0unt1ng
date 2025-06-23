@@ -424,9 +424,36 @@ def ViewReports():
         Rcolumns=Rcolumns,
         Rdata=Rdata,
     )
+    
+@app.route("/view/reports/table", methods=["GET", "POST"])
+def Report():
+    if request.method == "GET":
+        return render_template("reports.html")
+    elif request.method == "POST":
+        content = request.get_json()
+        if content is None:
+            return "Error: No JSON data received", 400
 
+        # Parse JSON data into string line
+        params = ",".join([str(content[key]) for key in content.keys()])
 
-@app.route("/view/advrep", methods=["POST", "GET"])
+        try:
+            table_data = GenerateReport(params)
+            return jsonify({"success": True, "table_data": table_data})
+        except Exception as e:
+            print(f"Error occurred: {str(e)}")
+            error_message = str(e)
+            return (
+                jsonify(
+                    {
+                        "success": False,
+                        "message": error_message,
+                    }
+                ),
+                400,
+            )
+
+@app.route("/view/reports/legacy", methods=["POST", "GET"])
 def ViewAdvReports():
     if request.method == "GET":
         return render_template(

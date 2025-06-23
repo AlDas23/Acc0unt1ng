@@ -26,8 +26,8 @@
       onclick="window.location.href='/currency'">Currency rates</button>
     <button class="nav_button {% if request.path == '/view/acc' %}disabled{% endif %}"
       onclick="window.location.href='/view/acc'">Balance sheet</button>
-    <button class="nav_button {% if request.path == '/view/advrep' %}disabled{% endif %}"
-      onclick="window.location.href='/view/advrep'">Monthly reports</button>
+    <button class="nav_button {% if request.path == '/view/reports/table' %}disabled{% endif %}"
+      onclick="window.location.href='/view/reports/table'">Reports table</button>
     <button class="nav_button {% if request.path == '/view/rep' %}disabled{% endif %}"
       onclick="window.location.href='/view/rep'">Yearly reports</button>
     <button class="nav_button" onclick="window.location.href='/invest'">Invest managment</button>

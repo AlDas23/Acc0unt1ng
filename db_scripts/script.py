@@ -852,6 +852,25 @@ def Read(x):
         df = pd.read_sql_query(query, conn)
         return df
 
+    elif x == "retcat":
+        c.execute("SELECT DISTINCT category FROM main ORDER BY category DESC")
+        result = [row[0] for row in c.fetchall()]
+        return result
+
+    elif x == "retcat+":
+        c.execute(
+            "SELECT DISTINCT category FROM main WHERE sum > 0 ORDER BY category DESC"
+        )
+        result = [row[0] for row in c.fetchall()]
+        return result
+
+    elif x == "retcat-":
+        c.execute(
+            "SELECT DISTINCT category FROM main WHERE sum < 0 ORDER BY category DESC"
+        )
+        result = [row[0] for row in c.fetchall()]
+        return result
+
     conn.commit()
     conn.close()
 
@@ -934,8 +953,8 @@ def GetTransactionHistory(type):
                     "ADV_comment": row_list[9],
                 }
             )
-            
-    elif (type == "depositO" or type == "depositC"):
+
+    elif type == "depositO" or type == "depositC":
         for row in data:
             row_list = list(row)
             Finalhistory.append(
@@ -1117,6 +1136,75 @@ def ConvReadPlus(x, mode):
     conn.close()
 
     return modified_list
+
+
+def GenerateReport(params):
+    # Function for generating table_data for reports page
+    table_data = {"table_dict": {}, "total": []}
+    # Months lsit
+    months = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"]
+
+    temp = params.split(",")
+    rType = temp[0]
+    table_data["report_type"] = rType
+    rFormat = temp[1]
+    table_data["report_format"] = rFormat
+
+    if rType == "inccat":
+        catList = Read("retcat+")
+    elif rType == "expcat":
+        catList = Read("retcat-")
+
+    with sqlite3.connect(dbPath) as conn:
+        c = conn.cursor()
+
+    for cat in catList:
+        for month in months:
+            query = """
+                SELECT category, sum, currency, date FROM main 
+                WHERE strftime('%m', date) = ? AND category = ?
+                """
+            c.execute(query, (month, cat))
+            data = c.fetchall()
+            converted = []
+
+            if data:
+                for row in data:
+                    category, amount, currency, date = row
+                    amount = abs(round(amount, 2))
+                    convertedAmount = ConvertToRON(currency, amount, date, c)
+                    converted.append((category, convertedAmount))
+            else:
+                converted.append((cat, 0))
+
+            totalConverted = [converted[0][0], sum(row[1] for row in converted)]
+
+            if totalConverted[0] in table_data["table_dict"]:
+                table_data["table_dict"][totalConverted[0]].append(round(totalConverted[1], 2))
+            else:
+                table_data["table_dict"][totalConverted[0]] = [round(totalConverted[1],2)]
+
+    total = [0] * 12
+    for values in table_data["table_dict"].values():
+        for i in range(12):
+            total[i] += values[i]
+            
+    total = [round(x, 2) for x in total]
+
+    if rFormat == "ron":
+        table_data["total"] = total
+
+    elif rFormat == "percent":
+        for category, values in table_data["table_dict"].items():
+            for i in range(12):
+                if total[i] == 0:
+                    table_data["table_dict"][category][i] = 0
+                else:
+                    table_data["table_dict"][category][i] = round(
+                        (values[i] / total[i]) * 100, 2
+                    )
+
+    return table_data
 
 
 def ReadAdv(type, month):
@@ -1357,7 +1445,6 @@ def ConvertToRON(currency, amount, date, c):
     converted_amount = round(amount * excRate, 2)
 
     return converted_amount
-
 
 def MarkerRead(mode, markers=None):
     # Function for returning markers sums for type/owner/both markers
