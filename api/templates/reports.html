@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block body %}
+
+<button style="margin-left: 90%; width: 60px" onclick="window.location.href='/view/reports/legacy'">Legacy reports</button>
+<h2>Reports view</h2>
+<div class="report_menu">
+    <label for="rep_type">Report type</label>
+    <select name="rep_type" id="rep_type">
+        <!-- TODO: Add more reports types from original report page. -->
+        <option value="None" disabled selected> </option>
+        <option value="inccat">Income categories</option>
+        <option value="expcat">Expense categories</option>
+    </select>
+    <br>
+    <label for="rep_format">Output format</label>
+    <select name="rep_format" id="rep_format">
+        <option value="percent" selected>Converted to %</option>
+        <option value="ron">Converted to RON</option>
+    </select>
+    <br>
+    <!-- TODO: Checklist with categories to filter. Should be active only in certain report types. -->
+    <br>
+    <button style="width: 80px; height: 26px;" onclick="validateReport()">Show table</button>
+</div>
+
+<div id="rep_table" class="report_table">
+    <!-- Table is generated via script -->
+</div>
+
+{% endblock %}

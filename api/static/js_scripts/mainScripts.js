@@ -382,3 +382,107 @@ function EditRecordTransfer(element, isAdvanced = false) {
         submitButton.setAttribute('onclick', 'ValidateTransfer(isAdvanced = true, Edit=true, ' + id + ')');
     }
 }
+
+function createReportTable(tableData) {
+    // Create table
+    const table = document.createElement('table');
+    table.className = 'reptable';
+    table.style.width = '95%';
+
+    // Create thead
+    const thead = document.createElement('thead');
+    const headRow = document.createElement('tr');
+    const thMonths = document.createElement('th');
+    thMonths.className = 'genRep_HeaderCell';
+    thMonths.textContent = 'Months';
+    headRow.appendChild(thMonths);
+
+    for (let i = 1; i <= 12; i++) {
+        const th = document.createElement('th');
+        th.className = 'genRep_HeaderCell';
+        th.textContent = i;
+        headRow.appendChild(th);
+    }
+    thead.appendChild(headRow);
+    table.appendChild(thead);
+
+    // Create tbody
+    const tbody = document.createElement('tbody');
+
+    // Total row
+    if (tableData.report_format === "ron") {
+        const totalRow = document.createElement('tr');
+        const tdTotal = document.createElement('td');
+        tdTotal.textContent = 'Total';
+        tdTotal.className = 'genRep_HeaderCell';
+        totalRow.appendChild(tdTotal);
+
+        tableData.total.forEach(val => {
+            const td = document.createElement('td');
+            td.className = 'genRep_DataCell';
+            td.textContent = val;
+            totalRow.appendChild(td);
+        });
+        tbody.appendChild(totalRow);
+    }
+
+    // Data rows
+    const sortedEntries = Object.entries(tableData.table_dict).sort((a, b) => a[0].localeCompare(b[0]));
+    for (const [rowName, rowData] of sortedEntries) {
+        const row = document.createElement('tr');
+        const tdName = document.createElement('td');
+        tdName.className = 'genRep_HeaderCell';
+        tdName.textContent = rowName;
+        row.appendChild(tdName);
+
+        rowData.forEach(val => {
+            const td = document.createElement('td');
+            td.className = 'genRep_DataCell';
+            td.textContent = val;
+            row.appendChild(td);
+        });
+        tbody.appendChild(row);
+    }
+
+    table.appendChild(tbody);
+
+    return table;
+}
+
+function validateReport() {
+    const report_type = document.getElementById("rep_type").value;
+    const report_format = document.getElementById("rep_format").value;
+
+    if (report_type === "None") {
+        alert("Please select a report type.");
+        return false;
+    }
+
+    FormData = {
+        report_type: report_type,
+        report_format: report_format
+    };
+
+    // Send POST request
+    fetch("/view/reports/table", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(FormData)
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const reportDiv = document.querySelector('.report_table');
+                reportDiv.innerHTML = "";
+                reportDiv.appendChild(createReportTable(data.table_data));
+            } else {
+                alert('Error: ' + (data.message || 'Failed to build table'));
+            }
+        })
+        .catch(error => {
+            console.error('Unexpected error:', error);
+            alert('Unexpected error occurred');
+        });
+}
