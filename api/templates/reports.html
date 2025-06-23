@@ -2,6 +2,7 @@
 
 {% block body %}
 
+<button style="margin-left: 90%; width: 60px" onclick="window.location.href='/view/reports/legacy'">Legacy reports</button>
 <h2>Reports view</h2>
 <div class="report_menu">
     <label for="rep_type">Report type</label>
@@ -19,38 +20,12 @@
     </select>
     <br>
     <!-- TODO: Checklist with categories to filter. Should be active only in certain report types. -->
+    <br>
+    <button style="width: 80px; height: 26px;" onclick="validateReport()">Show table</button>
 </div>
 
-<div class="report_table">
-    <!-- {% if table_data %}
-    <h3>{{ table_data.type }}</h3>
-    <table>
-        <thead>
-            <tr>
-                <th>Months</th>
-                {% for i in range(1, 13) %}
-                <th>{{ i }}</th>
-                {% endfor %}
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>Total</td>
-                {% for record in table_data.total %}
-                <td>{{ record }}</td>
-                {% endfor %}
-            </tr>
-            {% for row_name, row_data in table_data.table_dict.items() %}
-            <tr>
-                <td>{{ row_name }}</td>
-                {% for data in row_data %}
-                <td>{{ data }}</td>
-                {% endfor %}
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% endif %} -->
+<div id="rep_table" class="report_table">
+    <!-- Table is generated via script -->
 </div>
 
-{% endblock}
+{% endblock %}

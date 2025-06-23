@@ -424,10 +424,10 @@ def ViewReports():
         Rdata=Rdata,
     )
     
-@app.route("/report", methods=["GET", "POST"])
+@app.route("/view/reports/table", methods=["GET", "POST"])
 def Report():
     if request.method == "GET":
-        return render_template("report.html")
+        return render_template("reports.html")
     elif request.method == "POST":
         content = request.get_json()
         if content is None:
@@ -452,7 +452,7 @@ def Report():
                 400,
             )
 
-@app.route("/view/advrep", methods=["POST", "GET"])
+@app.route("/view/reports/legacy", methods=["POST", "GET"])
 def ViewAdvReports():
     if request.method == "GET":
         return render_template(

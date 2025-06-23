@@ -384,26 +384,22 @@ function EditRecordTransfer(element, isAdvanced = false) {
 }
 
 function createReportTable(tableData) {
-    // Create container
-    const container = document.createElement('div');
-
-    // Add heading
-    const heading = document.createElement('h3');
-    heading.textContent = tableData.type;
-    container.appendChild(heading);
-
     // Create table
     const table = document.createElement('table');
+    table.className = 'reptable';
+    table.style.width = '95%';
 
     // Create thead
     const thead = document.createElement('thead');
     const headRow = document.createElement('tr');
     const thMonths = document.createElement('th');
+    thMonths.className = 'genRep_HeaderCell';
     thMonths.textContent = 'Months';
     headRow.appendChild(thMonths);
 
     for (let i = 1; i <= 12; i++) {
         const th = document.createElement('th');
+        th.className = 'genRep_HeaderCell';
         th.textContent = i;
         headRow.appendChild(th);
     }
@@ -414,27 +410,34 @@ function createReportTable(tableData) {
     const tbody = document.createElement('tbody');
 
     // Total row
-    const totalRow = document.createElement('tr');
-    const tdTotal = document.createElement('td');
-    tdTotal.textContent = 'Total';
-    totalRow.appendChild(tdTotal);
+    if (tableData.report_format === "ron") {
+        const totalRow = document.createElement('tr');
+        const tdTotal = document.createElement('td');
+        tdTotal.textContent = 'Total';
+        tdTotal.className = 'genRep_HeaderCell';
+        totalRow.appendChild(tdTotal);
 
-    tableData.total.forEach(val => {
-        const td = document.createElement('td');
-        td.textContent = val;
-        totalRow.appendChild(td);
-    });
-    tbody.appendChild(totalRow);
+        tableData.total.forEach(val => {
+            const td = document.createElement('td');
+            td.className = 'genRep_DataCell';
+            td.textContent = val;
+            totalRow.appendChild(td);
+        });
+        tbody.appendChild(totalRow);
+    }
 
     // Data rows
-    for (const [rowName, rowData] of Object.entries(tableData.table_dict)) {
+    const sortedEntries = Object.entries(tableData.table_dict).sort((a, b) => a[0].localeCompare(b[0]));
+    for (const [rowName, rowData] of sortedEntries) {
         const row = document.createElement('tr');
         const tdName = document.createElement('td');
+        tdName.className = 'genRep_HeaderCell';
         tdName.textContent = rowName;
         row.appendChild(tdName);
 
         rowData.forEach(val => {
             const td = document.createElement('td');
+            td.className = 'genRep_DataCell';
             td.textContent = val;
             row.appendChild(td);
         });
@@ -442,9 +445,8 @@ function createReportTable(tableData) {
     }
 
     table.appendChild(tbody);
-    container.appendChild(table);
 
-    return container;
+    return table;
 }
 
 function validateReport() {
@@ -462,7 +464,7 @@ function validateReport() {
     };
 
     // Send POST request
-    fetch("/report", {
+    fetch("/view/reports/table", {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
