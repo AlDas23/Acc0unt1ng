@@ -408,7 +408,7 @@ def ViewReports():
     currencies = read_csv(SPVcurrPath)
 
     Ldata = Read("yeartotalrep")
-    Lcolumns = ["Month", "Expenses", "Incomes", "Balance"]
+    Lcolumns = ["Month", "Incomes", "Expenses", "Balance"]
     Cdata = Read("yearexprep")
     Ccolumns = ["Month"] + currencies + ["Total in RON"]
     Rdata = Read("yearincrep")

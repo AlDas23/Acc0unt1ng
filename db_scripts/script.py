@@ -715,8 +715,8 @@ def Read(x):
             # Prepare the tuple for each month: (month, expense_in_RON, income_in_RON, total_in_RON)
             month_tuple = (
                 month,
-                round(data["expense"], 2),  # expense in RON
                 round(data["income"], 2),  # income in RON
+                round(data["expense"], 2),  # expense in RON
                 round(data["total"], 2),  # total in RON
             )
             result.append(month_tuple)
@@ -1180,15 +1180,19 @@ def GenerateReport(params):
             totalConverted = [converted[0][0], sum(row[1] for row in converted)]
 
             if totalConverted[0] in table_data["table_dict"]:
-                table_data["table_dict"][totalConverted[0]].append(round(totalConverted[1], 2))
+                table_data["table_dict"][totalConverted[0]].append(
+                    round(totalConverted[1], 2)
+                )
             else:
-                table_data["table_dict"][totalConverted[0]] = [round(totalConverted[1],2)]
+                table_data["table_dict"][totalConverted[0]] = [
+                    round(totalConverted[1], 2)
+                ]
 
     total = [0] * 12
     for values in table_data["table_dict"].values():
         for i in range(12):
             total[i] += values[i]
-            
+
     total = [round(x, 2) for x in total]
 
     if rFormat == "ron":
@@ -1445,6 +1449,7 @@ def ConvertToRON(currency, amount, date, c):
     converted_amount = round(amount * excRate, 2)
 
     return converted_amount
+
 
 def MarkerRead(mode, markers=None):
     # Function for returning markers sums for type/owner/both markers
