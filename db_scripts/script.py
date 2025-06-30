@@ -724,17 +724,16 @@ def Read(x):
         return result
 
     elif x == "yearexprep":
-        # Fetching the monthly data with expenses per currency
+        # Fetch all negative expense records with exact date
         c.execute(
             """
             SELECT 
                 strftime('%Y-%m', "date") AS month,
                 currency,
-                ROUND(SUM(CASE WHEN sum < 0 THEN ABS(sum) ELSE 0 END), 2) AS total_expense,
+                ABS(sum) AS expense,
                 "date"
             FROM main
             WHERE sum < 0
-            GROUP BY month, currency
             ORDER BY month
             """
         )
@@ -747,36 +746,35 @@ def Read(x):
         for row in rows:
             month = row[0]
             currency = row[1]
-            total = row[2]
+            amount = row[2]
             date = row[3]
 
-            # Initialize the monthly data with currency totals if not already present
+            # Initialize monthly data structure
             if month not in monthly_data:
                 monthly_data[month] = {curr: 0 for curr in currencies}
-                monthly_data[month][
-                    "total_in_RON"
-                ] = 0  # Initialize RON total for the month
+                monthly_data[month]["total_in_RON"] = 0
 
-            # If currency is found in the list of valid currencies
             if currency in currencies:
-                monthly_data[month][currency] = total
+                # Sum original amount per currency
+                monthly_data[month][currency] += amount
 
-                # Convert the total to RON using the conversion function
-                total_in_RON = ConvertToRON(currency, total, date, c)
+                # Convert to RON using exact date
+                total_in_RON = ConvertToRON(currency, amount, date, c)
                 monthly_data[month]["total_in_RON"] += total_in_RON
 
-        # Prepare the result for each month with the total per currency and total in RON
+        # Prepare final output
         for month in sorted(monthly_data.keys()):
             month_tuple = (
                 (month,)
                 + tuple(
-                    round(monthly_data[month][currency], 2) for currency in currencies
+                    int(monthly_data[month][currency]) for currency in currencies
                 )
-                + (round(monthly_data[month]["total_in_RON"], 0),)
-            )  # Append RON total
+                + (int(monthly_data[month]["total_in_RON"]),)
+            )
             result.append(month_tuple)
 
         return result
+
 
     elif x == "yearincrep":
         c.execute(
@@ -784,7 +782,7 @@ def Read(x):
             SELECT 
                 strftime('%Y-%m', "date") AS month,
                 currency,
-                ROUND(SUM(CASE WHEN sum > 0 THEN ABS(sum) ELSE 0 END), 2) AS total_income,
+                ABS(sum) AS income,
                 "date"
             FROM main
             WHERE sum > 0
@@ -801,33 +799,31 @@ def Read(x):
         for row in rows:
             month = row[0]
             currency = row[1]
-            total = row[2]
+            amount = row[2]
             date = row[3]
 
-            # Initialize the monthly data with currency totals if not already present
+            # Initialize monthly data structure
             if month not in monthly_data:
                 monthly_data[month] = {curr: 0 for curr in currencies}
-                monthly_data[month][
-                    "total_in_RON"
-                ] = 0  # Initialize RON total for the month
+                monthly_data[month]["total_in_RON"] = 0
 
-            # If currency is found in the list of valid currencies
             if currency in currencies:
-                monthly_data[month][currency] = total
+                # Sum original amount per currency
+                monthly_data[month][currency] += amount
 
-                # Convert the total to RON using the conversion function
-                total_in_RON = ConvertToRON(currency, total, date, c)
+                # Convert to RON using exact date
+                total_in_RON = ConvertToRON(currency, amount, date, c)
                 monthly_data[month]["total_in_RON"] += total_in_RON
 
-        # Prepare the result for each month with the total per currency and total in RON
+        # Prepare final output
         for month in sorted(monthly_data.keys()):
             month_tuple = (
                 (month,)
                 + tuple(
-                    round(monthly_data[month][currency], 2) for currency in currencies
+                    int(monthly_data[month][currency]) for currency in currencies
                 )
-                + (round(monthly_data[month]["total_in_RON"], 0),)
-            )  # Append RON total
+                + (int(monthly_data[month]["total_in_RON"]),)
+            )
             result.append(month_tuple)
 
         return result
@@ -1143,70 +1139,89 @@ def GenerateReport(params):
     table_data = {"table_dict": {}, "total": []}
     # Months lsit
     months = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"]
-
-    temp = params.split(",")
-    rType = temp[0]
-    table_data["report_type"] = rType
-    rFormat = temp[1]
-    table_data["report_format"] = rFormat
-
-    if rType == "inccat":
-        catList = Read("retcat+")
-    elif rType == "expcat":
-        catList = Read("retcat-")
-
+    queryCat = """
+                    SELECT category, sum, currency, date FROM main 
+                    WHERE strftime('%m', date) = ? AND category = ?
+                    """
+    querySubcat = """
+                    SELECT sub_category, sum, currency, date FROM main 
+                    WHERE strftime('%m', date) = ? AND sub_category = ?
+                    """
+    
     with sqlite3.connect(dbPath) as conn:
         c = conn.cursor()
 
-    for cat in catList:
-        for month in months:
-            query = """
-                SELECT category, sum, currency, date FROM main 
-                WHERE strftime('%m', date) = ? AND category = ?
-                """
-            c.execute(query, (month, cat))
-            data = c.fetchall()
-            converted = []
+        temp = params.split(",")
+        rType = temp[0]
+        table_data["report_type"] = rType
+        rFormat = temp[1]
+        table_data["report_format"] = rFormat
+        
+        if rType == "subcat":
+            categoryFilter = temp[2]
 
-            if data:
-                for row in data:
-                    category, amount, currency, date = row
-                    amount = abs(round(amount, 2))
-                    convertedAmount = ConvertToRON(currency, amount, date, c)
-                    converted.append((category, convertedAmount))
-            else:
-                converted.append((cat, 0))
+        if rType == "inccat":
+            catList = Read("retcat+")
+        elif rType == "expcat":
+            catList = Read("retcat-")
+        else:
+            c.execute("""
+                      SELECT DISTINCT sub_category FROM main
+                      WHERE category IN (?) 
+                      ORDER BY sub_category DESC
+                      """, (categoryFilter,))
+            catList = [row[0] for row in c.fetchall()]
 
-            totalConverted = [converted[0][0], sum(row[1] for row in converted)]
-
-            if totalConverted[0] in table_data["table_dict"]:
-                table_data["table_dict"][totalConverted[0]].append(
-                    round(totalConverted[1], 2)
-                )
-            else:
-                table_data["table_dict"][totalConverted[0]] = [
-                    round(totalConverted[1], 2)
-                ]
-
-    total = [0] * 12
-    for values in table_data["table_dict"].values():
-        for i in range(12):
-            total[i] += values[i]
-
-    total = [round(x, 2) for x in total]
-
-    if rFormat == "ron":
-        table_data["total"] = total
-
-    elif rFormat == "percent":
-        for category, values in table_data["table_dict"].items():
-            for i in range(12):
-                if total[i] == 0:
-                    table_data["table_dict"][category][i] = 0
+        for cat in catList:
+            for month in months:
+                if rType == "subcat":
+                    query = querySubcat
                 else:
-                    table_data["table_dict"][category][i] = round(
-                        (values[i] / total[i]) * 100, 2
+                    query = queryCat
+                    
+                c.execute(query, (month, cat))
+                data = c.fetchall()
+                converted = []
+
+                if data:
+                    for row in data:
+                        category, amount, currency, date = row
+                        amount = abs(round(amount, 2))
+                        convertedAmount = ConvertToRON(currency, amount, date, c)
+                        converted.append((category, convertedAmount))
+                else:
+                    converted.append((cat, 0))
+
+                totalConverted = [converted[0][0], sum(row[1] for row in converted)]
+
+                if totalConverted[0] in table_data["table_dict"]:
+                    table_data["table_dict"][totalConverted[0]].append(
+                        round(totalConverted[1], 2)
                     )
+                else:
+                    table_data["table_dict"][totalConverted[0]] = [
+                        round(totalConverted[1], 2)
+                    ]
+
+        total = [0] * 12
+        for values in table_data["table_dict"].values():
+            for i in range(12):
+                total[i] += values[i]
+
+        total = [round(x, 2) for x in total]
+
+        if rFormat == "ron":
+            table_data["total"] = total
+
+        elif rFormat == "percent":
+            for category, values in table_data["table_dict"].items():
+                for i in range(12):
+                    if total[i] == 0:
+                        table_data["table_dict"][category][i] = 0
+                    else:
+                        table_data["table_dict"][category][i] = round(
+                            (values[i] / total[i]) * 100, 2
+                        )
 
     return table_data
 

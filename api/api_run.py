@@ -377,7 +377,7 @@ def AddDeposit():
             openDep=openDep,
             closedDep=closedDep,
         )
-        
+
     if request.method == "POST":
         content = request.get_json()
         if content is None:
@@ -423,11 +423,28 @@ def ViewReports():
         Rcolumns=Rcolumns,
         Rdata=Rdata,
     )
-    
+
+
 @app.route("/view/reports/table", methods=["GET", "POST"])
 def Report():
     if request.method == "GET":
-        return render_template("reports.html")
+        try:
+            expCategories = read_csv(SPVcatExpPath)
+        except Exception as e:
+            print(f"Error occurred: {str(e)}")
+            error_message = str(e)
+            return (
+                jsonify(
+                    {
+                        "success": False,
+                        "message": error_message,
+                    }
+                ),
+                400,
+            )
+
+        return render_template("reports.html", categories=expCategories)
+
     elif request.method == "POST":
         content = request.get_json()
         if content is None:
@@ -451,6 +468,7 @@ def Report():
                 ),
                 400,
             )
+
 
 @app.route("/view/reports/legacy", methods=["POST", "GET"])
 def ViewAdvReports():
