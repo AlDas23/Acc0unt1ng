@@ -491,8 +491,8 @@ def ViewAdvReports():
                 data2 = ReadAdv(report_type2, month2)
                 columns2 = ["Category", "Sum RON", "%"]
             if report_type2 == "subcatrep":
-                data = ReadAdv(report_type, month)
-                columns = ["Sub-category", "Sum RON", "%"]
+                data2 = ReadAdv(report_type2, month2)
+                columns2 = ["Sub-category", "Sum RON", "%"]
             if report_type2 == "catincbankrep":
                 data2 = ReadAdv(report_type2, month2)
                 columns2 = ["Category", "Person bank", "Currency", "Sum"]
