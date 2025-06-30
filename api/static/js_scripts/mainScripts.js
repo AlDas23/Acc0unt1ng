@@ -452,16 +452,32 @@ function createReportTable(tableData) {
 function validateReport() {
     const report_type = document.getElementById("rep_type").value;
     const report_format = document.getElementById("rep_format").value;
+    const categorySelect = document.getElementById("rep_cat").value;
 
     if (report_type === "None") {
         alert("Please select a report type.");
         return false;
     }
 
-    FormData = {
-        report_type: report_type,
-        report_format: report_format
-    };
+    if (report_type === "subcat" && categorySelect === "None") {
+        alert("Please select a category for sub-categories report.");
+        return false;
+    }
+
+    if (report_type !== "subcat") {
+
+        FormData = {
+            report_type: report_type,
+            report_format: report_format
+        };
+    }
+    else {
+        FormData = {
+            report_type: report_type,
+            report_format: report_format,
+            category: categorySelect
+        };
+    }
 
     // Send POST request
     fetch("/view/reports/table", {
@@ -477,6 +493,8 @@ function validateReport() {
                 const reportDiv = document.querySelector('.report_table');
                 reportDiv.innerHTML = "";
                 reportDiv.appendChild(createReportTable(data.table_data));
+                const tableButton = document.getElementById("showTableButton");
+                tableButton.textContent = "Reload table";
             } else {
                 alert('Error: ' + (data.message || 'Failed to build table'));
             }
