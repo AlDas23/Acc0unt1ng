@@ -6,11 +6,12 @@
 <h2>Reports view</h2>
 <div class="report_menu">
     <label for="rep_type">Report type</label>
-    <select name="rep_type" id="rep_type">
+    <select name="rep_type" id="rep_type" onchange="categoryFilter()">
         <!-- TODO: Add more reports types from original report page. -->
         <option value="None" disabled selected> </option>
         <option value="inccat">Income categories</option>
         <option value="expcat">Expense categories</option>
+        <option value="subcat">Expense sub-categories</option>
     </select>
     <br>
     <label for="rep_format">Output format</label>
@@ -19,9 +20,32 @@
         <option value="ron">Converted to RON</option>
     </select>
     <br>
-    <!-- TODO: Checklist with categories to filter. Should be active only in certain report types. -->
+    <script>
+        function categoryFilter() {
+            const reportType = document.getElementById("rep_type").value;
+            const categorySelect = document.getElementById("rep_cat");
+            const categorySelectLabel = document.getElementById("rep_cat_label");
+            if (reportType === "inccat" || reportType === "expcat") {
+                categorySelect.disabled = true;
+                categorySelect.hidden = true
+                categorySelectLabel.hidden = true;
+            } else {
+                categorySelect.disabled = false;
+                categorySelect.hidden = false;
+                categorySelectLabel.hidden = false;
+                categorySelect.value = "None"; // Reset selection
+            }
+        }
+    </script>
+    <label id="rep_cat_label" for="rep_cat" hidden>Category filter (select 1)</label>
+    <select name="rep_cat" id="rep_cat" hidden disabled>
+        <option value="None" disabled selected> </option>
+        {% for category in categories %}
+            <option value="{{ category }}">{{ category }}</option>
+        {% endfor %}
+    </select>
     <br>
-    <button style="width: 80px; height: 26px;" onclick="validateReport()">Show table</button>
+    <button id="showTableButton" style="width: 84px; height: 26px;" onclick="validateReport()">Show table</button>
 </div>
 
 <div id="rep_table" class="report_table">
