@@ -1145,7 +1145,7 @@ def GenerateReport(params):
                     """
     querySubcat = """
                     SELECT sub_category, sum, currency, date FROM main 
-                    WHERE strftime('%m', date) = ? AND sub_category = ?
+                    WHERE strftime('%m', date) = ? AND sub_category = ? AND category = ?
                     """
     
     with sqlite3.connect(dbPath) as conn:
@@ -1175,11 +1175,11 @@ def GenerateReport(params):
         for cat in catList:
             for month in months:
                 if rType == "subcat":
-                    query = querySubcat
+                    c.execute(querySubcat, (month, cat, categoryFilter))
                 else:
-                    query = queryCat
+                    c.execute(queryCat, (month, cat))
                     
-                c.execute(query, (month, cat))
+                
                 data = c.fetchall()
                 converted = []
 
