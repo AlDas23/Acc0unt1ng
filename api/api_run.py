@@ -14,6 +14,8 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from db_scripts.script import *
+from db_scripts.baseScripts import Add, MarkerRead, Re_Calculate_deposit, Read
+from db_scripts.csvScripts import read_csv
 from db_scripts.consts import *
 from api.api_invest import investPage
 
@@ -407,11 +409,11 @@ def AddDeposit():
 def ViewReports():
     currencies = read_csv(SPVcurrPath)
 
-    Ldata = Read("yeartotalrep")
+    Ldata = GetYearlyData("yeartotalrep")
     Lcolumns = ["Month", "Incomes", "Expenses", "Balance"]
-    Rdata = Read("yearexprep")
+    Rdata = GetYearlyData("yearexprep")
     Rcolumns = ["Month"] + currencies + ["Total in RON"]
-    Cdata = Read("yearincrep")
+    Cdata = GetYearlyData("yearincrep")
     Ccolumns = ["Month"] + currencies + ["Total in RON"]
 
     return render_template(
@@ -666,194 +668,6 @@ def Currencies():
             )
 
         return redirect(url_for("Currencies"))
-
-
-# Functions from below are deprecated and will be removed in future.
-@app.route("/api", methods=["GET"])
-def APIHome():
-    return redirect("/api/help")
-
-
-@app.route("/api/help", methods=["GET"])
-def APIHelp():
-    return """
-API - Help message:
-
-Go to /api/read for Read functions.
-Go to /api/conf/mark to configure Markers.
-Go to /api/conf/spv to configure SPVs and account initialization function.
-Go to /api/conf/spv/read to read existing SPVs.
-    """
-
-
-@app.route("/api/read", methods=["GET", "POST"])
-def APIRead():
-    if request.method == "GET":
-        return """
-API - Read message:
-
-Make a POST request on this adress with in next format:
-
-       Key  |          Value
-    -----------------------------------
-    Command | *Command from list below*
-
-Possible commands are:
-    allm        - show all records from main table
-    m+          - show positive records from main table
-    m-          - show negative records from main table
-    allacc      - show all accounts
-    initpb      - show all initial accounts
-    alldepacc   - show all deposit accounts
-    alldep      - show all deposit records
-    opendep     - show deposit records that considered open
-    closeddep   - show deposit records that considered closed
-    alltran     - show all standard transfer records
-    alladvtran  - show all advanced transfer records  
-    allcurrrate - show all currency rates records 
-    mtype       - show all type markers
-    mowner      - show all owner markers
-    allmtype    - show all accounts grouped by type Marker
-    allmowner   - show all accounts grouped by owner Marker
-    exowner     - show existing owner Markers
-    extype      - show existing type Markers
-        """
-    elif request.method == "POST":
-        command = request.form.get("Command")
-        if not command:
-            return "Command not provided!", 400
-        response = Read(command)
-        if response is None:
-            return "Unknown command!"
-        else:
-            return response
-
-
-@app.route("/api/conf", methods=["GET"])
-def APIConf():
-    if request.method == "GET":
-        return "You are not suppsed to be here pal."
-
-
-@app.route("/api/conf/mark", methods=["GET", "POST"])
-def APIConfMark():
-    if request.method == "GET":
-        return """
-API - Configuration - Mark message:
-
-Make a POST request on this adress with in next format:
-    
-      Key  |                      Value
-    ----------------------------------------------------------
-    Type   | [owner, type]
-    BR     | *person_bank of account or deposit account name*
-    Marker | *Marker value*
-        """
-    else:
-        mode = request.form.get("Type")
-        br = request.form.get("BR")
-        marker = request.form.get("Marker")
-
-        # Check if any of the required form data is missing
-        if not mode or not br or not marker:
-            return "Missing one or more required fields: 'Type', 'BR', 'Marker'", 400
-
-        to_send = br + "," + marker
-        try:
-            Mark(to_send, mode)
-        except:
-            return "Wrong POST format!"
-        finally:
-            return "Mark success!"
-
-
-@app.route("/api/conf/spv", methods=["GET", "POST"])
-def APIConfSPV():
-    if request.method == "GET":
-        return """
-API - Configuration - SPV message:
-
-Commands available for POST are:
-    catinc  - income categories
-    catexp  - expense categories
-    subcat  - sub-categories (expense)
-    curr    - currencies 
-    initpb  - Initialize account
-    delpb   - Delete account. !WARNING!, dangerous function
-
-Make a POST request on this adress with in next format:
-    
-        Key   |                     Value
-    ----------------------------------------------------------
-    Command   | *From commands above*
-    SPVLine   | *For SPV values in format: str1,str2,...*  
-    Mode      | *For SPV values, [A]ppend or [R]eplace list* 
-    PB        | *Person_bank value*
-    Sum       | *Only applicable with initpb*
-    Currency  | *Currency value*
-        """
-    else:
-        command = request.form.get("Command")
-        SPVLine = request.form.get("SPVLine")
-        mode = request.form.get("Mode")
-        pb = request.form.get("PB")
-        sum = request.form.get("Sum")
-        currency = request.form.get("Currency")
-
-        if sum != None:
-            to_send = pb + "," + sum + "," + currency
-        else:
-            to_send = (
-                pb + "," + currency
-            )  # TODO CBug: When using delpb command TypeError: unsupported operand type(s) for +: 'NoneType' and 'str'
-
-        try:
-            if (
-                command == "catinc"
-                or command == "catexp"
-                or command == "subcat"
-                or command == "curr"
-            ):
-                SPVconf(command, SPVLine)
-            elif command == "initpb":
-                InitPB(to_send)
-            elif command == "delpb":
-                DelPB(to_send)
-            else:
-                raise Exception("Wrong POST format!")
-        except:
-            return "Wrong POST format!"
-        finally:
-            return "Success!"
-
-
-@app.route("/api/conf/spv/read", methods=["GET", "POST"])
-def APIConfSPVRead():
-    if request.method == "GET":
-        return """
-API - Configuration - SPV - Read message:
-
-Make a POST request on this adress with in next format:
-    
-        Key   |         Value
-    -----------------------------------
-    Read      | *From values below*
-    
-    
-Possible values:
-    catinc - income categories
-    catexp - expense categories
-    subcat - sub-categories (expense)
-    curr   - currencies 
-    
-        """
-    else:
-        mode = request.form.get("Read")
-
-        try:
-            return ShowExistingSPVAPI(mode)
-        except:
-            return "Wrong POST format!"
 
 
 def api_start():
