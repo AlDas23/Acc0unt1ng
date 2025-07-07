@@ -23,7 +23,6 @@ After installing requirements using Colab cell, you will need to add some parame
 There are 4 .csv files that need to be initialized/placed into the *Acc0unt1ng* folder on your drive.
 
 ![dbPreview](preview/dbPreview.png)
-
 Each of them should have next structure:
 
 ![csvStructure](preview/csvStructure.png)

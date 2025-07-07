@@ -102,13 +102,13 @@
           <td class="rep" style=" width: max-content;">{{ record.id }}</td>
           <td class="rep" style=" width: max-content;">{{ record.date }}</td>
           <td class="rep" style=" width: max-content;">{{ record.pb }}</td>
-          <td class="rep" style=" width: max-content;">{{ record.amount }}</td>
+          <td class="rep" style=" width: max-content;">{{ "%.2f"|format(record.amount) }}</td>
           <td class="rep" style=" width: max-content;">{{ record.currency }}</td>
           <td class="rep" style=" width: max-content;">{{ record.ipbName }}</td>
-          <td class="rep" style=" width: max-content;">{{ record.iAmount }}</td>
+          <td class="rep" style=" width: max-content;">{{ "%.6f"|format(record.iAmount) }}</td>
           <td class="rep" style=" width: max-content;">{{ record.stock }}</td>
           <td class="rep" style=" width: max-content;">{{ record.fee }}</td>
-          <td class="rep" style=" width: max-content;">{{ record.stockPrice }}</td>
+          <td class="rep" style=" width: max-content;">{{ "%.2f"|format(record.stockPrice) }}</td>
         </tr>
         {% endfor %}
       </tbody>

@@ -51,7 +51,7 @@
                     <td class="rep">{{ record.id }}</td>
                     <td class="rep">{{ record.date }}</td>
                     <td class="rep">{{ record.stock }}</td>
-                    <td class="rep">{{ record.price }}</td>
+                    <td class="rep">{{ "%.6f"|format(record.price) }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
