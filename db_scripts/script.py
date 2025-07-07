@@ -79,9 +79,9 @@ def GetYearlyData(x):
             # Prepare the tuple for each month: (month, expense_in_RON, income_in_RON, total_in_RON)
             month_tuple = (
                 month,
-                round(data["income"], 2),  # income in RON
-                round(data["expense"], 2),  # expense in RON
-                round(data["total"], 2),  # total in RON
+                int(data["income"]),  # income in RON
+                int(data["expense"]),  # expense in RON
+                int(data["total"]),  # total in RON
             )
             result.append(month_tuple)
 
@@ -508,8 +508,8 @@ def GenerateReport(params):
                     if total[i] == 0:
                         table_data["table_dict"][category][i] = 0
                     else:
-                        table_data["table_dict"][category][i] = round(
-                            (values[i] / total[i]) * 100, 2
+                        table_data["table_dict"][category][i] = int(
+                            (values[i] / total[i]) * 100
                         )
 
     return table_data
@@ -589,7 +589,7 @@ def ReadAdv(type, month):
             modified_list = [
                 (
                     category,
-                    round(total_amount, 0),
+                    int(total_amount),
                     f"{(total_amount / total_income) * 100:.0f}%",
                 )
                 for category, total_amount in modified_dict.items()
@@ -643,7 +643,7 @@ def ReadAdv(type, month):
             modified_list = [
                 (
                     category,
-                    round(total_amount, 0),
+                    int(total_amount),
                     f"{(total_amount / total_expense) * 100:.0f}%",
                 )
                 for category, total_amount in modified_dict.items()
@@ -713,7 +713,7 @@ def ReadAdv(type, month):
             modified_list = [
                 (
                     subCategory,
-                    round(total_amount, 0),
+                    int(total_amount),
                     f"{(total_amount / total_expense) * 100:.0f}%",
                 )
                 for subCategory, total_amount in modified_dict.items()
@@ -745,6 +745,6 @@ def ConvertToRON(currency, amount, date, c = None):
             excRate = 1
     else:
         excRate = 1
-    converted_amount = round(amount * excRate, 2)
+    converted_amount = int(amount * excRate)
 
     return converted_amount

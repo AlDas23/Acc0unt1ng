@@ -87,7 +87,7 @@
       <td class="rep">{{ record.category }}</td>
       <td class="rep">{{ record.sub_category }}</td>
       <td class="rep">{{ record.pb }}</td>
-      <td class="rep">{{ record.sum }}</td>
+      <td class="rep">{{ "%.2f"|format(record.sum) }}</td>
       <td class="rep">{{ record.currency }}</td>
       <td class="rep">{{ record.comment }}</td>
     </tr>

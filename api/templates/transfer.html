@@ -135,7 +135,7 @@
                     <td class="rep" style=" width: max-content;">{{ record.date }}</td>
                     <td class="rep" style=" width: max-content;">{{ record.pb_from }}</td>
                     <td class="rep" style=" width: max-content;">{{ record.pb_to }}</td>
-                    <td class="rep" style=" width: max-content;">{{ record.sum }}</td>
+                    <td class="rep" style=" width: max-content;">{{ "%.2f"|format(record.sum) }}</td>
                     <td class="rep" style=" width: max-content;">{{ record.currency }}</td>
                     <td class="rep" style=" width: max-content;">{{ record.comment }}</td>
                 </tr>
@@ -175,10 +175,10 @@
                     </td>
                     <td class="rep" style=" width: max-content;">{{ record.ADV_date }}</td>
                     <td class="rep" style=" width: max-content;">{{ record.ADV_pb_from }}</td>
-                    <td class="rep" style=" width: max-content;">{{ record.ADV_sum_from }}</td>
+                    <td class="rep" style=" width: max-content;">{{ "%.2f"|format(record.ADV_sum_from) }}</td>
                     <td class="rep" style=" width: max-content;">{{ record.ADV_currency_from }}</td>
                     <td class="rep" style=" width: max-content;">{{ record.ADV_pb_to }}</td>
-                    <td class="rep" style=" width: max-content;">{{ record.ADV_sum_to }}</td>
+                    <td class="rep" style=" width: max-content;">{{ "%.2f"|format(record.ADV_sum_to) }}</td>
                     <td class="rep" style=" width: max-content;">{{ record.ADV_currency_to }}</td>
                     <td class="rep" style=" width: max-content;">{{ record.ADV_currency_rate }}</td>
                     <td class="rep">{{ record.ADV_comment }}</td>
