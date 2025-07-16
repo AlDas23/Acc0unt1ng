@@ -652,14 +652,13 @@ def Read(x):
             c.execute(
                 """
                     SELECT 
-                        strftime('%Y-%m', "date") AS month,
-                        currency,
-                        ABS(sum) AS income,
-                        "date"
-                    FROM main
-                    WHERE sum > 0
-                    GROUP BY month, currency
-                    ORDER BY month
+                    strftime('%Y-%m', "date") AS month,
+                    currency,
+                    ABS(sum) AS expense,
+                    "date"
+                FROM main
+                WHERE sum > 0
+                ORDER BY month
                     """
             )
             return c.fetchall()
