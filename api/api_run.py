@@ -672,4 +672,4 @@ def Currencies():
 
 def api_start():
     # app.config["SEND_FILE_MAX_AGE_DEFAULT"] = 1200
-    app.run(debug=True)
+    app.run(debug=True, port=5050)
