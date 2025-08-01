@@ -1,3 +1,5 @@
+import { memo } from 'react';
+
 function TableBody({ data, EditRecord }) {
     return (
         <tbody>
@@ -7,7 +9,7 @@ function TableBody({ data, EditRecord }) {
                         <td
                             className="ht-cell"
                             key={`cell-${rowIndex}-${cellIndex}`}
-                            {...(EditRecord && cellIndex === 0 ? { onClick: () => EditRecord(row[0]) } : {})}
+                            {...(EditRecord && cellIndex === 0 ? { onClick: () => EditRecord(this) } : {})}
                         >
                             {cell}
                         </td>
@@ -18,7 +20,7 @@ function TableBody({ data, EditRecord }) {
     );
 }
 
-export function HistoryTable({ columns, data }) {
+export const HistoryTable = memo(function HistoryTable({ columns, data }) {
     return (
         <table className="history-table">
             <thead>
@@ -31,9 +33,9 @@ export function HistoryTable({ columns, data }) {
             <TableBody data={data} />
         </table>
     );
-}
+});
 
-export function HistoryTableWithEdit({ columns, data, EditRecord }) {
+export const HistoryTableWithEdit = memo(function HistoryTableWithEdit({ columns, data, EditRecord }) {
     return (
         <table className="history-table">
             <thead>
@@ -46,4 +48,4 @@ export function HistoryTableWithEdit({ columns, data, EditRecord }) {
             <TableBody data={data} EditRecord={EditRecord} />
         </table>
     );
-}
+});

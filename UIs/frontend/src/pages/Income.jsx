@@ -4,7 +4,6 @@ import { HistoryTableWithEdit } from "../commonComponents/Common";
 function ValidateForm(Edit = false, id = null) {
     const date = document.getElementById("Date").value;
     const cat = document.getElementById("Category").value;
-    const subCat = document.getElementById("Sub-category").value;
     const pb = document.getElementById("Person-Bank").value;
     let sum = document.getElementById("Sum").value;
     const curr = document.getElementById("Currency").value;
@@ -12,7 +11,7 @@ function ValidateForm(Edit = false, id = null) {
 
     let endpoint;
 
-    if (date === "" || cat === "" || subCat === "" || pb === "" || sum === "" || curr === "") {
+    if (date === "" || cat === "" || pb === "" || sum === "" || curr === "") {
         alert("Please fill in all fields.");
         return false;
     }
@@ -25,17 +24,16 @@ function ValidateForm(Edit = false, id = null) {
     const FormData = {
         date: date,
         category: cat,
-        subCategory: subCat,
         personBank: pb,
-        sum: parseFloat(-sum).toFixed(2),
+        sum: parseFloat(sum).toFixed(2),
         currency: curr,
         comment: comment
     };
 
     if (!Edit) {
-        endpoint = 'http://localhost:5050/api/add/expense';
+        endpoint = 'http://localhost:5050/api/add/income';
     } else {
-        endpoint = 'http://localhost:5050/api/edit/expense/' + id;
+        endpoint = 'http://localhost:5050/api/edit/income/' + id;
     }
 
     // Send POST request
@@ -61,7 +59,7 @@ function ValidateForm(Edit = false, id = null) {
 }
 
 function GetOptions() {
-    return fetch('http://localhost:5050/api/get/options/expense')
+    return fetch('http://localhost:5050/api/get/options/income')
         .then(response => {
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
@@ -83,7 +81,7 @@ function GetOptions() {
 }
 
 function GetHistory() {
-    return fetch('http://localhost:5050/api/get/history/expense')
+    return fetch('http://localhost:5050/api/get/history/income')
         .then(response => {
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
@@ -112,7 +110,6 @@ function Forms({ options }) {
                     <tr>
                         <th>Date</th>
                         <th>Category</th>
-                        <th>Sub-category</th>
                         <th>Person-Bank</th>
                         <th>Sum</th>
                         <th>Currency</th>
@@ -127,14 +124,6 @@ function Forms({ options }) {
                                 <option value="" disabled selected></option>
                                 {options.categories.map((category, index) => (
                                     <option value={category} key={index}>{category}</option>
-                                ))}
-                            </select>
-                        </td>
-                        <td class="fields_big">
-                            <select id="Sub-category" name="Sub-category" class="standardWidth">
-                                <option value="" disabled selected></option>
-                                {options.subcategories.map((subcategory, index) => (
-                                    <option value={subcategory} key={index}>{subcategory}</option>
                                 ))}
                             </select>
                         </td>
@@ -168,9 +157,9 @@ function Forms({ options }) {
     );
 }
 
-export default function ExpensePage() {
+export default function IncomePage() {
     useEffect(() => {
-        document.title = "Expense Records";
+        document.title = "Income Records";
     }, []);
 
     const EditRecord = (element) => {
@@ -192,11 +181,10 @@ export default function ExpensePage() {
         // Populate form fields with the data from the selected row
         document.getElementById("Date").value = cells[1].innerText;
         document.getElementById("Category").value = cells[2].innerText;
-        document.getElementById("Sub-category").value = cells[3].innerText;
-        document.getElementById("Person-Bank").value = cells[4].innerText;
-        document.getElementById("Sum").value = Math.abs(parseFloat(cells[5].innerText).toFixed(2));
-        document.getElementById("Currency").value = cells[6].innerText;
-        document.getElementById("Comment").value = cells[7].innerText;
+        document.getElementById("Person-Bank").value = cells[3].innerText;
+        document.getElementById("Sum").value = parseFloat(cells[4].innerText).toFixed(2);
+        document.getElementById("Currency").value = cells[5].innerText;
+        document.getElementById("Comment").value = cells[6].innerText;
 
         const form = document.getElementById("form");
         form.setAttribute("onsubmit", `ValidateForm(true, ${id});`);
@@ -206,8 +194,8 @@ export default function ExpensePage() {
     }
 
     return (
-        <div className="expense-page">
-            <h1>Expense Records</h1>
+        <div className="income-page">
+            <h1>Income Records</h1>
             <Forms options={GetOptions()} />
             <br />
             <h3>History</h3>
