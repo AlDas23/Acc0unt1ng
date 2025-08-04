@@ -4,6 +4,9 @@ import {
   Routes
 } from "react-router-dom";
 import ExpensePage from "./pages/Expense";
+import IncomePage from "./pages/Income";
+import TransferPage from "./pages/Transfer";
+import DepositPage from "./pages/Deposit";
 
 export function NavBar() {
   return (
@@ -15,10 +18,10 @@ export function NavBar() {
             <Route path='/add/expense' element={<IncomePage />} />
             <Route path='/add/transfer' element={<TransferPage />} />
             <Route path='/add/deposit' element={<DepositPage />} />
-            <Route path='/currency' element={<CurrencyPage />} />
+            <Route path='/currencyrates' element={<CurrencyPage />} />
             <Route path='/view/acc' element={<BalancePage />} />
             <Route path='/view/reports/table' element={<ReportsPage />} />
-            <Route path='/view/year' element={<YearPage />} />
+            <Route path='/view/reports/year' element={<YearPage />} />
             <Route path='/invest' element={<InvestPage />} />
           </Route>
         </Routes>

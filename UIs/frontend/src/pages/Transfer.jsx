@@ -58,9 +58,9 @@ function ValidateForm(isAdvanced, Edit = false, id = null) {
     FormObject.transferType = isAdvanced ? 'advanced' : 'standard';
 
     if (!Edit) {
-        endpoint = '/add/transfer';
+        endpoint = 'http://localhost:5050/api/add/transfer';
     } else {
-        endpoint = '/edit/transfer/' + id;
+        endpoint = 'http://localhost:5050/api/edit/transfer/' + id;
     }
 
     // Send POST request
@@ -111,7 +111,7 @@ function GetHistory(type) {
     let endpoint;
     if (type === 'standard') {
         endpoint = 'http://localhost:5050/api/get/history/transfer'
-    } else {
+    } else if (type === 'advanced') {
         endpoint = 'http://localhost:5050/api/get/history/transferADV'
     }
     return fetch(endpoint)
@@ -179,7 +179,7 @@ function StandardTransferForm({ options }) {
                         class="standardWidth" /></td>
                 </tr>
             </table><br />
-            <input type="submit" value="Add" class="submitrec" />
+            <input type="submit" value="Add" id="standardSubmit" class="submitrec" />
         </form>
     )
 };
@@ -243,7 +243,7 @@ function AdvancedTransferForm({ options }) {
                         class="standardWidth" /></td>
                 </tr>
             </table><br />
-            <input type="submit" value="Add" class="submitrec" />
+            <input type="submit" value="Add" id="advancedSubmit" class="submitrec" />
         </form>
     )
 };
@@ -251,11 +251,15 @@ function AdvancedTransferForm({ options }) {
 function Forms({ options }) {
     return (
         <div className="forms">
-            <h2>Standard Transfer</h2>
-            <StandardTransferForm options={options} />
+            <div className="form-standard">
+                <h2>Standard Transfer</h2>
+                <StandardTransferForm options={options} />
+            </div>
             <br />
-            <h2>Advanced Transfer</h2>
-            <AdvancedTransferForm options={options} />
+            <div className="form-advanced">
+                <h2>Advanced Transfer</h2>
+                <AdvancedTransferForm options={options} />
+            </div>
         </div>
     );
 }
@@ -265,34 +269,108 @@ export default function TransferPage() {
         document.title = "Transfer Records";
     }, []);
 
-    const EditRecord = (element) => {       // TODO: Implement Edit functionality
-        const row = element.target.parentNode;
-        const cells = row.getElementsByTagName("td");
-        const id = cells[0].innerText;
+    const EditRecord = (element) => {
+        const leftTable = element.closest('.history-table-left');
+        const rightTable = element.closest('.history-table-right');
 
-        // Populate form fields with the data from the selected row
-        document.getElementById("Date").value = cells[1].innerText;
-        document.getElementById("Category").value = cells[2].innerText;
-        document.getElementById("Person-Bank").value = cells[3].innerText;
-        document.getElementById("Sum").value = parseFloat(cells[4].innerText).toFixed(2);
-        document.getElementById("Currency").value = cells[5].innerText;
-        document.getElementById("Comment").value = cells[6].innerText;
+        if (leftTable) {
+            const row = element.target.parentNode;
+            const cells = row.getElementsByTagName("td");
+            const id = cells[0].innerText;
 
-        const form = document.getElementById("form");
-        form.setAttribute("onsubmit", `ValidateForm(true, ${id});`);
+            const clickedRow = element.closest('tr');
+            const rows = document.querySelectorAll('.history-table tbody tr');
+
+            rows.forEach(row => {
+                if (row !== clickedRow) {
+                    row.style.display = 'none';
+                } else {
+                    row.style.display = ''; // Ensure the clicked row remains visible
+                }
+            });
+
+            // Hide right div and advanced forms
+            const rightDiv = document.querySelector('.history-table-right');
+            rightDiv.style.display = 'none';
+            const advForm = document.querySelector('.form-advanced');
+            advForm.style.display = 'none';
+
+            // Populate form fields with the data from the selected row
+            document.getElementById("Date").value = cells[1].innerText;
+            document.getElementById("Sender").value = cells[2].innerText;
+            document.getElementById("Receiver").value = cells[3].innerText;
+            document.getElementById("Sum").value = parseFloat(cells[4].innerText).toFixed(2);
+            document.getElementById("Currency").value = cells[5].innerText;
+            document.getElementById("Comment").value = cells[6].innerText;
+
+            const form = document.getElementById("FormStandard");
+            form.setAttribute("onsubmit", `ValidateForm(false, true, ${id});`);
+            const submitButton = document.getElementById("standardSubmit");
+            submitButton.value = "Edit";
+
+        } else if (rightTable) {
+            const row = element.target.parentNode;
+            const cells = row.getElementsByTagName("td");
+            const id = cells[0].innerText;
+
+            const clickedRow = element.closest('tr');
+            const rows = document.querySelectorAll('.history-table tbody tr');
+
+            rows.forEach(row => {
+                if (row !== clickedRow) {
+                    row.style.display = 'none';
+                } else {
+                    row.style.display = ''; // Ensure the clicked row remains visible
+                }
+            });
+
+            // Hide left div
+            const leftDiv = document.querySelector('.history-table-left');
+            leftDiv.style.display = 'none';
+            const stdForm = document.querySelector('.form-standard');
+            stdForm.style.display = 'none';
+
+            // Populate form fields with the data from the selected row
+            document.getElementById("ADVDate").value = cells[1].innerText;
+            document.getElementById("ADVSender").value = cells[2].innerText;
+            document.getElementById("ADVSSum").value = parseFloat(cells[3].innerText).toFixed(2);
+            document.getElementById("ADVSCurrency").value = cells[4].innerText;
+            document.getElementById("ADVReceiver").value = cells[5].innerText;
+            document.getElementById("ADVRSum").value = parseFloat(cells[6].innerText).toFixed(2);
+            document.getElementById("ADVRCurrency").value = cells[7].innerText;
+            document.getElementById("ADVCurrencyRate").value = cells[8].innerText;
+            document.getElementById("ADVComment").value = cells[9].innerText;
+
+
+            const form = document.getElementById("FormAdvanced");
+            form.setAttribute("onsubmit", `ValidateForm(true, true, ${id});`);
+            const submitButton = document.getElementById("advancedSubmit");
+            submitButton.value = "Edit";
+        }
     }
 
-    // TODO: Implement History for Transfer
     return (
-        <div className="income-page">
-            <h1>Income Records</h1>
+        <div className="transfer-page">
+            <h1>Transfer Records</h1>
             <Forms options={GetOptions()} />
             <br />
             <h3>History</h3>
             <br />
-            <HistoryTableWithEdit
-                columns={["ID", "Date", "Category", "Sub-category", "Person-Bank", "Sum", "Currency", "Comment"]}
-                data={GetHistory()} />
+            <div className="history-table-container">
+                <div className="history-table-left">
+                    <h3>Standard Transfers</h3>
+                    <HistoryTableWithEdit
+                        columns={["ID", "Date", "Sender", "Receiver", "Sum", "Currency", "Comment"]}
+                        data={GetHistory('standard')} />
+                </div>
+                <div className="history-table-right">
+                    <h3>Advanced Transfers</h3>
+                    <HistoryTableWithEdit
+                        columns={["ID", "Date", "Sender", "Sum", "Currency", "Receiver", "Sum", "Currency", "Comment"]}
+                        data={GetHistory('advanced')}
+                    />
+                </div>
+            </div>
         </div>
     )
 

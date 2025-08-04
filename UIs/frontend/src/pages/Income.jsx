@@ -201,7 +201,7 @@ export default function IncomePage() {
             <h3>History</h3>
             <br />
             <HistoryTableWithEdit
-                columns={["ID", "Date", "Category", "Sub-category", "Person-Bank", "Sum", "Currency", "Comment"]}
+                columns={["ID", "Date", "Category", "Person-Bank", "Sum", "Currency", "Comment"]}
                 data={GetHistory()} />
         </div>
     )
