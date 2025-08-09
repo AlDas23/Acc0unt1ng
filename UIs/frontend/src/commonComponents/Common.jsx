@@ -20,9 +20,9 @@ function TableBody({ data, EditRecord }) {
     );
 }
 
-export const HistoryTable = memo(function HistoryTable({ columns, data }) {
+export const HistoryTable = memo(function HistoryTable({ columns, data, tableId }) {
     return (
-        <table className="history-table">
+        <table className="history-table" id={tableId || undefined}>
             <thead>
                 <tr>
                     {columns.map((col, index) => (
@@ -35,9 +35,9 @@ export const HistoryTable = memo(function HistoryTable({ columns, data }) {
     );
 });
 
-export const HistoryTableWithEdit = memo(function HistoryTableWithEdit({ columns, data, EditRecord }) {
+export const HistoryTableWithEdit = memo(function HistoryTableWithEdit({ columns, data, EditRecord, tableId }) {
     return (
-        <table className="history-table">
+        <table className="history-table" id={tableId || undefined}>
             <thead>
                 <tr>
                     {columns.map((col, index) => (
