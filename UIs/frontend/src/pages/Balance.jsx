@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { HistoryTable } from "../commonComponents/Common";
 
-export default function DepositPage() {
+export default function BalancePage() {
     const [data, setData] = useState([]);
     const [filters, setFilters] = useState({ owner: "None", type: "None" });
     const [options, setOptions] = useState({ pb: [], type: [] });
