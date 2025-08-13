@@ -59,7 +59,12 @@ function ValidateForm() {
         },
         body: JSON.stringify(FormData)
     })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.success) {
                 window.location.href = data.redirect_url;

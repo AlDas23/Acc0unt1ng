@@ -116,7 +116,7 @@ export default function BalancePage() {
     };
 
     return (
-        <div className="balance-page-container">
+        <div className="balance-page">
             <div className="info-tables">
                 <h2 onClick={() => toggleTable("curr-table")}>Group by currency</h2>
                 <br />

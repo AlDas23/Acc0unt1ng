@@ -47,7 +47,7 @@ export default function CurrencyRatesPage() {
         const data = Object.fromEntries(formData.entries());
 
         try {
-            const response = await fetch('http://localhost:5050/api/post/currencyrates', {
+            const response = await fetch('http://localhost:5050/api/add/currencyrates', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -119,7 +119,7 @@ export default function CurrencyRatesPage() {
     };
 
     return (
-        <>
+        <div className="currency-rates-page">
             <Form />
             <br />
             <div className="historyTable-split">
@@ -135,6 +135,6 @@ export default function CurrencyRatesPage() {
                     <img id="CurrRatePlot" src={imageUrl} alt="Currency dynamics plot" />
                 </div>
             </div>
-        </>
+        </div>
     );
 }

@@ -7,6 +7,9 @@ import ExpensePage from "./pages/Expense";
 import IncomePage from "./pages/Income";
 import TransferPage from "./pages/Transfer";
 import DepositPage from "./pages/Deposit";
+import CurrencyPage from "./pages/CurrencyRates";
+import BalancePage from "./pages/Balance";
+import ReportsPage from "./pages/Reports";
 
 export function NavBar() {
   return (
