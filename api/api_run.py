@@ -83,6 +83,18 @@ def GetOptions(source):
                     "pb": person_banks,
                 }
             )
+        elif source == "income":
+            categories = read_csv(SPVcatIncPath)
+            currencies = read_csv(SPVcurrPath)
+            person_banks = Read("retacc")
+            payload = jsonify(
+                {
+                    "success": True,
+                    "categories": categories,
+                    "currency": currencies,
+                    "pb": person_banks,
+                }
+            )
 
     except Exception as e:
         print(f"Error occurred: {str(e)}")
@@ -104,6 +116,8 @@ def GetHistory(source):
     try:
         if source == "expense":
             payload = GetTransactionHistory("expense")
+        elif source == "income":
+            payload = GetTransactionHistory("income")
             
     except Exception as e:
         print(f"Error occurred: {str(e)}")
@@ -173,36 +187,8 @@ def EditExpense(id):
         )
 
 
-@app.route("/add/income", methods=["POST", "GET"])
-def Income():
-    if request.method == "GET":
-        try:
-            categories = read_csv(SPVcatIncPath)
-            currencies = read_csv(SPVcurrPath)
-            person_banks = Read("retacc")
-        except Exception as e:
-            print(f"Error occurred: {str(e)}")
-            error_message = str(e)
-            return (
-                jsonify(
-                    {
-                        "success": False,
-                        "message": error_message,
-                    }
-                ),
-                400,
-            )
-
-        options = {
-            "categories": categories,
-            "person_banks": person_banks,
-            "currencies": currencies,
-        }
-
-        data = GetTransactionHistory("income")
-
-        return render_template("addinc.html", options=options, data=data)
-    elif request.method == "POST":
+@app.route("/api/add/income", methods=["POST"])
+def AddIncome():
         content = request.get_json()
         if content is None:
             return "Error: No JSON data received", 400
@@ -212,7 +198,7 @@ def Income():
 
         try:
             Add(line, "main")
-            return jsonify({"success": True, "redirect_url": url_for("Income")})
+            return jsonify({"success": True})
         except Exception as e:
             print(f"Error occurred: {str(e)}")
             error_message = str(e)
@@ -227,7 +213,7 @@ def Income():
             )
 
 
-@app.route("/edit/income/<int:id>", methods=["POST"])
+@app.route("/api/edit/income/<int:id>", methods=["POST"])
 def EditIncome(id):
     if request.method == "POST":
         content = request.get_json()
@@ -240,7 +226,7 @@ def EditIncome(id):
 
         try:
             UpdateRecord(line, "main")
-            return jsonify({"success": True, "redirect_url": url_for("Income")})
+            return jsonify({"success": True})
         except Exception as e:
             print(f"Error occurred: {str(e)}")
             error_message = str(e)

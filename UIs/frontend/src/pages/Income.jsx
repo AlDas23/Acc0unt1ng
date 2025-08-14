@@ -52,7 +52,7 @@ function ValidateForm(Edit = false, id = null) {
         })
         .then(data => {
             if (data.success) {
-                window.location.href = data.redirect_url;
+                window.location.reload();
             } else {
                 alert('Error: ' + (data.message || 'Failed to add transaction'));
             }
