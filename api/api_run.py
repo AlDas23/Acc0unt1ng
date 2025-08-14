@@ -66,64 +66,87 @@ def main():
     return redirect("/add/expense")
 
 
-@app.route("/add/expense", methods=["POST", "GET"])
-def Expense():
-    if request.method == "GET":
-        try:
+@app.route("/api/get/options/<string:source>", methods=["GET"])
+def GetOptions(source):
+    try:
+        if source == "expense":
             categories = read_csv(SPVcatExpPath)
             sub_categories = read_csv(SPVsubcatPath)
             currencies = read_csv(SPVcurrPath)
             person_banks = Read("retacc")
-        except Exception as e:
-            print(f"Error occurred: {str(e)}")
-            error_message = str(e)
-            return (
-                jsonify(
-                    {
-                        "success": False,
-                        "message": error_message,
-                    }
-                ),
-                400,
+            payload = jsonify(
+                {
+                    "success": True,
+                    "categories": categories,
+                    "subcategories": sub_categories,
+                    "currency": currencies,
+                    "pb": person_banks,
+                }
             )
 
-        options = {
-            "categories": categories,
-            "sub_categories": sub_categories,
-            "person_banks": person_banks,
-            "currencies": currencies,
-        }
+    except Exception as e:
+        print(f"Error occurred: {str(e)}")
+        error_message = str(e)
+        payload = (
+            jsonify(
+                {
+                    "success": False,
+                    "message": error_message,
+                }
+            ),
+            400,
+        )
+    finally:
+        return payload
 
-        data = GetTransactionHistory("expense")
+@app.route("/api/get/history/<string:source>", methods=["GET"])
+def GetHistory(source):
+    try:
+        if source == "expense":
+            payload = GetTransactionHistory("expense")
+            
+    except Exception as e:
+        print(f"Error occurred: {str(e)}")
+        error_message = str(e)
+        payload = (
+            jsonify(
+                {
+                    "success": False,
+                    "message": error_message,
+                }
+            ),
+            400,
+        )
+    finally:
+        return payload
 
-        return render_template("addexp.html", options=options, data=data)
+@app.route("/api/add/expense", methods=["POST"])
+def AddExpense():
+    content = request.get_json()
+    if content is None:
+        return "Error: No JSON data received", 400
 
-    elif request.method == "POST":
-        content = request.get_json()
-        if content is None:
-            return "Error: No JSON data received", 400
+    # Parse JSON data into string line
+    line = ",".join([str(content[key]) for key in content.keys()])
 
-        # Parse JSON data into string line
-        line = ",".join([str(content[key]) for key in content.keys()])
-
-        try:
-            Add(line, "main")
-            return jsonify({"success": True, "redirect_url": url_for("Expense")})
-        except Exception as e:
-            print(f"Error occurred: {str(e)}")
-            error_message = str(e)
-            return (
-                jsonify(
-                    {
-                        "success": False,
-                        "message": error_message,
-                    }
-                ),
-                400,
-            )
+    try:
+        Add(line, "main")
+        return jsonify({"success": True})
+    except Exception as e:
+        print(f"Error occurred: {str(e)}")
+        error_message = str(e)
+        return (
+            jsonify(
+                {
+                    "success": False,
+                    "message": error_message,
+                }
+            ),
+            400,
+        )
 
 
-@app.route("/edit/expense/<int:id>", methods=["POST"])
+@app.route("/api/edit/expense/<int:id>", methods=["POST"])
 def EditExpense(id):
     content = request.get_json()
     if content is None:
@@ -135,7 +158,7 @@ def EditExpense(id):
 
     try:
         UpdateRecord(line, "main")
-        return jsonify({"success": True, "redirect_url": url_for("Expense")})
+        return jsonify({"success": True})
     except Exception as e:
         print(f"Error occurred: {str(e)}")
         error_message = str(e)

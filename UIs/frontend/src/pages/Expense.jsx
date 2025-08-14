@@ -49,7 +49,7 @@ function ValidateForm(Edit = false, id = null) {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                window.location.href = data.redirect_url;
+                window.location.reload();
             } else {
                 alert('Error: ' + (data.message || 'Failed to add transaction'));
             }
@@ -66,6 +66,7 @@ function GetOptions() {
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
+            
             return response.json();
         })
         .then(data => {
