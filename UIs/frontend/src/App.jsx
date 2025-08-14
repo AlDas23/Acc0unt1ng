@@ -10,6 +10,7 @@ import DepositPage from "./pages/Deposit";
 import CurrencyPage from "./pages/CurrencyRates";
 import BalancePage from "./pages/Balance";
 import ReportsPage from "./pages/Reports";
+import YearPage from "./pages/YearReport";
 
 export function NavBar() {
   return (
@@ -25,7 +26,6 @@ export function NavBar() {
             <Route path='/view/acc' element={<BalancePage />} />
             <Route path='/view/reports/table' element={<ReportsPage />} />
             <Route path='/view/reports/year' element={<YearPage />} />
-            <Route path='/invest' element={<InvestPage />} />
           </Route>
         </Routes>
       </nav>

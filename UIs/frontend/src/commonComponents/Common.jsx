@@ -49,3 +49,11 @@ export const HistoryTableWithEdit = memo(function HistoryTableWithEdit({ columns
         </table>
     );
 });
+
+export function Banner() {
+    return (
+        <header>
+            <img class="banner" src="assets/imgs/Banner.png" alt="Acc0unt1ng Banner" />
+        </header>
+    )
+}
