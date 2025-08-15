@@ -67,7 +67,7 @@ function ValidateForm() {
         })
         .then(data => {
             if (data.success) {
-                window.location.href = data.redirect_url;
+                window.location.reload();
             } else {
                 alert('Error: ' + (data.message || 'Failed to add deposit'));
             }
@@ -102,7 +102,7 @@ function GetOptions() {
 
 function GetHistory(isActive) {
     if (isActive) {
-        return fetch('http://localhost:5050/api/get/history/deposit/active')
+        return fetch('http://localhost:5050/api/get/history/depositO')
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
@@ -122,7 +122,7 @@ function GetHistory(isActive) {
                 throw error;
             });
     } else {
-        return fetch('http://localhost:5050/api/get/history/deposit/closed')
+        return fetch('http://localhost:5050/api/get/history/depositC')
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);

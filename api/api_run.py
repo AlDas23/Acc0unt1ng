@@ -105,6 +105,16 @@ def GetOptions(source):
                     "pb": person_banks,
                 }
             )
+        elif source == "deposit":
+            currencies = read_csv(SPVcurrPath)
+            person_banks = Read("retacc")
+            payload = jsonify(
+                {
+                    "success": True,
+                    "currencies": currencies,
+                    "pb": person_banks,
+                }
+            )
 
     except Exception as e:
         print(f"Error occurred: {str(e)}")
@@ -133,6 +143,10 @@ def GetHistory(source):
             payload = GetTransactionHistory("transfer")
         elif source == "transferADV":
             payload = GetTransactionHistory("advtransfer")
+        elif source == "depositO":
+            payload = GetTransactionHistory("depositO")
+        elif source == "depositC":
+            payload = GetTransactionHistory("depositC")
 
     except Exception as e:
         print(f"Error occurred: {str(e)}")
@@ -329,7 +343,7 @@ def EditTransfer(id):
                     ),
                     400,
                 )
-                
+
         elif transferType == "advanced":
             try:
                 UpdateRecord(line, "advtransfer")
@@ -348,60 +362,30 @@ def EditTransfer(id):
                 )
 
 
-@app.route("/add/deposit", methods=["POST", "GET"])
+@app.route("/api/add/deposit", methods=["POST"])
 def AddDeposit():
-    if request.method == "GET":
-        try:
-            currencies = read_csv(SPVcurrPath)
-            person_banks = Read("retacc")
-        except Exception as e:
-            print(f"Error occurred: {str(e)}")
-            error_message = str(e)
-            return (
-                jsonify(
-                    {
-                        "success": False,
-                        "message": error_message,
-                    }
-                ),
-                400,
-            )
+    content = request.get_json()
+    if content is None:
+        return "Error: No JSON data received", 400
 
-        options = {"person_banks": person_banks, "currencies": currencies}
+    # Parse JSON data into string line
+    line = ",".join([str(content[key]) for key in content.keys()])
 
-        openDep = GetTransactionHistory("depositO")
-        closedDep = GetTransactionHistory("depositC")
-
-        return render_template(
-            "adddeposit.html",
-            options=options,
-            openDep=openDep,
-            closedDep=closedDep,
+    try:
+        Add(line, "deposit")
+        return jsonify({"success": True})
+    except Exception as e:
+        print(f"Error occurred: {str(e)}")
+        error_message = str(e)
+        return (
+            jsonify(
+                {
+                    "success": False,
+                    "message": error_message,
+                }
+            ),
+            400,
         )
-
-    if request.method == "POST":
-        content = request.get_json()
-        if content is None:
-            return "Error: No JSON data received", 400
-
-        # Parse JSON data into string line
-        line = ",".join([str(content[key]) for key in content.keys()])
-
-        try:
-            Add(line, "deposit")
-            return jsonify({"success": True, "redirect_url": url_for("AddDeposit")})
-        except Exception as e:
-            print(f"Error occurred: {str(e)}")
-            error_message = str(e)
-            return (
-                jsonify(
-                    {
-                        "success": False,
-                        "message": error_message,
-                    }
-                ),
-                400,
-            )
 
 
 @app.route("/view/rep", methods=["GET"])
