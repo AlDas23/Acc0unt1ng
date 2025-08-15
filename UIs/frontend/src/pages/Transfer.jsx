@@ -74,7 +74,7 @@ function ValidateForm(isAdvanced, Edit = false, id = null) {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                window.location.href = data.redirect_url;
+                window.location.reload();
             } else {
                 alert('Error: ' + (data.message || 'Failed to add transfer'));
             }
@@ -137,7 +137,7 @@ function GetHistory(type) {
 
 function StandardTransferForm({ options }) {
     return (
-        <form action="/transfer" method="post" id="FormStandard" onsubmit="ValidateTransfer(isAdvanced = false)">
+        <form action="/transfer" method="post" id="FormStandard" onsubmit={ValidateForm(false)}>
             <table>
                 <tr>
                     <th>Date</th>
@@ -170,8 +170,8 @@ function StandardTransferForm({ options }) {
                     <td class="fields_small">
                         <select id="Currency" name="Currency" class="standardWidth">
                             <option value="" disabled selected></option>
-                            {options.pb.map((pb, index) => (
-                                <option value={pb} key={index}>{pb}</option>
+                            {options.currency.map((currency, index) => (
+                                <option value={currency} key={index}>{currency}</option>
                             ))}
                         </select>
                     </td>
@@ -186,7 +186,7 @@ function StandardTransferForm({ options }) {
 
 function AdvancedTransferForm({ options }) {
     return (
-        <form action="/transfer" method="post" id="FormAdvanced" onsubmit="ValidateTransfer(isAdvanced = true)">
+        <form action="/transfer" method="post" id="FormAdvanced" onsubmit={ValidateForm(true)}>
             <table>
                 <tr>
                     <th>Date</th>
@@ -213,8 +213,8 @@ function AdvancedTransferForm({ options }) {
                     <td class="fields_big">
                         <select id="ADVSCurrency" name="SCurrency" class="standardWidth">
                             <option value="" disabled selected></option>
-                            {options.pb.map((pb, index) => (
-                                <option value={pb} key={index}>{pb}</option>
+                            {options.currency.map((currency, index) => (
+                                <option value={currency} key={index}>{currency}</option>
                             ))}
                         </select>
                     </td>
@@ -231,8 +231,8 @@ function AdvancedTransferForm({ options }) {
                     <td class="fields_small">
                         <select id="ADVRCurrency" name="RCurrency" class="standardWidth">
                             <option value="" disabled selected></option>
-                            {options.pb.map((pb, index) => (
-                                <option value={pb} key={index}>{pb}</option>
+                            {options.currency.map((currency, index) => (
+                                <option value={currency} key={index}>{currency}</option>
                             ))}
                         </select>
                     </td>

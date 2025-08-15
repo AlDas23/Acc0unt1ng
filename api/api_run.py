@@ -95,6 +95,16 @@ def GetOptions(source):
                     "pb": person_banks,
                 }
             )
+        elif source == "transfer":
+            currencies = read_csv(SPVcurrPath)
+            person_banks = Read("retacc")
+            payload = jsonify(
+                {
+                    "success": True,
+                    "currencies": currencies,
+                    "pb": person_banks,
+                }
+            )
 
     except Exception as e:
         print(f"Error occurred: {str(e)}")
@@ -110,6 +120,7 @@ def GetOptions(source):
         )
     finally:
         return payload
+
 
 @app.route("/api/get/history/<string:source>", methods=["GET"])
 def GetHistory(source):
@@ -118,7 +129,11 @@ def GetHistory(source):
             payload = GetTransactionHistory("expense")
         elif source == "income":
             payload = GetTransactionHistory("income")
-            
+        elif source == "transfer":
+            payload = GetTransactionHistory("transfer")
+        elif source == "transferADV":
+            payload = GetTransactionHistory("advtransfer")
+
     except Exception as e:
         print(f"Error occurred: {str(e)}")
         error_message = str(e)
@@ -133,6 +148,7 @@ def GetHistory(source):
         )
     finally:
         return payload
+
 
 @app.route("/api/add/expense", methods=["POST"])
 def AddExpense():
@@ -189,28 +205,28 @@ def EditExpense(id):
 
 @app.route("/api/add/income", methods=["POST"])
 def AddIncome():
-        content = request.get_json()
-        if content is None:
-            return "Error: No JSON data received", 400
+    content = request.get_json()
+    if content is None:
+        return "Error: No JSON data received", 400
 
-        # Parse JSON data into string line
-        line = ",".join([str(content[key]) for key in content.keys()])
+    # Parse JSON data into string line
+    line = ",".join([str(content[key]) for key in content.keys()])
 
-        try:
-            Add(line, "main")
-            return jsonify({"success": True})
-        except Exception as e:
-            print(f"Error occurred: {str(e)}")
-            error_message = str(e)
-            return (
-                jsonify(
-                    {
-                        "success": False,
-                        "message": error_message,
-                    }
-                ),
-                400,
-            )
+    try:
+        Add(line, "main")
+        return jsonify({"success": True})
+    except Exception as e:
+        print(f"Error occurred: {str(e)}")
+        error_message = str(e)
+        return (
+            jsonify(
+                {
+                    "success": False,
+                    "message": error_message,
+                }
+            ),
+            400,
+        )
 
 
 @app.route("/api/edit/income/<int:id>", methods=["POST"])
@@ -241,12 +257,19 @@ def EditIncome(id):
             )
 
 
-@app.route("/add/transfer", methods=["POST", "GET"])
-def Transfer():
-    if request.method == "GET":
+@app.route("/api/add/transfer", methods=["POST"])
+def AddTransfer():
+    content = request.get_json()
+    if content is None:
+        return "Error: No JSON data received", 400
+
+    transferType = content.pop("transferType", "")
+    # Parse JSON data into string line
+    line = ",".join([str(content[key]) for key in content.keys()])
+    if transferType == "standard":
         try:
-            currencies = read_csv(SPVcurrPath)
-            person_banks = Read("retacc")
+            Add(line, "transfer")
+            return jsonify({"success": True})
         except Exception as e:
             print(f"Error occurred: {str(e)}")
             error_message = str(e)
@@ -260,59 +283,25 @@ def Transfer():
                 400,
             )
 
-        options = {"person_banks": person_banks, "currencies": currencies}
-
-        data = GetTransactionHistory("transfer")
-
-        return render_template(
-            "transfer.html",
-            options=options,
-            data=data,
-        )
-    elif request.method == "POST":
-        content = request.get_json()
-        if content is None:
-            return "Error: No JSON data received", 400
-
-        transferType = content.pop("transferType", "")
-        # Parse JSON data into string line
-        line = ",".join([str(content[key]) for key in content.keys()])
-        if transferType == "standard":
-            try:
-                Add(line, "transfer")
-                return jsonify({"success": True, "redirect_url": url_for("Transfer")})
-            except Exception as e:
-                print(f"Error occurred: {str(e)}")
-                error_message = str(e)
-                return (
-                    jsonify(
-                        {
-                            "success": False,
-                            "message": error_message,
-                        }
-                    ),
-                    400,
-                )
-
-        elif transferType == "advanced":
-            try:
-                Add(line, "advtransfer")
-                return jsonify({"success": True, "redirect_url": url_for("Transfer")})
-            except Exception as e:
-                print(f"Error occurred: {str(e)}")
-                error_message = str(e)
-                return (
-                    jsonify(
-                        {
-                            "success": False,
-                            "message": error_message,
-                        }
-                    ),
-                    400,
-                )
+    elif transferType == "advanced":
+        try:
+            Add(line, "advtransfer")
+            return jsonify({"success": True})
+        except Exception as e:
+            print(f"Error occurred: {str(e)}")
+            error_message = str(e)
+            return (
+                jsonify(
+                    {
+                        "success": False,
+                        "message": error_message,
+                    }
+                ),
+                400,
+            )
 
 
-@app.route("/edit/transfer/<int:id>", methods=["POST"])
+@app.route("/api/edit/transfer/<int:id>", methods=["POST"])
 def EditTransfer(id):
     if request.method == "POST":
         content = request.get_json()
@@ -327,7 +316,7 @@ def EditTransfer(id):
         if transferType == "standard":
             try:
                 UpdateRecord(line, "transfer")
-                return jsonify({"success": True, "redirect_url": url_for("Transfer")})
+                return jsonify({"success": True})
             except Exception as e:
                 print(f"Error occurred: {str(e)}")
                 error_message = str(e)
@@ -340,10 +329,11 @@ def EditTransfer(id):
                     ),
                     400,
                 )
+                
         elif transferType == "advanced":
             try:
                 UpdateRecord(line, "advtransfer")
-                return jsonify({"success": True, "redirect_url": url_for("Transfer")})
+                return jsonify({"success": True})
             except Exception as e:
                 print(f"Error occurred: {str(e)}")
                 error_message = str(e)

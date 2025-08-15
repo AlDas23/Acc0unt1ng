@@ -169,7 +169,8 @@ def GetTransactionHistory(type):
         data = Read("m+")
     elif type == "transfer":
         data = Read("alltran")
-        dataAdv = Read("alladvtran")
+    elif type == "advtransfer":
+        data = Read("alladvtran")
     elif type == "depositO":
         data = Read("opendep")
     elif type == "depositC":
@@ -220,7 +221,9 @@ def GetTransactionHistory(type):
                     "comment": row_list[6],
                 }
             )
-        for row in dataAdv:
+            
+    elif type == "advtransfer":
+        for row in data:
             row_list = list(row)
             Finalhistory.append(
                 {
