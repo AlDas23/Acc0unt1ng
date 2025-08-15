@@ -175,6 +175,8 @@ def GetTransactionHistory(type):
         data = Read("opendep")
     elif type == "depositC":
         data = Read("closeddep")
+    elif type == "currencyrates":
+        data = Read("allcurrrate")
 
     if type == "expense":
         for row in data:
@@ -258,6 +260,17 @@ def GetTransactionHistory(type):
                     "currency_rate": round(row_list[8], 4),
                     "expect": round(row_list[9], 2),
                     "comment": row_list[10],
+                }
+            )
+            
+    elif type == "currencyrates":
+        for row in data:
+            row_list = list(row)
+            Finalhistory.append(
+                {
+                    "date": row_list[0],
+                    "currency": row_list[1],
+                    "rate": round(row_list[2], 4),
                 }
             )
 
@@ -733,14 +746,14 @@ def ConvertToRON(currency, amount, date, c = None):
         c = conn.cursor()
 
     if currency != "RON":
-        query = f"""
-            SELECT {currency} 
+        query = """
+            SELECT rate 
             FROM exc_rate 
-            WHERE {currency} != 0
-            ORDER BY ABS(JULIANDAY(date) - JULIANDAY('{date}'))
+            WHERE currency = ?
+            ORDER BY ABS(JULIANDAY(date) - JULIANDAY(?))
             LIMIT 1
         """
-        c.execute(query)
+        c.execute(query, (currency, date))
         excRate_row = c.fetchone()
         if excRate_row != None:
             excRate = excRate_row[0]  # Extract the exchange rate

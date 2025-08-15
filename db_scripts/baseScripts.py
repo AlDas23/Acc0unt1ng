@@ -33,13 +33,8 @@ def NewDBase():
         c.execute(
             """CREATE TABLE exc_rate (
                     date text,
-                    RON real,
-                    UAH real,
-                    EUR real,
-                    USD real,
-                    GBP real,
-                    CHF real,
-                    HUF real
+                    currency text,
+                    rate real
                 )"""
         )
         c.execute(
@@ -289,19 +284,14 @@ def Add(input_field, mode):
 
         elif mode == "currrate":
             values = input_field.split(",")
-            for n in range(1, 6):
-                values[n] = round(
-                    float(values[n] if values[n].strip() != " " else 0), 4
-                )
 
-            values.insert(2, round(1 / values[1], 4))  # UAH = 1 / RON
-
+            values[2] = round(values[1], 4)
             records = {
                 curr_keys[i]: values[i] for i in range(len(curr_keys))
             }  # Make dictionary with all values to add
 
             c.execute(
-                "INSERT INTO exc_rate VALUES (:date, :RON, :UAH, :EUR, :USD, :GBP, :CHF, :HUF)",
+                "INSERT INTO exc_rate VALUES (:date, :currency, :rate)",
                 records,
             )
 
@@ -681,7 +671,7 @@ def Read(x):
             return result
 
         elif x == "retcurrr":
-            query = "SELECT Date, RON, EUR, USD, GBP, CHF FROM exc_rate ORDER BY date"
+            query = "SELECT Date, Currency, Rate FROM exc_rate ORDER BY date"
             df = pd.read_sql_query(query, conn)
             return df
 
