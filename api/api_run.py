@@ -4,60 +4,17 @@ from flask import (
     request,
     render_template,
     redirect,
-    url_for,
-    render_template_string,
 )
-import base64
-import io
-import matplotlib
 
-matplotlib.use("Agg")
-import matplotlib.pyplot as plt
 from db_scripts.script import *
 from db_scripts.baseScripts import Add, MarkerRead, Re_Calculate_deposit, Read
 from db_scripts.csvScripts import read_csv
 from db_scripts.consts import *
+from helpers.genPlot import plot_to_img_tag
 from api.api_invest import investPage
 
 app = Flask(__name__)
 app.register_blueprint(investPage, url_prefix="/")
-
-
-def plot_to_img_tag(df):
-    plt.clf()
-
-    plt.figure(figsize=(12, 6))
-
-    # Plot each currency's rate over time
-    for currency in df.columns[1:]:  # Skip the 'date' column
-        plt.plot(df["date"], df[currency], marker="o", label=currency)
-
-    plt.title("Currency Rates Over Time")
-    plt.xlabel("Date")
-    plt.ylabel("Rate")
-    plt.legend()
-    plt.grid(True)
-
-    # Rotate and align the tick labels so they look better
-    plt.xticks(rotation=45, ha="right")
-
-    # Use automatic layout adjustment to prevent label overlap
-    plt.tight_layout()
-
-    # If still too crowded, show fewer x-axis ticks
-    if len(df) > 20:
-        # Show approximately 15 evenly spaced ticks
-        plt.gca().xaxis.set_major_locator(plt.MaxNLocator(15))
-
-    # Save plot to a BytesIO object
-    img = io.BytesIO()
-    plt.savefig(img, format="png", bbox_inches="tight")
-    img.seek(0)
-
-    # Encode image to base64 string
-    img_tag = base64.b64encode(img.getvalue()).decode()
-    plt.close()
-    return img_tag
 
 
 @app.route("/", methods=["POST", "GET"])
@@ -115,6 +72,14 @@ def GetOptions(source):
                     "pb": person_banks,
                 }
             )
+        elif source == "currencyrates":
+            currencies = read_csv(SPVcurrPath)
+            payload = jsonify(
+                {
+                    "success": True,
+                    "currency": currencies,
+                }
+            )
 
     except Exception as e:
         print(f"Error occurred: {str(e)}")
@@ -147,6 +112,8 @@ def GetHistory(source):
             payload = GetTransactionHistory("depositO")
         elif source == "depositC":
             payload = GetTransactionHistory("depositC")
+        elif source == "currencyrates":
+            payload = GetTransactionHistory("currencyrates")
 
     except Exception as e:
         print(f"Error occurred: {str(e)}")
@@ -162,6 +129,28 @@ def GetHistory(source):
         )
     finally:
         return payload
+
+@app.route("/api/get/plot/<string:source>", methods=["GET"])
+def GetPlot(source):
+    if source == "currencyrates":
+        try:
+            df = Read("retcurrr")
+            plot1 = plot_to_img_tag(df, "Currency Rates Over Time", "Date", "Rate")
+            payload = jsonify({"success": True, "plot": plot1})
+        except Exception as e:
+            print(f"Error occurred: {str(e)}")
+            error_message = str(e)
+            payload = (
+                jsonify(
+                    {
+                        "success": False,
+                        "message": error_message,
+                    }
+                ),
+                400,
+            )
+        finally:
+            return payload
 
 
 @app.route("/api/add/expense", methods=["POST"])
@@ -373,6 +362,36 @@ def AddDeposit():
 
     try:
         Add(line, "deposit")
+        return jsonify({"success": True})
+    except Exception as e:
+        print(f"Error occurred: {str(e)}")
+        error_message = str(e)
+        return (
+            jsonify(
+                {
+                    "success": False,
+                    "message": error_message,
+                }
+            ),
+            400,
+        )
+
+
+@app.route("/api/add/currencyrates", methods=["POST"])
+def AddCurrencyRate():
+
+    # df = Read("retcurrr")
+    # plot1 = plot_to_img_tag(df)
+
+    content = request.get_json()
+    if content is None:
+        return "Error: No JSON data received", 400
+    
+    # Parse JSON data into string line
+    line = ",".join([str(content[key]) for key in content.keys()])
+
+    try:
+        Add(line, "currrate")
         return jsonify({"success": True})
     except Exception as e:
         print(f"Error occurred: {str(e)}")
@@ -614,44 +633,6 @@ def ViewAcc():
             selected_owner=owner,
             selected_type=type,
         )
-
-
-@app.route("/currency", methods=["GET", "POST"])
-def Currencies():
-    if request.method == "GET":
-        data = Read("allcurrrate")
-        columns = ["Date", "RON", "UAH", "EUR", "USD", "GBP", "CHF", "HUF"]
-        df = Read("retcurrr")
-        plot1 = plot_to_img_tag(df)
-
-        return render_template(
-            "currencies.html", columns=columns, data=data, plot1=plot1
-        )
-
-    else:
-        date = request.form["Date"]
-        ron = request.form["RON"]
-        eur = request.form.get("EUR", " ")
-        usd = request.form.get("USD", " ")
-        gbp = request.form.get("GBP", " ")
-        chf = request.form.get("CHF", " ")
-        huf = request.form.get("HUF", " ")
-
-        final_str = f"{date},{ron},{eur},{usd},{gbp},{chf},{huf}"
-
-        try:
-            Add(final_str, "currrate")
-        except Exception as e:
-            # Capture the exception message
-            error_message = str(e)
-            # Return the error message in the response
-            return render_template_string(
-                "<h1>Failed to currency rate!</h1><p>{{ error_message }}</p>",
-                error_message=error_message,
-            )
-
-        return redirect(url_for("Currencies"))
-
 
 def api_start():
     # app.config["SEND_FILE_MAX_AGE_DEFAULT"] = 1200

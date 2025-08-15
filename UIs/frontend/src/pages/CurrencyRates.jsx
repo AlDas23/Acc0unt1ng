@@ -11,7 +11,7 @@ export default function CurrencyRatesPage() {
             try {
                 document.title = "Currency Rates";
 
-                const response = await fetch('http://localhost:5050/api/get/currencyrates');
+                const response = await fetch('http://localhost:5050/api/get/history/currencyrates');
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
                 }
@@ -20,7 +20,7 @@ export default function CurrencyRatesPage() {
                     setData(result.data);
                 }
 
-                const plotResponse = await fetch('http://localhost:5050/api/get/currencyrates/plot');
+                const plotResponse = await fetch('http://localhost:5050/api/get/plot/currencyrates');
                 if (!plotResponse.ok) {
                     throw new Error('Network response was not ok');
                 }
@@ -71,19 +71,15 @@ export default function CurrencyRatesPage() {
         }
     };
 
-    const Form = () => {
+    const Form = (options) => {
         return (
             <form action="/currency" method="post" onSubmit={handleSubmit}>
                 <table>
                     <thead>
                         <tr>
                             <th>Date</th>
-                            <th>RON/UA</th>
-                            <th>EUR</th>
-                            <th>USD</th>
-                            <th>GBP</th>
-                            <th>CHF</th>
-                            <th>HUF</th>
+                            <th>Currency</th>
+                            <th>Rate</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -92,22 +88,14 @@ export default function CurrencyRatesPage() {
                                 <input type="date" id="Date" name="Date" className="date" required />
                             </td>
                             <td className="fields">
-                                <input type="text" id="RON" name="RON" autoComplete="off" required />
+                                <select id="Currency" name="Currency" required>
+                                    {options && options.currency.map((currency, index) => (
+                                        <option key={currency} value={index}>{currency}</option>
+                                    ))}
+                                </select>
                             </td>
                             <td className="fields">
-                                <input type="text" id="EUR" name="EUR" autoComplete="off" />
-                            </td>
-                            <td className="fields">
-                                <input type="text" id="USD" name="USD" autoComplete="off" />
-                            </td>
-                            <td className="fields">
-                                <input type="text" id="GBP" name="GBP" autoComplete="off" />
-                            </td>
-                            <td className="fields">
-                                <input type="text" id="CHF" name="CHF" autoComplete="off" />
-                            </td>
-                            <td className="fields">
-                                <input type="text" id="HUF" name="HUF" autoComplete="off" />
+                                <input type="text" id="Rate" name="Rate" autoComplete="off" required />
                             </td>
                         </tr>
                     </tbody>
@@ -126,7 +114,7 @@ export default function CurrencyRatesPage() {
                 <h2>Currency Rates History</h2>
                 <div className="left-split">
                     <HistoryTable
-                        columns={["Date", "RON/UA", "EUR", "USD", "GBP", "CHF", "HUF"]}
+                        columns={["Date", "Currency", "Rate"]}
                         data={data}
                     />
                 </div>
