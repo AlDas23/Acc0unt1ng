@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { HistoryTableWithEdit } from "../commonComponents/Common";
+import { HistoryTableWithEdit, DatePicker } from "../commonComponents/Common";
 
 function ValidateForm(isAdvanced, Edit = false, id = null) {
     let FormObject;
@@ -148,7 +148,9 @@ function StandardTransferForm({ options }) {
                     <th>Comment</th>
                 </tr>
                 <tr>
-                    <td class="fields_big"><input type="date" id="Date" name="Date" class="standardWidth" /></td>
+                    <td class="fields_big">
+                        <DatePicker id="Date" name="Date" />
+                    </td>
                     <td class="fields_big">
                         <select id="Sender" name="Sender" class="standardWidth">
                             <option value="" disabled selected></option>
@@ -200,7 +202,9 @@ function AdvancedTransferForm({ options }) {
                     <th>Comment</th>
                 </tr>
                 <tr>
-                    <td class="fields_big"><input type="date" id="ADVDate" name="Date" class="standardWidth" /></td>
+                    <td class="fields_big">
+                        <DatePicker id="ADVDate" name="Date" />
+                    </td>
                     <td class="fields">
                         <select id="ADVSender" name="Sender" class="standardWidth">
                             <option value="" disabled selected></option>

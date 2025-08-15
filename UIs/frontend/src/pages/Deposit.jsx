@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { HistoryTable } from "../commonComponents/Common";
+import { HistoryTable, DatePicker } from "../commonComponents/Common";
 
 function ValidateForm() {
     const date_in = document.getElementById("DateIn").value;
@@ -163,7 +163,7 @@ function Forms({ options }) {
                     </tr>
                     <tr>
                         <td class="fields_big">
-                            <input type="date" id="DateIn" name="DateIn" class="standardWidth" />
+                            <DatePicker id="DateIn" name="DateIn" />
                         </td>
                         <td class="fields_big">
                             <input type="text" id="Name" name="Name" autocomplete="off" class="standardWidth" />
@@ -191,7 +191,7 @@ function Forms({ options }) {
                             <input type="text" id="Months" name="Months" autocomplete="off" class="standardWidth" />
                         </td>
                         <td class="fields_big">
-                            <input type="date" id="DateOut" name="DateOut" class="standardWidth" />
+                            <input type="date" id="DateOut" name="DateOut" class="date" />
                         </td>
                         <td class="fields_small">
                             <input type="text" id="Percent" name="Percent" class="standardWidth" autocomplete="off" />

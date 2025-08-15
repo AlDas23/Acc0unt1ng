@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { HistoryTableWithEdit } from "../commonComponents/Common";
+import { HistoryTableWithEdit, DatePicker } from "../commonComponents/Common";
 
 function ValidateForm(Edit = false, id = null) {
     const date = document.getElementById("Date").value;
@@ -122,7 +122,7 @@ function Forms({ options }) {
                     </tr>
                     <tr>
                         <td class="fields_big">
-                            <input type="date" id="Date" name="Date" class="standardWidth" />
+                            <DatePicker id="Date" name="Date" />
                         </td>
                         <td class="fields_big">
                             <select id="Category" name="Category" class="standardWidth">
