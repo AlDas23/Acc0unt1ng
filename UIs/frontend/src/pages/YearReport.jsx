@@ -5,7 +5,7 @@ export default function YearReportPage() {
     const [currencyList, setCurrencyList] = useState([]);
 
     useEffect(() => {
-        fetch('http://localhost:5050/api/get/currencylist')
+        fetch('http://localhost:5050/api/get/list/currency')
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
@@ -26,15 +26,9 @@ export default function YearReportPage() {
     }, []);
 
     const GetData = (type) => {
-        const url = `http://localhost:5050/api/get/report/year`;
+        const url = `http://localhost:5050/api/get/report/year/${type}`;
 
-        return fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ type })
-        })
+        fetch(url)
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);

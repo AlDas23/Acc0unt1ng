@@ -557,28 +557,6 @@ def Balance(source):
         return payload
 
 
-@app.route("/view/rep", methods=["GET"])
-def ViewReports():
-    currencies = read_csv(SPVcurrPath)
-
-    Ldata = GetYearlyData("yeartotalrep")
-    Lcolumns = ["Month", "Incomes", "Expenses", "Balance"]
-    Rdata = GetYearlyData("yearexprep")
-    Rcolumns = ["Month"] + currencies + ["Total in RON"]
-    Cdata = GetYearlyData("yearincrep")
-    Ccolumns = ["Month"] + currencies + ["Total in RON"]
-
-    return render_template(
-        "viewrep.html",
-        Lcolumns=Lcolumns,
-        Ldata=Ldata,
-        Ccolumns=Ccolumns,
-        Cdata=Cdata,
-        Rcolumns=Rcolumns,
-        Rdata=Rdata,
-    )
-
-
 @app.route("/api/get/report", methods=["POST"])
 def Report():
     content = request.get_json()
@@ -604,8 +582,18 @@ def Report():
             ),
             400,
         )
-
+        
+        
+@app.route("/api/get/report/year/<string:type>", methods=["GET"])
+def YearReport(type):
+    if type == "total":
+        data = GetYearlyData("yeartotalrep")
+    elif type == "expense":
+        data = GetYearlyData("yearexprep")
+    elif type == "income":
+        data = GetYearlyData("yearincrep")
+    return jsonify({"success": True, "data": data})
+    
 
 def api_start():
-    # app.config["SEND_FILE_MAX_AGE_DEFAULT"] = 1200
     app.run(debug=True, port=5050)
