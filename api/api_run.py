@@ -3,8 +3,8 @@ from flask import (
     jsonify,
     request,
     render_template,
-    redirect,
 )
+from flask_cors import CORS
 
 from db_scripts.script import *
 from db_scripts.baseScripts import Add, MarkerRead, Re_Calculate_deposit, Read
@@ -15,13 +15,11 @@ from api.api_invest import investPage
 
 app = Flask(__name__)
 app.register_blueprint(investPage, url_prefix="/")
+CORS(app)
 
-
-@app.route("/", methods=["POST", "GET"])
-def main():
+@app.after_request
+def AfterRequest():
     Re_Calculate_deposit()
-    return redirect("/add/expense")
-
 
 @app.route("/api/get/options/<string:source>", methods=["GET"])
 def GetOptions(source):
