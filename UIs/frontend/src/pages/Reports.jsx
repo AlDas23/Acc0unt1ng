@@ -15,7 +15,7 @@ export default function ReportsPage() {
     }, []);
 
     const fetchCategories = () => {
-        fetch('http://localhost:5050/api/get/report/categories')
+        fetch('http://localhost:5050/api/get/list/categories', )
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
@@ -54,7 +54,7 @@ export default function ReportsPage() {
 
 
         // Fetch report data based on selected type and format
-        fetch('http://localhost:5050/api/report', {
+        fetch('http://localhost:5050/api/get/report', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -72,7 +72,7 @@ export default function ReportsPage() {
                 })
                 .then(data => {
                     if (data.success) {
-                        setTableData(data.report_data);
+                        setTableData(data.table_data);
                     } else {
                         alert('Error: ' + (data.message || 'Failed to generate report'));
                     }

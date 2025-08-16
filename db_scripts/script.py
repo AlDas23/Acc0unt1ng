@@ -437,7 +437,7 @@ def ConvReadPlus(x, mode):
     return modified_list
 
 
-def GenerateReport(params):
+def GenerateReport(rType, rFormat, categoryFilter):
     # Function for generating table_data for reports page
     table_data = {"table_dict": {}, "total": []}
     # Months lsit
@@ -454,14 +454,8 @@ def GenerateReport(params):
     with sqlite3.connect(dbPath) as conn:
         c = conn.cursor()
 
-        temp = params.split(",")
-        rType = temp[0]
         table_data["report_type"] = rType
-        rFormat = temp[1]
         table_data["report_format"] = rFormat
-
-        if rType == "subcat":
-            categoryFilter = temp[2]
 
         if rType == "inccat":
             catList = Read("retcat+")

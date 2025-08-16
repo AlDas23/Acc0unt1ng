@@ -17,9 +17,62 @@ app = Flask(__name__)
 app.register_blueprint(investPage, url_prefix="/")
 CORS(app)
 
+
 @app.after_request
 def AfterRequest():
     Re_Calculate_deposit()
+
+
+@app.route("/api/get/list/<string:source>", methods=["GET"])
+def GetList(source):
+    try:
+        if source == "categories_exp":
+            expCategories = read_csv(SPVcatExpPath)
+            payload = jsonify(
+                {
+                    "success": True,
+                    "categories": expCategories,
+                }
+            )
+        elif source == "categories_inc":
+            incCategories = read_csv(SPVcatIncPath)
+            payload = jsonify(
+                {
+                    "success": True,
+                    "categories": incCategories,
+                }
+            )
+        elif source == "subcategories":
+            subCategories = read_csv(SPVsubcatPath)
+            payload = jsonify(
+                {
+                    "success": True,
+                    "subcategories": subCategories,
+                }
+            )
+        elif source == "currencies":
+            currencies = read_csv(SPVcurrPath)
+            payload = jsonify(
+                {
+                    "success": True,
+                    "currencies": currencies,
+                }
+            )
+    except Exception as e:
+        print(f"Error occurred: {str(e)}")
+        error_message = str(e)
+        payload = (
+            jsonify(
+                {
+                    "success": False,
+                    "message": error_message,
+                }
+            ),
+            400,
+        )
+    finally:
+        return payload
+
 
 @app.route("/api/get/options/<string:source>", methods=["GET"])
 def GetOptions(source):
@@ -86,9 +139,7 @@ def GetOptions(source):
         elif source == "balance":
             ownersList = Read("retmowner")
             typesList = Read("retmtype")
-            payload = jsonify(
-                {"success": True, "owner": ownersList, "type": typesList}
-            )
+            payload = jsonify({"success": True, "owner": ownersList, "type": typesList})
 
     except Exception as e:
         print(f"Error occurred: {str(e)}")
@@ -472,22 +523,24 @@ def Balance(source):
                         "table": currType,
                     }
                 )
-                
+
         elif source == "balance":
             if content.owner is "None" and content.type is "None":
-                data = MarkerRead("none") 
+                data = MarkerRead("none")
             elif content.owner is not "None" and content.type is "None":
                 data = MarkerRead("byowner", content.owner)
             elif content.owner is "None" and content.type is not "None":
                 data = MarkerRead("bytype", content.type)
             elif content.owner is not "None" and content.type is not "None":
                 data = MarkerRead("byall", content.owner + "," + content.type)
-                
-            payload = jsonify({
-                "success": True,
-                "data": data,
-            })
-                
+
+            payload = jsonify(
+                {
+                    "success": True,
+                    "data": data,
+                }
+            )
+
     except Exception as e:
         print(f"Error occurred: {str(e)}")
         payload = (
@@ -526,132 +579,31 @@ def ViewReports():
     )
 
 
-@app.route("/view/reports/table", methods=["GET", "POST"])
+@app.route("/api/get/report", methods=["POST"])
 def Report():
-    if request.method == "GET":
-        try:
-            expCategories = read_csv(SPVcatExpPath)
-        except Exception as e:
-            print(f"Error occurred: {str(e)}")
-            error_message = str(e)
-            return (
-                jsonify(
-                    {
-                        "success": False,
-                        "message": error_message,
-                    }
-                ),
-                400,
-            )
+    content = request.get_json()
+    if content is None:
+        return "Error: No JSON data received", 400
 
-        return render_template("reports.html", categories=expCategories)
+    rType = content.get("report_type", "")
+    rFormat = content.get("report_format", "")
+    categoryFilter = content.get("category", None)
 
-    elif request.method == "POST":
-        content = request.get_json()
-        if content is None:
-            return "Error: No JSON data received", 400
-
-        # Parse JSON data into string line
-        params = ",".join([str(content[key]) for key in content.keys()])
-
-        try:
-            table_data = GenerateReport(params)
-            return jsonify({"success": True, "table_data": table_data})
-        except Exception as e:
-            print(f"Error occurred: {str(e)}")
-            error_message = str(e)
-            return (
-                jsonify(
-                    {
-                        "success": False,
-                        "message": error_message,
-                    }
-                ),
-                400,
-            )
-
-
-@app.route("/view/reports/legacy", methods=["POST", "GET"])
-def ViewAdvReports():
-    if request.method == "GET":
-        return render_template(
-            "viewrepadv.html", columns=[], data=[], columns2=[], data2=[]
+    try:
+        table_data = GenerateReport(rType, rFormat, categoryFilter)
+        return jsonify({"success": True, "table_data": table_data})
+    except Exception as e:
+        print(f"Error occurred: {str(e)}")
+        error_message = str(e)
+        return (
+            jsonify(
+                {
+                    "success": False,
+                    "message": error_message,
+                }
+            ),
+            400,
         )
-    else:
-        report_type = request.form["View Report"]
-        if report_type != "None":
-            month = request.form["Month"]
-            if report_type == "catpbrep":
-                data = ReadAdv(report_type, month)
-                columns = ["Category", "Person bank", "Currency", "Sum"]
-            if report_type == "catincrep":
-                data = ReadAdv(report_type, month)
-                columns = ["Category", "Sum RON", "%"]
-            if report_type == "catexprep":
-                data = ReadAdv(report_type, month)
-                columns = ["Category", "Sum RON", "%"]
-            if report_type == "subcatrep":
-                data = ReadAdv(report_type, month)
-                columns = ["Sub-category", "Sum RON", "%"]
-            if report_type == "catincbankrep":
-                data = ReadAdv(report_type, month)
-                columns = ["Category", "Person bank", "Currency", "Sum"]
-
-        report_type2 = request.form["View Report2"]
-        if report_type2 != "None":
-            month2 = request.form["Month2"]
-            if report_type2 == "catpbrep":
-                data2 = ReadAdv(report_type2, month2)
-                columns2 = ["Category", "Person bank", "Currency", "Sum"]
-            if report_type2 == "catincrep":
-                data2 = ReadAdv(report_type2, month2)
-                columns2 = ["Category", "Sum RON", "%"]
-            if report_type2 == "catexprep":
-                data2 = ReadAdv(report_type2, month2)
-                columns2 = ["Category", "Sum RON", "%"]
-            if report_type2 == "subcatrep":
-                data2 = ReadAdv(report_type2, month2)
-                columns2 = ["Sub-category", "Sum RON", "%"]
-            if report_type2 == "catincbankrep":
-                data2 = ReadAdv(report_type2, month2)
-                columns2 = ["Category", "Person bank", "Currency", "Sum"]
-
-        if report_type == "None" and report_type2 == "None":
-            return render_template(
-                "viewrepadv.html",
-                selected_option=report_type,
-                selected_option2=report_type2,
-            )
-        elif report_type != "None" and report_type2 == "None":
-            return render_template(
-                "viewrepadv.html",
-                columns=columns,
-                data=data,
-                selected_option=report_type,
-                selected_option2=report_type2,
-                selected_month=month,
-            )
-        elif report_type == "None" and report_type2 != "None":
-            return render_template(
-                "viewrepadv.html",
-                columns2=columns2,
-                data2=data2,
-                selected_option=report_type,
-                selected_option2=report_type2,
-                selected_month2=month2,
-            )
-        elif report_type != "None" and report_type2 != "None":
-            return render_template(
-                "viewrepadv.html",
-                columns=columns,
-                data=data,
-                columns2=columns2,
-                data2=data2,
-                selected_option=report_type,
-                selected_option2=report_type2,
-                selected_month=month,
-                selected_month2=month2,
-            )
 
 
 def api_start():
