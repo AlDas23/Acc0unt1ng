@@ -15,7 +15,6 @@ import YearPage from "./pages/YearReport";
 export function NavBar() {
   return (
     <Router>
-      <nav>
         <Routes>
           <Route path='/' element={<ExpensePage />} >
             <Route path='/add/expense' element={<ExpensePage />} />
@@ -28,7 +27,6 @@ export function NavBar() {
             <Route path='/view/reports/year' element={<YearPage />} />
           </Route>
         </Routes>
-      </nav>
     </Router>
   );
 }
