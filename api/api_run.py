@@ -1,8 +1,7 @@
 from flask import (
     Flask,
     jsonify,
-    request,
-    render_template,
+    request
 )
 from flask_cors import CORS
 
@@ -525,13 +524,13 @@ def Balance(source):
                 )
 
         elif source == "balance":
-            if content.owner is "None" and content.type is "None":
+            if content.owner == "None" and content.type == "None":
                 data = MarkerRead("none")
-            elif content.owner is not "None" and content.type is "None":
+            elif content.owner != "None" and content.type == "None":
                 data = MarkerRead("byowner", content.owner)
-            elif content.owner is "None" and content.type is not "None":
+            elif content.owner == "None" and content.type != "None":
                 data = MarkerRead("bytype", content.type)
-            elif content.owner is not "None" and content.type is not "None":
+            elif content.owner != "None" and content.type != "None":
                 data = MarkerRead("byall", content.owner + "," + content.type)
 
             payload = jsonify(
