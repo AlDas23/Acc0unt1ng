@@ -4,13 +4,13 @@ import { HistoryTable } from "../commonComponents/Common";
 export default function BalancePage() {
     const [data, setData] = useState([]);
     const [filters, setFilters] = useState({ owner: "None", type: "None" });
-    const [options, setOptions] = useState({ pb: [], type: [] });
+    const [options, setOptions] = useState({ owner: [], type: [] });
     const [groupedData, setGroupedData] = useState({});
 
     // Fetch data based on mode
     const GetData = (mode, table = null) => {
-        const endpointStandard = `http://localhost:5050/api/get/balance/data`;
-        const endpointBalance = `http://localhost:5050/api/get/balance`;
+        const endpointStandard = `http://localhost:5050/api/get/balance/tables`;
+        const endpointBalance = `http://localhost:5050/api/get/balance/balance`;
 
         if (mode === "standard") {
             return fetch(endpointStandard, {
@@ -44,9 +44,9 @@ export default function BalancePage() {
 
     // Fetch filter options
     const GetOptions = () => {
-        fetch("http://localhost:5050/api/get/balance/options")
+        fetch("http://localhost:5050/api/get/options/balance")
             .then((response) => response.json())
-            .then((data) => setOptions({ pb: data.pb, type: data.type }))
+            .then((data) => setOptions({ owner: data.owner, type: data.type }))
             .catch((error) => console.error("Error fetching options:", error));
     };
 
@@ -85,9 +85,9 @@ export default function BalancePage() {
                 value={filters.owner}
             >
                 <option value="None">None</option>
-                {options.pb.map((pb, index) => (
-                    <option value={pb} key={index}>
-                        {pb}
+                {options.owner.map((owner, index) => (
+                    <option value={owner} key={index}>
+                        {owner}
                     </option>
                 ))}
             </select>

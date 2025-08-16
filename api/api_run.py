@@ -40,6 +40,7 @@ def GetOptions(source):
                     "pb": person_banks,
                 }
             )
+
         elif source == "income":
             categories = read_csv(SPVcatIncPath)
             currencies = read_csv(SPVcurrPath)
@@ -52,6 +53,7 @@ def GetOptions(source):
                     "pb": person_banks,
                 }
             )
+
         elif source == "transfer":
             currencies = read_csv(SPVcurrPath)
             person_banks = Read("retacc")
@@ -62,6 +64,7 @@ def GetOptions(source):
                     "pb": person_banks,
                 }
             )
+
         elif source == "deposit":
             currencies = read_csv(SPVcurrPath)
             person_banks = Read("retacc")
@@ -72,6 +75,7 @@ def GetOptions(source):
                     "pb": person_banks,
                 }
             )
+
         elif source == "currencyrates":
             currencies = read_csv(SPVcurrPath)
             payload = jsonify(
@@ -79,6 +83,13 @@ def GetOptions(source):
                     "success": True,
                     "currency": currencies,
                 }
+            )
+
+        elif source == "balance":
+            ownersList = Read("retmowner")
+            typesList = Read("retmtype")
+            payload = jsonify(
+                {"success": True, "owner": ownersList, "type": typesList}
             )
 
     except Exception as e:
@@ -129,6 +140,7 @@ def GetHistory(source):
         )
     finally:
         return payload
+
 
 @app.route("/api/get/plot/<string:source>", methods=["GET"])
 def GetPlot(source):
@@ -379,14 +391,10 @@ def AddDeposit():
 
 @app.route("/api/add/currencyrates", methods=["POST"])
 def AddCurrencyRate():
-
-    # df = Read("retcurrr")
-    # plot1 = plot_to_img_tag(df)
-
     content = request.get_json()
     if content is None:
         return "Error: No JSON data received", 400
-    
+
     # Parse JSON data into string line
     line = ",".join([str(content[key]) for key in content.keys()])
 
@@ -405,6 +413,97 @@ def AddCurrencyRate():
             ),
             400,
         )
+
+
+@app.route("/api/get/balance/<string:source>", methods=["POST"])
+def Balance(source):
+    content = request.get_json()
+    if content is None:
+        return "Error: No JSON data received", 400
+
+    try:
+        if source == "tables":
+            if content.table == "allcurr":
+                data_curr1 = ConvRead("norm", "allcurr", True)
+                data_curr2 = Read("allcurr")
+
+                # Combine the two data sets
+                data_curr = []
+                for curr1 in data_curr1:
+                    for curr2 in data_curr2:
+                        if curr1[0] == curr2[0]:  # Match on currency name
+                            data_curr.append(
+                                (
+                                    curr1[0],  # Currency name
+                                    curr2[1],  # Original sum
+                                    curr1[1],  # Converted sum
+                                    curr1[2],  # Percent
+                                )
+                            )
+                            break
+
+                payload = jsonify(
+                    {
+                        "success": True,
+                        "table": data_curr,
+                    }
+                )
+            elif content.table == "owner-table":
+                owners = ConvReadPlus("norm", "allmowner")
+
+                payload = jsonify(
+                    {
+                        "success": True,
+                        "table": owners,
+                    }
+                )
+            elif content.table == "type-table":
+                types = ConvRead("norm", "allmtype", True)
+
+                payload = jsonify(
+                    {
+                        "success": True,
+                        "table": types,
+                    }
+                )
+            elif content.table == "currType":
+                currType = GenerateTable("currType+%")
+                payload = jsonify(
+                    {
+                        "success": True,
+                        "table": currType,
+                    }
+                )
+                
+        elif source == "balance":
+            if content.owner is "None" and content.type is "None":
+                data = MarkerRead("none") 
+            elif content.owner is not "None" and content.type is "None":
+                data = MarkerRead("byowner", content.owner)
+            elif content.owner is "None" and content.type is not "None":
+                data = MarkerRead("bytype", content.type)
+            elif content.owner is not "None" and content.type is not "None":
+                data = MarkerRead("byall", content.owner + "," + content.type)
+                
+            payload = jsonify({
+                "success": True,
+                "data": data,
+            })
+                
+    except Exception as e:
+        print(f"Error occurred: {str(e)}")
+        payload = (
+            jsonify(
+                {
+                    "success": False,
+                    "message": str(e),
+                }
+            ),
+            400,
+        )
+
+    finally:
+        return payload
 
 
 @app.route("/view/rep", methods=["GET"])
@@ -556,83 +655,6 @@ def ViewAdvReports():
                 selected_month2=month2,
             )
 
-
-@app.route("/view/acc", methods=["GET", "POST"])
-def ViewAcc():
-    data_curr1 = ConvRead("norm", "allcurr", True)
-    data_curr2 = Read("allcurr")
-    data = MarkerRead("none")
-
-    # Combine the two data sets
-
-    data_curr = []
-    for curr1 in data_curr1:
-        for curr2 in data_curr2:
-            if curr1[0] == curr2[0]:  # Match on currency name
-                data_curr.append(
-                    (
-                        curr1[0],  # Currency name
-                        curr2[1],  # Original sum
-                        curr1[1],  # Converted sum
-                        curr1[2],  # Percent
-                    )
-                )
-                break
-    columns_curr = ["Currency", "Sum", "Sum RON", "%"]
-    owners = ConvReadPlus("norm", "allmowner")
-    columns_owner = ["Owner", "Currency", "Sum", "Sum RON"]
-    types = ConvRead("norm", "allmtype", True)
-    columns_type = ["Type", "Sum RON", "%"]
-    currType = GenerateTable("currType+%")
-    currType_columns = ["Currency", "Type", "Sum", "%"]
-    ownersList = Read("retmowner")
-    typesList = Read("retmtype")
-    options = {"owners": ownersList, "types": typesList}
-
-    tables = {
-        "owner": owners,
-        "owner_columns": columns_owner,
-        "type": types,
-        "type_columns": columns_type,
-        "curr": data_curr,
-        "curr_columns": columns_curr,
-        "currType": currType,
-        "currType_columns": currType_columns,
-    }
-
-    if request.method == "GET":
-        return render_template(
-            "viewacc.html",
-            tables=tables,
-            columns=["Person bank", "Currency", "Sum"],
-            data=data,
-            options=options,
-        )
-    elif request.method == "POST":
-        owner = request.form["Acc owner"]
-        type = request.form["Acc type"]
-
-        if type == " " and owner != " ":
-            data = MarkerRead("byowner", owner)
-
-        elif owner == " " and type != " ":
-            data = MarkerRead("bytype", type)
-
-        elif owner != " " and type != " ":
-            all = owner + "," + type
-            data = MarkerRead("byall", all)
-        else:
-            data = MarkerRead("none")
-
-        return render_template(
-            "viewacc.html",
-            tables=tables,
-            options=options,
-            columns=["Person bank", "Currency", "Sum"],
-            data=data,
-            selected_owner=owner,
-            selected_type=type,
-        )
 
 def api_start():
     # app.config["SEND_FILE_MAX_AGE_DEFAULT"] = 1200
