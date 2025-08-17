@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { HistoryTableWithEdit, DatePicker } from "../commonComponents/Common";
+import Header from "../commonComponents/Header";
 
 function ValidateForm(isAdvanced, Edit = false, id = null) {
     let FormObject;
@@ -354,28 +355,30 @@ export default function TransferPage() {
     }
 
     return (
-        <div className="transfer-page">
-            <h1>Transfer Records</h1>
-            <Forms options={GetOptions()} />
-            <br />
-            <h3>History</h3>
-            <br />
-            <div className="history-table-container">
-                <div className="history-table-left">
-                    <h3>Standard Transfers</h3>
-                    <HistoryTableWithEdit
-                        columns={["ID", "Date", "Sender", "Receiver", "Sum", "Currency", "Comment"]}
-                        data={GetHistory('standard')} />
-                </div>
-                <div className="history-table-right">
-                    <h3>Advanced Transfers</h3>
-                    <HistoryTableWithEdit
-                        columns={["ID", "Date", "Sender", "Sum", "Currency", "Receiver", "Sum", "Currency", "Comment"]}
-                        data={GetHistory('advanced')}
-                    />
+        <>
+            <Header />
+            <div className="transfer-page">
+                <h1>Transfer Records</h1>
+                <Forms options={GetOptions()} />
+                <br />
+                <h3>History</h3>
+                <br />
+                <div className="history-table-container">
+                    <div className="history-table-left">
+                        <h3>Standard Transfers</h3>
+                        <HistoryTableWithEdit
+                            columns={["ID", "Date", "Sender", "Receiver", "Sum", "Currency", "Comment"]}
+                            data={GetHistory('standard')} />
+                    </div>
+                    <div className="history-table-right">
+                        <h3>Advanced Transfers</h3>
+                        <HistoryTableWithEdit
+                            columns={["ID", "Date", "Sender", "Sum", "Currency", "Receiver", "Sum", "Currency", "Comment"]}
+                            data={GetHistory('advanced')}
+                        />
+                    </div>
                 </div>
             </div>
-        </div>
+        </>
     )
-
 }

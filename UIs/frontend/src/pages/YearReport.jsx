@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { HistoryTable } from "../commonComponents/Common"
+import Header from "../commonComponents/Header";
 
 export default function YearReportPage() {
     const [currencyList, setCurrencyList] = useState([]);
@@ -50,29 +51,32 @@ export default function YearReportPage() {
     }
 
     return (
-        <div className="year-report-page">
-            <h1>Yearly Report</h1>
-            <div className="left-column">
-                <h3>Income</h3>
-                <HistoryTable
-                    columns={["Month", ...currencyList, "Total in RON"]}
-                    data={GetData('income')}
-                    tableId="income-table" />
+        <>
+            <Header />
+            <div className="year-report-page">
+                <h1>Yearly Report</h1>
+                <div className="left-column">
+                    <h3>Income</h3>
+                    <HistoryTable
+                        columns={["Month", ...currencyList, "Total in RON"]}
+                        data={GetData('income')}
+                        tableId="income-table" />
+                </div>
+                <div className="center-column">
+                    <h3>Expenses</h3>
+                    <HistoryTable
+                        columns={["Month", ...currencyList, "Total in RON"]}
+                        data={GetData('expense')}
+                        tableId="expense-table" />
+                </div>
+                <div className="right-column">
+                    <h3>Total balance</h3>
+                    <HistoryTable
+                        columns={["Month", "Incomes", "Expenses", "Balance"]}
+                        data={GetData('total')}
+                        tableId="total-table" />
+                </div>
             </div>
-            <div className="center-column">
-                <h3>Expenses</h3>
-                <HistoryTable
-                    columns={["Month", ...currencyList, "Total in RON"]}
-                    data={GetData('expense')}
-                    tableId="expense-table" />
-            </div>
-            <div className="right-column">
-                <h3>Total balance</h3>
-                <HistoryTable
-                    columns={["Month", "Incomes", "Expenses", "Balance"]}
-                    data={GetData('total')}
-                    tableId="total-table" />
-            </div>
-        </div>
+        </>
     )
 }

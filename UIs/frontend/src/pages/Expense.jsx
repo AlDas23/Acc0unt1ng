@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { HistoryTableWithEdit, DatePicker } from "../commonComponents/Common";
+import Header from "../commonComponents/Header";
 
 function ValidateForm(Edit = false, id = null) {
     const date = document.getElementById("Date").value;
@@ -66,7 +67,7 @@ function GetOptions() {
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
-            
+
             return response.json();
         })
         .then(data => {
@@ -207,16 +208,19 @@ export default function ExpensePage() {
     }
 
     return (
-        <div className="expense-page">
-            <h1>Expense Records</h1>
-            <Forms options={GetOptions()} />
-            <br />
-            <h3>History</h3>
-            <br />
-            <HistoryTableWithEdit
-                columns={["ID", "Date", "Category", "Sub-category", "Person-Bank", "Sum", "Currency", "Comment"]}
-                data={GetHistory()} />
-        </div>
+        <>
+            <Header />
+            <div className="expense-page">
+                <h1>Expense Records</h1>
+                <Forms options={GetOptions()} />
+                <br />
+                <h3>History</h3>
+                <br />
+                <HistoryTableWithEdit
+                    columns={["ID", "Date", "Category", "Sub-category", "Person-Bank", "Sum", "Currency", "Comment"]}
+                    data={GetHistory()} />
+            </div>
+        </>
     )
 
 }

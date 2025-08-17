@@ -12,7 +12,7 @@ import BalancePage from "./pages/Balance";
 import ReportsPage from "./pages/Reports";
 import YearPage from "./pages/YearReport";
 
-export function NavBar() {
+export default function RoutesMap() {
   return (
     <Router>
         <Routes>
@@ -21,7 +21,7 @@ export function NavBar() {
             <Route path='/add/expense' element={<IncomePage />} />
             <Route path='/add/transfer' element={<TransferPage />} />
             <Route path='/add/deposit' element={<DepositPage />} />
-            <Route path='/currencyrates' element={<CurrencyPage />} />
+            <Route path='/add/currencyrates' element={<CurrencyPage />} />
             <Route path='/view/acc' element={<BalancePage />} />
             <Route path='/view/reports/table' element={<ReportsPage />} />
             <Route path='/view/reports/year' element={<YearPage />} />

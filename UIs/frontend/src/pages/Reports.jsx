@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import Header from "../commonComponents/Header";
 
 export default function ReportsPage() {
     const [reportType, setReportType] = useState("");
@@ -15,7 +16,7 @@ export default function ReportsPage() {
     }, []);
 
     const fetchCategories = () => {
-        fetch('http://localhost:5050/api/get/list/categories', )
+        fetch('http://localhost:5050/api/get/list/categories',)
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
@@ -122,65 +123,68 @@ export default function ReportsPage() {
     };
 
     return (
-        <div className="reports-page">
-            <h2>Reports view</h2>
-            <div className="report_menu">
-                <label htmlFor="rep_type">Report type</label>
-                <select
-                    name="rep_type"
-                    id="rep_type"
-                    value={reportType}
-                    onChange={handleReportTypeChange}
-                >
-                    <option value="" disabled>Select a type</option>
-                    <option value="inccat">Income categories</option>
-                    <option value="expcat">Expense categories</option>
-                    <option value="subcat">Expense sub-categories</option>
-                </select>
-                <br />
-                <label htmlFor="rep_format">Output format</label>
-                <select
-                    name="rep_format"
-                    id="rep_format"
-                    value={reportFormat}
-                    onChange={(e) => setReportFormat(e.target.value)}
-                >
-                    <option value="percent">Converted to %</option>
-                    <option value="ron">Converted to RON</option>
-                </select>
-                <br />
-                <label
-                    id="rep_cat_label"
-                    htmlFor="rep_cat"
-                    style={{ display: isCategoryFilterVisible ? 'inline' : 'none' }}
-                >
-                    Category filter (select 1)
-                </label>
-                <select
-                    name="rep_cat"
-                    id="rep_cat"
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    style={{ display: isCategoryFilterVisible ? 'inline' : 'none' }}
-                    disabled={!isCategoryFilterVisible}
-                >
-                    <option value="" disabled>Select a category</option>
-                    {categories.map((cat, index) => (
-                        <option key={index} value={cat}>{cat}</option>
-                    ))}
-                </select>
-                <br />
-                <button
-                    id="showTableButton"
-                    style={{ width: '84px', height: '26px' }}
-                    onClick={validateReport}
-                >
-                    Show table
-                </button>
+        <>
+            <Header />
+            <div className="reports-page">
+                <h2>Reports view</h2>
+                <div className="report_menu">
+                    <label htmlFor="rep_type">Report type</label>
+                    <select
+                        name="rep_type"
+                        id="rep_type"
+                        value={reportType}
+                        onChange={handleReportTypeChange}
+                    >
+                        <option value="" disabled>Select a type</option>
+                        <option value="inccat">Income categories</option>
+                        <option value="expcat">Expense categories</option>
+                        <option value="subcat">Expense sub-categories</option>
+                    </select>
+                    <br />
+                    <label htmlFor="rep_format">Output format</label>
+                    <select
+                        name="rep_format"
+                        id="rep_format"
+                        value={reportFormat}
+                        onChange={(e) => setReportFormat(e.target.value)}
+                    >
+                        <option value="percent">Converted to %</option>
+                        <option value="ron">Converted to RON</option>
+                    </select>
+                    <br />
+                    <label
+                        id="rep_cat_label"
+                        htmlFor="rep_cat"
+                        style={{ display: isCategoryFilterVisible ? 'inline' : 'none' }}
+                    >
+                        Category filter (select 1)
+                    </label>
+                    <select
+                        name="rep_cat"
+                        id="rep_cat"
+                        value={category}
+                        onChange={(e) => setCategory(e.target.value)}
+                        style={{ display: isCategoryFilterVisible ? 'inline' : 'none' }}
+                        disabled={!isCategoryFilterVisible}
+                    >
+                        <option value="" disabled>Select a category</option>
+                        {categories.map((cat, index) => (
+                            <option key={index} value={cat}>{cat}</option>
+                        ))}
+                    </select>
+                    <br />
+                    <button
+                        id="showTableButton"
+                        style={{ width: '84px', height: '26px' }}
+                        onClick={validateReport}
+                    >
+                        Show table
+                    </button>
+                </div>
+                <div id="rep_table" className="report_table">
+                    {createReportTable()}
+                </div>
             </div>
-            <div id="rep_table" className="report_table">
-                {createReportTable()}
-            </div>
-        </div>
+        </>
     );
 }

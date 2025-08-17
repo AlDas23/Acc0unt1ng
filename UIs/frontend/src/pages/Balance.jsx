@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { HistoryTable } from "../commonComponents/Common";
+import Header from "../commonComponents/Header";
 
 export default function BalancePage() {
     const [data, setData] = useState([]);
@@ -116,53 +117,56 @@ export default function BalancePage() {
     };
 
     return (
-        <div className="balance-page">
-            <div className="info-tables">
-                <h2 onClick={() => toggleTable("curr-table")}>Group by currency</h2>
-                <br />
-                <HistoryTable
-                    columns={["Currency", "Sum", "Sum RON", "%"]}
-                    data={groupedData["curr-table"] || []}
-                    tableId="curr-table"
-                />
-                <br />
-                <h2 onClick={() => toggleTable("owner-table")}>Group by Owner</h2>
-                <br />
-                <HistoryTable
-                    columns={["Owner", "Currency", "Sum", "Sum RON"]}
-                    data={groupedData["owner-table"] || []}
-                    tableId="owner-table"
-                />
-                <br />
-                <h2 onClick={() => toggleTable("type-table")}>Group by Type</h2>
-                <br />
-                <HistoryTable
-                    columns={["Type", "Sum RON", "%"]}
-                    data={groupedData["type-table"] || []}
-                    tableId="type-table"
-                />
-                <br />
-                <h2 onClick={() => toggleTable("curr-type-table")}>
-                    Group by currency and type
-                </h2>
-                <br />
-                <HistoryTable
-                    columns={["Currency", "Type", "Sum", "%"]}
-                    data={groupedData["curr-type-table"] || []}
-                    tableId="curr-type-table"
-                />
+        <>
+            <Header />
+            <div className="balance-page">
+                <div className="info-tables">
+                    <h2 onClick={() => toggleTable("curr-table")}>Group by currency</h2>
+                    <br />
+                    <HistoryTable
+                        columns={["Currency", "Sum", "Sum RON", "%"]}
+                        data={groupedData["curr-table"] || []}
+                        tableId="curr-table"
+                    />
+                    <br />
+                    <h2 onClick={() => toggleTable("owner-table")}>Group by Owner</h2>
+                    <br />
+                    <HistoryTable
+                        columns={["Owner", "Currency", "Sum", "Sum RON"]}
+                        data={groupedData["owner-table"] || []}
+                        tableId="owner-table"
+                    />
+                    <br />
+                    <h2 onClick={() => toggleTable("type-table")}>Group by Type</h2>
+                    <br />
+                    <HistoryTable
+                        columns={["Type", "Sum RON", "%"]}
+                        data={groupedData["type-table"] || []}
+                        tableId="type-table"
+                    />
+                    <br />
+                    <h2 onClick={() => toggleTable("curr-type-table")}>
+                        Group by currency and type
+                    </h2>
+                    <br />
+                    <HistoryTable
+                        columns={["Currency", "Type", "Sum", "%"]}
+                        data={groupedData["curr-type-table"] || []}
+                        tableId="curr-type-table"
+                    />
+                </div>
+                <div className="balance-content">
+                    <h2>Balance Sheet</h2>
+                    <br />
+                    <FilterBalance />
+                    <br />
+                    <HistoryTable
+                        columns={["Person bank", "Currency", "Sum"]}
+                        data={data}
+                        tableId="balance-table"
+                    />
+                </div>
             </div>
-            <div className="balance-content">
-                <h2>Balance Sheet</h2>
-                <br />
-                <FilterBalance />
-                <br />
-                <HistoryTable
-                    columns={["Person bank", "Currency", "Sum"]}
-                    data={data}
-                    tableId="balance-table"
-                />
-            </div>
-        </div>
+        </>
     );
 }

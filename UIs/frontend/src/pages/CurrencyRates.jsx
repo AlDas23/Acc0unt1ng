@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { HistoryTable, DatePicker } from "../commonComponents/Common";
+import Header from "../commonComponents/Header";
 
 
 export default function CurrencyRatesPage() {
@@ -107,22 +108,25 @@ export default function CurrencyRatesPage() {
     };
 
     return (
-        <div className="currency-rates-page">
-            <Form />
-            <br />
-            <div className="historyTable-split">
-                <h2>Currency Rates History</h2>
-                <div className="left-split">
-                    <HistoryTable
-                        columns={["Date", "Currency", "Rate"]}
-                        data={data}
-                    />
-                </div>
-                <div className="right-split">
-                    <h2>Currency dynamics plot</h2>
-                    <img id="CurrRatePlot" src={imageUrl} alt="Currency dynamics plot" />
+        <>
+            <Header />
+            <div className="currency-rates-page">
+                <Form />
+                <br />
+                <div className="historyTable-split">
+                    <h2>Currency Rates History</h2>
+                    <div className="left-split">
+                        <HistoryTable
+                            columns={["Date", "Currency", "Rate"]}
+                            data={data}
+                        />
+                    </div>
+                    <div className="right-split">
+                        <h2>Currency dynamics plot</h2>
+                        <img id="CurrRatePlot" src={imageUrl} alt="Currency dynamics plot" />
+                    </div>
                 </div>
             </div>
-        </div>
+        </>
     );
 }

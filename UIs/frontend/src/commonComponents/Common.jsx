@@ -50,13 +50,6 @@ export const HistoryTableWithEdit = memo(function HistoryTableWithEdit({ columns
     );
 });
 
-export function Banner() {
-    return (
-        <header>
-            <img class="banner" src="assets/imgs/Banner.png" alt="Acc0unt1ng Banner" />
-        </header>
-    )
-}
 
 export function DatePicker({ id, name }) {
     // Get current date in YYYY-MM-DD format

@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { HistoryTable, DatePicker } from "../commonComponents/Common";
+import Header from "../commonComponents/Header";
 
 function ValidateForm() {
     const date_in = document.getElementById("DateIn").value;
@@ -217,27 +218,30 @@ export default function DepositPage() {
 
 
     return (
-        <div className="deposit-page">
-            <h1>Deposit Records</h1>
-            <Forms options={GetOptions()} />
-            <br />
-            <div className="history-table-container">
-                <div className="history-table-deposits-active">
-                    <h3>Active deposits</h3>
-                    <HistoryTable
-                        columns={["Deposit Date", "Name", "Person-bank", "Sum", "Currency", "Months", "Closing Date", "%", "Currency rate", "Comment"]}
-                        data={GetHistory(true)}
-                    />
-                </div>
+        <>
+            <Header />
+            <div className="deposit-page">
+                <h1>Deposit Records</h1>
+                <Forms options={GetOptions()} />
                 <br />
-                <div className="history-table-deposits-closed">
-                    <HistoryTable
-                        columns={["Deposit Date", "Name", "Person-bank", "Sum", "Currency", "Months", "Closing Date", "%", "Currency rate", "Comment"]}
-                        data={GetHistory(false)}
-                    />
+                <div className="history-table-container">
+                    <div className="history-table-deposits-active">
+                        <h3>Active deposits</h3>
+                        <HistoryTable
+                            columns={["Deposit Date", "Name", "Person-bank", "Sum", "Currency", "Months", "Closing Date", "%", "Currency rate", "Comment"]}
+                            data={GetHistory(true)}
+                        />
+                    </div>
+                    <br />
+                    <div className="history-table-deposits-closed">
+                        <HistoryTable
+                            columns={["Deposit Date", "Name", "Person-bank", "Sum", "Currency", "Months", "Closing Date", "%", "Currency rate", "Comment"]}
+                            data={GetHistory(false)}
+                        />
+                    </div>
                 </div>
             </div>
-        </div>
+        </>
     )
 
 }
