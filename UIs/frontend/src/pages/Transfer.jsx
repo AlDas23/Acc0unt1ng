@@ -149,40 +149,40 @@ function StandardTransferForm({ options }) {
                     <th>Comment</th>
                 </tr>
                 <tr>
-                    <td class="fields_big">
+                    <td className="fields_big">
                         <DatePicker id="Date" name="Date" />
                     </td>
-                    <td class="fields_big">
-                        <select id="Sender" name="Sender" class="standardWidth">
+                    <td className="fields_big">
+                        <select id="Sender" name="Sender" className="standardWidth">
                             <option value="" disabled selected></option>
                             {options.pb.map((pb, index) => (
                                 <option value={pb} key={index}>{pb}</option>
                             ))}
                         </select>
                     </td>
-                    <td class="fields_big">
-                        <select id="Receiver" name="Receiver" class="standardWidth">
+                    <td className="fields_big">
+                        <select id="Receiver" name="Receiver" className="standardWidth">
                             <option value="" disabled selected></option>
                             {options.pb.map((pb, index) => (
                                 <option value={pb} key={index}>{pb}</option>
                             ))}
                         </select>
                     </td>
-                    <td class="fields_small"><input type="text" id="Sum" name="Sum" autocomplete="off" class="standardWidth" />
+                    <td className="fields_small"><input type="text" id="Sum" name="Sum" autocomplete="off" className="standardWidth" />
                     </td>
-                    <td class="fields_small">
-                        <select id="Currency" name="Currency" class="standardWidth">
+                    <td className="fields_small">
+                        <select id="Currency" name="Currency" className="standardWidth">
                             <option value="" disabled selected></option>
                             {options.currency.map((currency, index) => (
                                 <option value={currency} key={index}>{currency}</option>
                             ))}
                         </select>
                     </td>
-                    <td class="fields_comment"><input type="text" id="Comment" name="Comment" autocomplete="off"
-                        class="standardWidth" /></td>
+                    <td className="fields_comment"><input type="text" id="Comment" name="Comment" autocomplete="off"
+                        className="standardWidth" /></td>
                 </tr>
             </table><br />
-            <input type="submit" value="Add" id="standardSubmit" class="submitrec" />
+            <input type="submit" value="Add" id="standardSubmit" className="submitrec" />
         </form>
     )
 };
@@ -203,52 +203,52 @@ function AdvancedTransferForm({ options }) {
                     <th>Comment</th>
                 </tr>
                 <tr>
-                    <td class="fields_big">
+                    <td className="fields_big">
                         <DatePicker id="ADVDate" name="Date" />
                     </td>
-                    <td class="fields">
-                        <select id="ADVSender" name="Sender" class="standardWidth">
+                    <td className="fields">
+                        <select id="ADVSender" name="Sender" className="standardWidth">
                             <option value="" disabled selected></option>
                             {options.pb.map((pb, index) => (
                                 <option value={pb} key={index}>{pb}</option>
                             ))}
                         </select>
                     </td>
-                    <td class="fields_small"><input type="text" id="ADVSSum" name="SSum" class="standardWidth" autocomplete="off" /></td>
-                    <td class="fields_big">
-                        <select id="ADVSCurrency" name="SCurrency" class="standardWidth">
+                    <td className="fields_small"><input type="text" id="ADVSSum" name="SSum" className="standardWidth" autocomplete="off" /></td>
+                    <td className="fields_big">
+                        <select id="ADVSCurrency" name="SCurrency" className="standardWidth">
                             <option value="" disabled selected></option>
                             {options.currency.map((currency, index) => (
                                 <option value={currency} key={index}>{currency}</option>
                             ))}
                         </select>
                     </td>
-                    <td class="fields_big">
-                        <select id="ADVReceiver" name="Receiver" class="standardWidth">
+                    <td className="fields_big">
+                        <select id="ADVReceiver" name="Receiver" className="standardWidth">
                             <option value="" disabled selected></option>
                             {options.pb.map((pb, index) => (
                                 <option value={pb} key={index}>{pb}</option>
                             ))}
                         </select>
                     </td>
-                    <td class="fields_small"><input type="text" id="ADVRSum" name="RSum" autocomplete="off"
-                        class="standardWidth" /></td>
-                    <td class="fields_small">
-                        <select id="ADVRCurrency" name="RCurrency" class="standardWidth">
+                    <td className="fields_small"><input type="text" id="ADVRSum" name="RSum" autocomplete="off"
+                        className="standardWidth" /></td>
+                    <td className="fields_small">
+                        <select id="ADVRCurrency" name="RCurrency" className="standardWidth">
                             <option value="" disabled selected></option>
                             {options.currency.map((currency, index) => (
                                 <option value={currency} key={index}>{currency}</option>
                             ))}
                         </select>
                     </td>
-                    <td class="fields_small">
-                        <input type="text" id="ADVCurrencyRate" name="Currency rate" autocomplete="off" class="standardWidth" />
+                    <td className="fields_small">
+                        <input type="text" id="ADVCurrencyRate" name="Currency rate" autocomplete="off" className="standardWidth" />
                     </td>
-                    <td class="fields_comment"><input type="text" id="ADVComment" name="Comment" autocomplete="off"
-                        class="standardWidth" /></td>
+                    <td className="fields_comment"><input type="text" id="ADVComment" name="Comment" autocomplete="off"
+                        className="standardWidth" /></td>
                 </tr>
             </table><br />
-            <input type="submit" value="Add" id="advancedSubmit" class="submitrec" />
+            <input type="submit" value="Add" id="advancedSubmit" className="submitrec" />
         </form>
     )
 };

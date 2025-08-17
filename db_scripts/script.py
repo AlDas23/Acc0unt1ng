@@ -182,96 +182,96 @@ def GetTransactionHistory(type):
         for row in data:
             row_list = list(row)
             Finalhistory.append(
-                {
-                    "id": row_list[0],
-                    "date": row_list[1],
-                    "category": row_list[2],
-                    "sub_category": row_list[3],
-                    "pb": row_list[4],
-                    "sum": round(row_list[5], 2),
-                    "currency": row_list[6],
-                    "comment": row_list[7],
-                }
+                [
+                    row_list[0],  # id
+                    row_list[1],  # date
+                    row_list[2],  # category
+                    row_list[3],  # sub_category
+                    row_list[4],  # pb
+                    round(row_list[5], 2),  # sum
+                    row_list[6],  # currency
+                    row_list[7],  # comment
+                ]
             )
 
     elif type == "income":
         for row in data:
             row_list = list(row)
             Finalhistory.append(
-                {
-                    "id": row_list[0],
-                    "date": row_list[1],
-                    "category": row_list[2],
-                    "pb": row_list[3],
-                    "sum": round(row_list[4], 2),
-                    "currency": row_list[5],
-                    "comment": row_list[6],
-                }
+                [
+                    row_list[0],  # id
+                    row_list[1],  # date
+                    row_list[2],  # category
+                    row_list[3],  # pb
+                    round(row_list[4], 2),  # sum
+                    row_list[5],  # currency
+                    row_list[6],  # comment
+                ]
             )
 
     elif type == "transfer":
         for row in data:
             row_list = list(row)
             Finalhistory.append(
-                {
-                    "id": row_list[0],
-                    "date": row_list[1],
-                    "pb_from": row_list[2],
-                    "pb_to": row_list[3],
-                    "sum": round(row_list[4], 2),
-                    "currency": row_list[5],
-                    "comment": row_list[6],
-                }
+                [
+                    row_list[0],  # id
+                    row_list[1],  # date
+                    row_list[2],  # pb_from
+                    row_list[3],  # pb_to
+                    round(row_list[4], 2),  # sum
+                    row_list[5],  # currency
+                    row_list[6],  # comment
+                ]
             )
-            
+
     elif type == "advtransfer":
         for row in data:
             row_list = list(row)
             Finalhistory.append(
-                {
-                    "ADV_id": row_list[0],
-                    "ADV_date": row_list[1],
-                    "ADV_pb_from": row_list[2],
-                    "ADV_sum_from": round(row_list[3], 2),
-                    "ADV_currency_from": row_list[4],
-                    "ADV_pb_to": row_list[5],
-                    "ADV_sum_to": round(row_list[6], 2),
-                    "ADV_currency_to": row_list[7],
-                    "ADV_currency_rate": (
+                [
+                    row_list[0],  # id
+                    row_list[1],  # date
+                    row_list[2],  # pb_from
+                    round(row_list[3], 2),  # sum_from
+                    row_list[4],  # currency_from
+                    row_list[5],  # pb_to
+                    round(row_list[6], 2),  # sum_to
+                    row_list[7],  # currency_to
+                    (
                         round(row_list[8], 4) if row_list[8] != "" else ""
-                    ),
-                    "ADV_comment": row_list[9],
-                }
+                    ),  # currency_rate
+                    row_list[9],  # comment
+                ]
             )
 
     elif type == "depositO" or type == "depositC":
         for row in data:
             row_list = list(row)
             Finalhistory.append(
-                {
-                    "date_in": row_list[0],
-                    "name": row_list[1],
-                    "owner": row_list[2],
-                    "sum": round(row_list[3], 2),
-                    "currency": row_list[4],
-                    "months": row_list[5],
-                    "date_out": row_list[6],
-                    "percent": round(row_list[7], 2),
-                    "currency_rate": round(row_list[8], 4),
-                    "expect": round(row_list[9], 2),
-                    "comment": row_list[10],
-                }
+                [
+                    row_list[0],  # date_in
+                    row_list[1],  # id
+                    row_list[2],  # owner
+                    round(row_list[3], 2),  # sum
+                    row_list[4],  # currency
+                    row_list[5],  # months
+                    row_list[6],  # date_out
+                    round(row_list[7], 2),  # percent
+                    round(row_list[8], 4),  # currency_rate
+                    round(row_list[9], 2),  # expect
+                    row_list[10],  # comment
+                ]
             )
-            
+
     elif type == "currencyrates":
         for row in data:
             row_list = list(row)
             Finalhistory.append(
-                {
-                    "date": row_list[0],
-                    "currency": row_list[1],
-                    "rate": round(row_list[2], 4),
-                }
+                [
+                    row_list[0],  # date
+                    row_list[1],  # currency
+                    round(row_list[2], 4),  # rate
+                ]
             )
 
     return Finalhistory
@@ -732,9 +732,9 @@ def ReadAdv(type, month):
         return modified_list
 
 
-def ConvertToRON(currency, amount, date, c = None):
+def ConvertToRON(currency, amount, date, c=None):
     # Converting to RON
-    
+
     if c is None:
         conn = sqlite3.connect(dbPath)
         c = conn.cursor()

@@ -1,8 +1,4 @@
-from flask import (
-    Flask,
-    jsonify,
-    request
-)
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 
 from db_scripts.script import *
@@ -14,12 +10,12 @@ from api.api_invest import investPage
 
 app = Flask(__name__)
 app.register_blueprint(investPage, url_prefix="/")
-CORS(app)
+CORS(app, resources=r"/api/*")
 
 
-@app.after_request
-def AfterRequest():
-    Re_Calculate_deposit()
+# @app.after_request
+# def AfterRequest():
+#     Re_Calculate_deposit()
 
 
 @app.route("/api/get/list/<string:source>", methods=["GET"])
@@ -81,64 +77,51 @@ def GetOptions(source):
             sub_categories = read_csv(SPVsubcatPath)
             currencies = read_csv(SPVcurrPath)
             person_banks = Read("retacc")
-            payload = jsonify(
-                {
-                    "success": True,
-                    "categories": categories,
-                    "subcategories": sub_categories,
-                    "currency": currencies,
-                    "pb": person_banks,
-                }
-            )
+            options = {
+                "categories": categories,
+                "subcategories": sub_categories,
+                "currency": currencies,
+                "pb": person_banks,
+            }
 
         elif source == "income":
             categories = read_csv(SPVcatIncPath)
             currencies = read_csv(SPVcurrPath)
             person_banks = Read("retacc")
-            payload = jsonify(
-                {
-                    "success": True,
-                    "categories": categories,
-                    "currency": currencies,
-                    "pb": person_banks,
-                }
-            )
+            options = {
+                "categories": categories,
+                "currency": currencies,
+                "pb": person_banks,
+            }
 
         elif source == "transfer":
             currencies = read_csv(SPVcurrPath)
             person_banks = Read("retacc")
-            payload = jsonify(
-                {
-                    "success": True,
-                    "currencies": currencies,
-                    "pb": person_banks,
-                }
-            )
+            options = {
+                "currencies": currencies,
+                "pb": person_banks,
+            }
 
         elif source == "deposit":
             currencies = read_csv(SPVcurrPath)
             person_banks = Read("retacc")
-            payload = jsonify(
-                {
-                    "success": True,
-                    "currencies": currencies,
-                    "pb": person_banks,
-                }
-            )
+            options = {
+                "currencies": currencies,
+                "pb": person_banks,
+            }
 
         elif source == "currencyrates":
             currencies = read_csv(SPVcurrPath)
-            payload = jsonify(
-                {
-                    "success": True,
-                    "currency": currencies,
-                }
-            )
+            options = {
+                "currency": currencies,
+            }
 
         elif source == "balance":
             ownersList = Read("retmowner")
             typesList = Read("retmtype")
-            payload = jsonify({"success": True, "owner": ownersList, "type": typesList})
+            options = {"owner": ownersList, "type": typesList}
+
+        payload = jsonify({"success": True, "options": options})
 
     except Exception as e:
         print(f"Error occurred: {str(e)}")
@@ -160,19 +143,26 @@ def GetOptions(source):
 def GetHistory(source):
     try:
         if source == "expense":
-            payload = GetTransactionHistory("expense")
+            history = GetTransactionHistory("expense")
         elif source == "income":
-            payload = GetTransactionHistory("income")
+            history = GetTransactionHistory("income")
         elif source == "transfer":
-            payload = GetTransactionHistory("transfer")
+            history = GetTransactionHistory("transfer")
         elif source == "transferADV":
-            payload = GetTransactionHistory("advtransfer")
+            history = GetTransactionHistory("advtransfer")
         elif source == "depositO":
-            payload = GetTransactionHistory("depositO")
+            history = GetTransactionHistory("depositO")
         elif source == "depositC":
-            payload = GetTransactionHistory("depositC")
+            history = GetTransactionHistory("depositC")
         elif source == "currencyrates":
-            payload = GetTransactionHistory("currencyrates")
+            history = GetTransactionHistory("currencyrates")
+
+        payload = jsonify(
+            {
+                "success": True,
+                "history": history,
+            }
+        )
 
     except Exception as e:
         print(f"Error occurred: {str(e)}")
@@ -581,8 +571,8 @@ def Report():
             ),
             400,
         )
-        
-        
+
+
 @app.route("/api/get/report/year/<string:type>", methods=["GET"])
 def YearReport(type):
     if type == "total":
@@ -592,7 +582,7 @@ def YearReport(type):
     elif type == "income":
         data = GetYearlyData("yearincrep")
     return jsonify({"success": True, "data": data})
-    
+
 
 def api_start():
     app.run(debug=True, port=5050)

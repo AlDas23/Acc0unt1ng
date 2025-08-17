@@ -163,49 +163,49 @@ function Forms({ options }) {
                         <th>Comment</th>
                     </tr>
                     <tr>
-                        <td class="fields_big">
+                        <td className="fields_big">
                             <DatePicker id="DateIn" name="DateIn" />
                         </td>
-                        <td class="fields_big">
-                            <input type="text" id="Name" name="Name" autocomplete="off" class="standardWidth" />
+                        <td className="fields_big">
+                            <input type="text" id="Name" name="Name" autocomplete="off" className="standardWidth" />
                         </td>
-                        <td class="fields_small">
-                            <select id="Owner" name="Owner" class="standardWidth">
+                        <td className="fields_small">
+                            <select id="Owner" name="Owner" className="standardWidth">
                                 <option value="" disabled selected></option>
                                 {options.pb.map((pb, index) => (
                                     <option value={pb} key={index}>{pb}</option>
                                 ))}
                             </select>
                         </td>
-                        <td class="fields_small">
-                            <input type="text" id="Sum" name="Sum" autocomplete="off" class="standardWidth" />
+                        <td className="fields_small">
+                            <input type="text" id="Sum" name="Sum" autocomplete="off" className="standardWidth" />
                         </td>
-                        <td class="fields_small">
-                            <select id="Currency" name="Currency" class="standardWidth">
+                        <td className="fields_small">
+                            <select id="Currency" name="Currency" className="standardWidth">
                                 <option value="" disabled selected></option>
                                 {options.currency.map((currency, index) => (
                                     <option value={currency} key={index}>{currency}</option>
                                 ))}
                             </select>
                         </td>
-                        <td class="fields_small">
-                            <input type="text" id="Months" name="Months" autocomplete="off" class="standardWidth" />
+                        <td className="fields_small">
+                            <input type="text" id="Months" name="Months" autocomplete="off" className="standardWidth" />
                         </td>
-                        <td class="fields_big">
-                            <input type="date" id="DateOut" name="DateOut" class="date" />
+                        <td className="fields_big">
+                            <input type="date" id="DateOut" name="DateOut" className="date" />
                         </td>
-                        <td class="fields_small">
-                            <input type="text" id="Percent" name="Percent" class="standardWidth" autocomplete="off" />
+                        <td className="fields_small">
+                            <input type="text" id="Percent" name="Percent" className="standardWidth" autocomplete="off" />
                         </td>
-                        <td class="fields_small">
-                            <input type="text" id="CurrencyRate" name="Currency rate" autocomplete="off" class="standardWidth" />
+                        <td className="fields_small">
+                            <input type="text" id="CurrencyRate" name="Currency rate" autocomplete="off" className="standardWidth" />
                         </td>
-                        <td class="fields_comment">
-                            <input type="text" id="Comment" name="Comment" autocomplete="off" class="standardWidth" />
+                        <td className="fields_comment">
+                            <input type="text" id="Comment" name="Comment" autocomplete="off" className="standardWidth" />
                         </td>
                     </tr>
                 </table><br />
-                <input type="submit" value="Add" id="submitButton" class="submitrec" />
+                <input type="submit" value="Add" id="submitButton" className="submitrec" />
             </form>
         </div>
     );

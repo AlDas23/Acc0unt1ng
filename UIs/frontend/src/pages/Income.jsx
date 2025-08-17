@@ -122,42 +122,42 @@ function Forms({ options }) {
                         <th>Comment</th>
                     </tr>
                     <tr>
-                        <td class="fields_big">
+                        <td className="fields_big">
                             <DatePicker id="Date" name="Date" />
                         </td>
-                        <td class="fields_big">
-                            <select id="Category" name="Category" class="standardWidth">
+                        <td className="fields_big">
+                            <select id="Category" name="Category" className="standardWidth">
                                 <option value="" disabled selected></option>
                                 {options.categories.map((category, index) => (
                                     <option value={category} key={index}>{category}</option>
                                 ))}
                             </select>
                         </td>
-                        <td class="fields_big">
-                            <select id="Person-Bank" name="Person-Bank" class="standardWidth">
+                        <td className="fields_big">
+                            <select id="Person-Bank" name="Person-Bank" className="standardWidth">
                                 <option value="" disabled selected></option>
                                 {options.pb.map((pb, index) => (
                                     <option value={pb} key={index}>{pb}</option>
                                 ))}
                             </select>
                         </td>
-                        <td class="fields_small">
-                            <input type="text" id="Sum" name="Sum" autocomplete="off" class="standardWidth" />
+                        <td className="fields_small">
+                            <input type="text" id="Sum" name="Sum" autocomplete="off" className="standardWidth" />
                         </td>
-                        <td class="fields_small">
-                            <select id="Currency" name="Currency" class="standardWidth">
+                        <td className="fields_small">
+                            <select id="Currency" name="Currency" className="standardWidth">
                                 <option value="" disabled selected></option>
                                 {options.currency.map((currency, index) => (
                                     <option value={currency} key={index}>{currency}</option>
                                 ))}
                             </select>
                         </td>
-                        <td class="fields_comment">
-                            <input type="text" id="Comment" name="Comment" autocomplete="off" class="standardWidth" />
+                        <td className="fields_comment">
+                            <input type="text" id="Comment" name="Comment" autocomplete="off" className="standardWidth" />
                         </td>
                     </tr>
                 </table><br />
-                <input type="submit" value="Add" id="submitButton" class="submitrec" />
+                <input type="submit" value="Add" id="submitButton" className="submitrec" />
             </form>
         </div>
     );
