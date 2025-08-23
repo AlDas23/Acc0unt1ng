@@ -29,7 +29,7 @@ function NavBar() {
 function Banner() {
     return (
         <>
-            <img className="banner" src="../assets/imgs/Banner.png" alt="Acc0unt1ng Banner" />
+            <img style={{width: '100%', height: 'auto', display: 'block'}} className="banner" src="/src/assets/imgs/Banner.png" alt="Acc0unt1ng Banner" />
         </>
     )
 }
