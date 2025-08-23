@@ -41,3 +41,13 @@ h3 {
     margin-top: 16px;
     width: 10%;
 }
+
+.editable-cell {
+    color: #007bff;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.editable-cell:hover {
+    color: #0056b3;
+}

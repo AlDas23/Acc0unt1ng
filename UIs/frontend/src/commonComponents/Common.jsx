@@ -7,9 +7,9 @@ function TableBody({ data, EditRecord }) {
                 <tr key={`row-${rowIndex}`}>
                     {row.map((cell, cellIndex) => (
                         <td
-                            className="ht-cell"
+                            className={`ht-cell ${EditRecord && cellIndex === 0 ? 'editable-cell' : ''}`}
                             key={`cell-${rowIndex}-${cellIndex}`}
-                            {...(EditRecord && cellIndex === 0 ? { onClick: () => EditRecord(this) } : {})}
+                            {...(EditRecord && cellIndex === 0 ? { onClick: (e) => EditRecord(e) } : {})}
                         >
                             {cell}
                         </td>

@@ -8,13 +8,13 @@ import Row from 'react-bootstrap/Row';
 import '../assets/styles/ExpensePageStyles.css'
 
 function ValidateForm(Edit = false, id = null) {
-    const date = document.getElementById("Date").value;
-    const cat = document.getElementById("Category").value;
-    const subCat = document.getElementById("Sub-category").value;
-    const pb = document.getElementById("Person-Bank").value;
-    let sum = document.getElementById("Sum").value;
-    const curr = document.getElementById("Currency").value;
-    const comment = document.getElementById("Comment").value;
+    const date = document.getElementById("inputDate").value;
+    const cat = document.getElementById("inputCategory").value;
+    const subCat = document.getElementById("inputSubCategory").value;
+    const pb = document.getElementById("inputPersonBank").value;
+    let sum = document.getElementById("inputSum").value;
+    const curr = document.getElementById("inputCurrency").value;
+    const comment = document.getElementById("inputComment").value;
 
     let endpoint;
 
@@ -301,7 +301,7 @@ export default function ExpensePage() {
                         <HistoryTableWithEdit
                             columns={["ID", "Date", "Category", "Sub-category", "Person-Bank", "Sum", "Currency", "Comment"]}
                             data={history}
-                            EditRecord={true} />
+                            EditRecord={EditRecord} />
                     )}
                 </div>
             </div>
