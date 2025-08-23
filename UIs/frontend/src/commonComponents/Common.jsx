@@ -56,6 +56,6 @@ export function DatePicker({ id, name }) {
     const today = new Date().toISOString().split('T')[0];
 
     return (
-        <input type="date" id={id} name={name} className="date" value={today} required={true} />
+        <input type="date" id={id} name={name} className="date" defaultValue={today} required={true} />
     );
 }
