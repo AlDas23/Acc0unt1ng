@@ -15,18 +15,18 @@ import YearPage from "./pages/YearReport";
 export default function RoutesMap() {
   return (
     <Router>
-        <Routes>
-          <Route path='/' element={<ExpensePage />} >
-            <Route path='/add/expense' element={<ExpensePage />} />
-            <Route path='/add/expense' element={<IncomePage />} />
-            <Route path='/add/transfer' element={<TransferPage />} />
-            <Route path='/add/deposit' element={<DepositPage />} />
-            <Route path='/add/currencyrates' element={<CurrencyPage />} />
-            <Route path='/view/acc' element={<BalancePage />} />
-            <Route path='/view/reports/table' element={<ReportsPage />} />
-            <Route path='/view/reports/year' element={<YearPage />} />
-          </Route>
-        </Routes>
+      <Routes>
+        <Route path='/add/expense' element={<ExpensePage />} />
+        <Route path='/add/income' element={<IncomePage />} />
+        <Route path='/add/transfer' element={<TransferPage />} />
+        <Route path='/add/deposit' element={<DepositPage />} />
+        <Route path='/add/currencyrates' element={<CurrencyPage />} />
+        <Route path='/view/acc' element={<BalancePage />} />
+        <Route path='/view/reports/table' element={<ReportsPage />} />
+        <Route path='/view/reports/year' element={<YearPage />} />
+        <Route path='/' element={<ExpensePage />} >
+        </Route>
+      </Routes>
     </Router>
   );
 }

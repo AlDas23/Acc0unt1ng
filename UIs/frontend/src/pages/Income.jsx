@@ -1,14 +1,19 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { HistoryTableWithEdit, DatePicker } from "../commonComponents/Common";
 import Header from "../commonComponents/Header";
+import Button from 'react-bootstrap/Button';
+import Col from 'react-bootstrap/Col';
+import Form from 'react-bootstrap/Form';
+import Row from 'react-bootstrap/Row';
+import '../assets/styles/IncomePageStyles.css';
 
 function ValidateForm(Edit = false, id = null) {
-    const date = document.getElementById("Date").value;
-    const cat = document.getElementById("Category").value;
-    const pb = document.getElementById("Person-Bank").value;
-    let sum = document.getElementById("Sum").value;
-    const curr = document.getElementById("Currency").value;
-    const comment = document.getElementById("Comment").value;
+    const date = document.getElementById("inputDate").value;
+    const cat = document.getElementById("inputCategory").value;
+    const pb = document.getElementById("inputPersonBank").value;
+    let sum = document.getElementById("inputSum").value;
+    const curr = document.getElementById("inputCurrency").value;
+    const comment = document.getElementById("inputComment").value;
 
     let endpoint;
 
@@ -25,6 +30,7 @@ function ValidateForm(Edit = false, id = null) {
     const FormData = {
         date: date,
         category: cat,
+        subCategory: "",
         personBank: pb,
         sum: parseFloat(sum).toFixed(2),
         currency: curr,
@@ -110,62 +116,103 @@ function GetHistory() {
 
 function Forms({ options }) {
     return (
-        <div>
-            <form className="forms" id="form" onSubmit={ValidateForm()}>
-                <table>
-                    <tr>
-                        <th>Date</th>
-                        <th>Category</th>
-                        <th>Person-Bank</th>
-                        <th>Sum</th>
-                        <th>Currency</th>
-                        <th>Comment</th>
-                    </tr>
-                    <tr>
-                        <td className="fields_big">
-                            <DatePicker id="Date" name="Date" />
-                        </td>
-                        <td className="fields_big">
-                            <select id="Category" name="Category" className="standardWidth">
-                                <option value="" disabled selected></option>
-                                {options.categories.map((category, index) => (
-                                    <option value={category} key={index}>{category}</option>
-                                ))}
-                            </select>
-                        </td>
-                        <td className="fields_big">
-                            <select id="Person-Bank" name="Person-Bank" className="standardWidth">
-                                <option value="" disabled selected></option>
-                                {options.pb.map((pb, index) => (
-                                    <option value={pb} key={index}>{pb}</option>
-                                ))}
-                            </select>
-                        </td>
-                        <td className="fields_small">
-                            <input type="text" id="Sum" name="Sum" autocomplete="off" className="standardWidth" />
-                        </td>
-                        <td className="fields_small">
-                            <select id="Currency" name="Currency" className="standardWidth">
-                                <option value="" disabled selected></option>
-                                {options.currency.map((currency, index) => (
-                                    <option value={currency} key={index}>{currency}</option>
-                                ))}
-                            </select>
-                        </td>
-                        <td className="fields_comment">
-                            <input type="text" id="Comment" name="Comment" autocomplete="off" className="standardWidth" />
-                        </td>
-                    </tr>
-                </table><br />
-                <input type="submit" value="Add" id="submitButton" className="submitrec" />
-            </form>
-        </div>
+        <Form noValidate className="form" id="form" onSubmit={(e) => {
+            e.preventDefault();
+            ValidateForm();
+        }}>
+            <Row>
+                <Col xl="2">
+                    <Form.Label htmlFor="inputDate">
+                        Date
+                    </Form.Label>
+                    <br />
+                    <DatePicker id={"inputDate"} name={"inputDate"} />
+                </Col>
+                <Col xl="2">
+                    <Form.Label htmlFor="inputCategory">
+                        Category
+                    </Form.Label>
+                    <Form.Select id="inputCategory" name="Category" defaultValue={""}>
+                        <option value="" disabled></option>
+                        {options.categories.map((category, index) => (
+                            <option value={category} key={index}>{category}</option>
+                        ))}
+                    </Form.Select>
+                </Col>
+                <Col xl="2">
+                    <Form.Label htmlFor="inputPersonBank">
+                        Person-Bank
+                    </Form.Label>
+                    <Form.Select id="inputPersonBank" name="PersonBank" defaultValue={""}>
+                        <option value="" disabled></option>
+                        {options.pb.map((pb, index) => (
+                            <option value={pb} key={index}>{pb}</option>
+                        ))}
+                    </Form.Select>
+                </Col>
+                <Col xl="1">
+                    <Form.Label htmlFor="inputSum">
+                        Amount
+                    </Form.Label>
+                    <Form.Control type="text" id="inputSum" name="Sum" />
+                </Col>
+                <Col xl="1">
+                    <Form.Label htmlFor="inputCurrency">
+                        Currency
+                    </Form.Label>
+                    <Form.Select id="inputCurrency" name="Currency" defaultValue={""}>
+                        <option value="" disabled></option>
+                        {options.currency.map((currency, index) => (
+                            <option value={currency} key={index}>{currency}</option>
+                        ))}
+                    </Form.Select>
+                </Col>
+                <Col xl="auto">
+                    <Form.Label htmlFor="inputComment">
+                        Comment
+                    </Form.Label>
+                    <Form.Control type="text" id="inputComment" name="Comment" />
+                </Col>
+            </Row>
+            <Row>
+                <Button type="submit" id="SubmitButton">Add Record</Button>
+            </Row>
+        </Form>
     );
 }
 
 export default function IncomePage() {
     useEffect(() => {
         document.title = "Income Records";
+    }, []);
+
+    const [options, setOptions] = useState(null);
+    const [history, setHistory] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        // Fetch options
+        GetOptions()
+            .then(optionsData => {
+                setOptions(optionsData);
+            })
+            .catch(error => {
+                setError('Failed to load options: ' + error.message);
+                console.error('Error loading options:', error);
+            });
+
+        // Fetch history
+        GetHistory()
+            .then(historyData => {
+                setHistory(historyData);
+                setLoading(false);
+            })
+            .catch(error => {
+                setError('Failed to load history: ' + error.message);
+                setLoading(false);
+                console.error('Error loading history:', error);
+            });
     }, []);
 
     const EditRecord = (element) => {
@@ -199,18 +246,51 @@ export default function IncomePage() {
         submitButton.value = "Edit";
     }
 
+    if (loading) {
+        return (
+            <>
+                <Header />
+                <div className="income-page">
+                    <h1>Income Records</h1>
+                    <p>Loading...</p>
+                </div>
+            </>
+        );
+    }
+
+    if (error) {
+        return (
+            <>
+                <Header />
+                <div className="income-page">
+                    <h1>Income Records</h1>
+                    <p>Error: {error}</p>
+                </div>
+            </>
+        );
+    }
+
     return (
         <>
             <Header />
-            <div className="income-page">
-                <h1>Income Records</h1>
-                <Forms options={GetOptions()} />
+            <div className="income-page container">
+                <div className="row">
+                    <div className="col-bg-12">
+                        <h1>Income Records</h1>
+                        <Forms options={options} />
+                        <br />
+                    </div>
+                </div>
                 <br />
-                <h3>History</h3>
-                <br />
-                <HistoryTableWithEdit
-                    columns={["ID", "Date", "Category", "Person-Bank", "Sum", "Currency", "Comment"]}
-                    data={GetHistory()} />
+                <div className="row">
+                    <h3>History</h3>
+                    <br />
+                    {history && (<HistoryTableWithEdit
+                        columns={["ID", "Date", "Category", "Person-Bank", "Sum", "Currency", "Comment"]}
+                        data={history}
+                        EditRecord={EditRecord}
+                    />)}
+                </div>
             </div>
         </>
     )
