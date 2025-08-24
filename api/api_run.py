@@ -98,7 +98,7 @@ def GetOptions(source):
             currencies = read_csv(SPVcurrPath)
             person_banks = Read("retacc")
             options = {
-                "currencies": currencies,
+                "currency": currencies,
                 "pb": person_banks,
             }
 

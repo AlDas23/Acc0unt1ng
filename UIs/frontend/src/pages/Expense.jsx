@@ -223,7 +223,7 @@ export default function ExpensePage() {
             });
     }, []);
 
-    const EditRecord = (element) => {
+    const EditRecord = (element) => { // TODO: Find a way to correctly populate forms with edit records data
         const row = element.target.parentNode;
         const cells = row.getElementsByTagName("td");
         const id = cells[0].innerText;
