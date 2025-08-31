@@ -49,13 +49,3 @@ export const HistoryTableWithEdit = memo(function HistoryTableWithEdit({ columns
         </table>
     );
 });
-
-
-export function DatePicker({ id, name }) {
-    // Get current date in YYYY-MM-DD format
-    const today = new Date().toISOString().split('T')[0];
-
-    return (
-        <input type="date" id={id} name={name} className="date" defaultValue={today} required={true} />
-    );
-}

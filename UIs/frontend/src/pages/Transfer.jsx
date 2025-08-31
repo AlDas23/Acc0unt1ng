@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { HistoryTableWithEdit, DatePicker } from "../commonComponents/Common";
+import { HistoryTableWithEdit } from "../commonComponents/Common";
 import Header from "../commonComponents/Header";
 import Button from 'react-bootstrap/Button';
 import Col from 'react-bootstrap/Col';
@@ -279,7 +279,7 @@ export default function TransferPage() {
                         <Form.Label htmlFor="inputDate">
                             Date
                         </Form.Label>
-                        <DatePicker id="inputDate" name="Date" value={formData.date} />
+                        <input type="date" id="inputDate" name="Date" value={formData.date} />
                     </Col>
                     <Col xl="2">
                         <Form.Label htmlFor="inputSender">

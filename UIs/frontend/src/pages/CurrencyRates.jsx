@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { HistoryTable, DatePicker } from "../commonComponents/Common";
+import { HistoryTable } from "../commonComponents/Common";
 import Header from "../commonComponents/Header";
 
 
@@ -86,7 +86,7 @@ export default function CurrencyRatesPage() {
                     <tbody>
                         <tr>
                             <td>
-                                <DatePicker id="Date" name="Date" />
+                                <input type="date" id="Date" name="Date" />
                             </td>
                             <td className="fields">
                                 <select id="Currency" name="Currency" required>

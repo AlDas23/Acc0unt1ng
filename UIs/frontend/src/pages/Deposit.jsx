@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { HistoryTable, DatePicker } from "../commonComponents/Common";
+import { HistoryTable } from "../commonComponents/Common";
 import Header from "../commonComponents/Header";
 
 function ValidateForm() {
@@ -164,7 +164,7 @@ function Forms({ options }) {
                     </tr>
                     <tr>
                         <td className="fields_big">
-                            <DatePicker id="DateIn" name="DateIn" />
+                            <input type="date" id="DateIn" name="DateIn" />
                         </td>
                         <td className="fields_big">
                             <input type="text" id="Name" name="Name" autocomplete="off" className="standardWidth" />
