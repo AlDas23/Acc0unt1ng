@@ -184,8 +184,8 @@ def GetHistory(source):
 def GetPlot(source):
     if source == "currencyrates":
         try:
-            df = Read("retcurrr")
-            plot1 = plot_to_img_tag(df, "Currency Rates Over Time", "Date", "Rate")
+            data = Read("currrate")
+            plot1 = plot_to_img_tag(data, "Currency Rates Over Time", "Date", "Rate")
             payload = jsonify({"success": True, "plot": plot1})
         except Exception as e:
             print(f"Error occurred: {str(e)}")

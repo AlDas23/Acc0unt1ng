@@ -1,9 +1,7 @@
 from datetime import datetime
 import os.path
 import sqlite3
-import pandas as pd
 from db_scripts.consts import *
-from db_scripts.csvScripts import read_csv
 
 
 def NewDBase():
@@ -670,10 +668,9 @@ def Read(x):
             result = [row[0] for row in c.fetchall()]
             return result
 
-        elif x == "retcurrr":
-            query = "SELECT Date, Currency, Rate FROM exc_rate ORDER BY date"
-            df = pd.read_sql_query(query, conn)
-            return df
+        elif x == "currrate":
+            c.execute("SELECT Date, Currency, Rate FROM exc_rate ORDER BY date")
+            return c.fetchall()
 
         elif x == "retcat":
             c.execute("SELECT DISTINCT category FROM main ORDER BY category DESC")

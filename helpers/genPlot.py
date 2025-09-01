@@ -1,18 +1,27 @@
 import matplotlib
 import base64
 import io
+import pandas as pd
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-def plot_to_img_tag(df, title, xlabel, ylabel):
+def plot_to_img_tag(data, title, xlabel, ylabel):
     plt.clf()
-
     plt.figure(figsize=(12, 6))
 
-    # Plot each point's rate over time
-    for point in df.columns[1:]:  # Skip the 'date' column
-        plt.plot(df["date"], df[point], marker="o", label=point)
+    # Convert data to DataFrame with proper structure
+    df = pd.DataFrame(data, columns=['date', 'currency', 'rate'])
+    
+    # Pivot the data to have currencies as columns and dates as index
+    pivot_df = df.pivot(index='date', columns='currency', values='rate')
+    
+    # Reset index to make 'date' a column again for plotting
+    pivot_df.reset_index(inplace=True)
+    
+    # Plot each currency's rate over time
+    for currency in pivot_df.columns[1:]:  # Skip the 'date' column
+        plt.plot(pivot_df["date"], pivot_df[currency], marker="o", label=currency)
 
     plt.title(title)
     plt.xlabel(xlabel)
@@ -27,7 +36,7 @@ def plot_to_img_tag(df, title, xlabel, ylabel):
     plt.tight_layout()
 
     # If still too crowded, show fewer x-axis ticks
-    if len(df) > 20:
+    if len(pivot_df) > 20:
         # Show approximately 15 evenly spaced ticks
         plt.gca().xaxis.set_major_locator(plt.MaxNLocator(15))
 
@@ -39,4 +48,5 @@ def plot_to_img_tag(df, title, xlabel, ylabel):
     # Encode image to base64 string
     img_tag = base64.b64encode(img.getvalue()).decode()
     plt.close()
-    return img_tag
+    
+    return f"data:image/png;base64,{img_tag}"
