@@ -1,4 +1,4 @@
-.income-page {
+.deposit-page {
     width: 100%;
     margin-top: 16px;
     margin-left: 20px;
@@ -26,14 +26,18 @@ h3 {
 .form .row > .col,
 .form .row > [class^="col-"] {
     margin-bottom: 0 !important;
-    padding-right: 4px;
-    padding-left: 4px;
-}
-.form label {
-    margin-bottom: 4px;
+    padding-right: 6px;
+    padding-left: 6px;
 }
 
-#inputDate {
+.form label {
+    margin-bottom: 4px;
+    text-align: center;
+    width: 100%;
+    display: block;
+}
+
+.datePicker {
     height: 36px;
     width: 100%;
 }
@@ -41,21 +45,4 @@ h3 {
 #SubmitButton {
     margin-top: 16px;
     width: 10%;
-}
-
-#CancelButton {
-    margin-top: 20px;
-    margin-left: 0px;
-    width: 10%;
-    background-color: red;
-}
-
-.editable-cell {
-    color: #007bff;
-    text-decoration: underline;
-    cursor: pointer;
-}
-
-.editable-cell:hover {
-    color: #0056b3;
 }

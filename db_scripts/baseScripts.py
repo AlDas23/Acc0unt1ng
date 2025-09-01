@@ -251,17 +251,17 @@ def Add(input_field, mode):
             if exists == None:
                 raise Exception("Person_bank-currency pair does not exist!")
             values[3] = round(float(values[3]), 2)
-            if values[5] == " ":
+            if values[5] == "":
                 values[5] = 0
             else:
                 values[5] = int(values[5])
             values[7] = float(values[7])
-            if values[8] == " ":
+            if values[8] == "":
                 values[8] = 0
             else:
                 values[8] = float(values[8])
 
-            if values[5] == 0 or values[6] == " ":
+            if values[5] == 0 or values[6] == "":
                 values.insert(9, 0)
             else:
                 # Provided formula to calculate deposit return
@@ -345,7 +345,7 @@ def Read(x):
             return c.fetchall()
         elif x == "opendep":
             c.execute(
-                "SELECT date_in, name, owner, sum, currency, months, date_out, percent, currency_rate, expect, comment FROM deposit WHERE isOpen = 1 ORDER BY date_out DESC"
+                "SELECT date_in, name, owner, sum, currency, months, date_out, percent, currency_rate, expect, comment FROM deposit WHERE isOpen = 1 ORDER BY date_out ASC"
             )
             return c.fetchall()
         elif x == "closeddep":
