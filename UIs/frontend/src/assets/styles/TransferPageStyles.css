@@ -57,6 +57,14 @@ h3 {
     width: 10%;
 }
 
+#CancelButtonStandard,
+#CancelButtonAdvanced {
+    margin-top: 20px;
+    margin-left: 0px;
+    width: 10%;
+    background-color: red;
+}
+
 .editable-cell {
     color: #007bff;
     text-decoration: underline;
@@ -85,3 +93,4 @@ h3 {
     text-decoration: underline;
     background-color: rgb(181, 181, 181);
 }
+

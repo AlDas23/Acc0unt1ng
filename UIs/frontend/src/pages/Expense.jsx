@@ -91,6 +91,7 @@ function Forms({ options, ValidateForm, handleInputChange, resetForm, editMode, 
                         name="Sum"
                         value={formData.sum}
                         onChange={handleInputChange}
+                        autoComplete="off"
                     />
                 </Col>
                 <Col xl="1">
@@ -119,6 +120,7 @@ function Forms({ options, ValidateForm, handleInputChange, resetForm, editMode, 
                         name="Comment"
                         value={formData.comment}
                         onChange={handleInputChange}
+                        autoComplete="off"
                     />
                 </Col>
             </Row>

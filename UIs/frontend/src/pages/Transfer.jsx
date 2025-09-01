@@ -7,6 +7,437 @@ import Form from 'react-bootstrap/Form';
 import Row from 'react-bootstrap/Row';
 import '../assets/styles/TransferPageStyles.css'
 
+const initialFormDataSTD = {
+    date: new Date().toISOString().split('T')[0],
+    sender: '',
+    receiver: '',
+    sum: '',
+    currency: '',
+    comment: ''
+};
+
+const initialFormDataADV = {
+    date: new Date().toISOString().split('T')[0],
+    sender: '',
+    sSum: '',
+    sCurrency: '',
+    receiver: '',
+    rSum: '',
+    rCurrency: '',
+    currencyRate: '',
+    comment: ''
+};
+
+function StandardTransferForm({ options, formData, handleInputChange, editMode, resetForm }) {
+    return (
+        <Form noValidate className="form" id="formStandard" onSubmit={(e) => {
+            e.preventDefault();
+            const form = e.target;
+            const formDataObj = new FormData(form);
+            const formObject = Object.fromEntries(formDataObj.entries());
+
+            // Validate form
+            if (formObject.Date === "" || formObject.Sender === "" || formObject.Receiver === "" || formObject.Sum === "" || formObject.Currency === "") {
+                alert("Please fill in all fields.");
+                return false;
+            }
+
+            if (isNaN(parseFloat(formObject.Sum)) || parseFloat(formObject.Sum) <= 0) {
+                alert("Please enter a valid sum.");
+                return false;
+            }
+
+            if (formObject.Sender === formObject.Receiver) {
+                alert("Sender and Receiver cannot be the same.");
+                return false;
+            }
+
+            // Append transfer type to the formObject
+            formObject.transferType = 'standard';
+
+            let endpoint;
+            if (editMode && editMode.isEditing && editMode.type === 'standard') {
+                endpoint = 'http://localhost:5050/api/edit/transfer/' + editMode.id;
+            } else {
+                endpoint = 'http://localhost:5050/api/add/transfer';
+            }
+
+            // Send POST request
+            fetch(endpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formObject)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        window.location.reload();
+                    } else {
+                        alert('Error: ' + (data.message || 'Failed to add transfer'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Unexpected error:', error);
+                    alert('Unexpected error occurred');
+                });
+        }}
+            style={editMode.isEditing && editMode.type === 'advanced' ? { display: 'none' } : null}
+        >
+            <Row>
+                <Col xl="2">
+                    <Form.Label htmlFor="inputDate">
+                        Date
+                    </Form.Label>
+                    <input
+                        type="date"
+                        id="inputDate"
+                        name="Date"
+                        value={formData.date}
+                        onChange={handleInputChange}
+                    />
+                </Col>
+                <Col xl="2">
+                    <Form.Label htmlFor="inputSender">
+                        Sender
+                    </Form.Label>
+                    <Form.Select
+                        id="inputSender"
+                        name="Sender"
+                        value={formData.sender}
+                        onChange={handleInputChange}
+                    >
+                        <option value="" disabled></option>
+                        {options.pb.map((pb, index) => (
+                            <option value={pb} key={index}>{pb}</option>
+                        ))}
+                    </Form.Select>
+                </Col>
+                <Col xl="2">
+                    <Form.Label htmlFor="inputReceiver">
+                        Receiver
+                    </Form.Label>
+                    <Form.Select
+                        id="inputReceiver"
+                        name="Receiver"
+                        value={formData.receiver}
+                        onChange={handleInputChange}
+                    >
+                        <option value="" disabled></option>
+                        {options.pb.map((pb, index) => (
+                            <option value={pb} key={index}>{pb}</option>
+                        ))}
+                    </Form.Select>
+                </Col>
+                <Col xl="1">
+                    <Form.Label htmlFor="inputSum">
+                        Sum
+                    </Form.Label>
+                    <Form.Control
+                        type="text"
+                        id="inputSum"
+                        name="Sum"
+                        value={formData.sum}
+                        onChange={handleInputChange}
+                        autoComplete="off"
+                    />
+                </Col>
+                <Col xl="1">
+                    <Form.Label htmlFor="inputCurrency">
+                        Currency
+                    </Form.Label>
+                    <Form.Select
+                        id="inputCurrency"
+                        name="Currency"
+                        value={formData.currency}
+                        onChange={handleInputChange}
+                    >
+                        <option value="" disabled></option>
+                        {options.currency.map((currency, index) => (
+                            <option value={currency} key={index}>{currency}</option>
+                        ))}
+                    </Form.Select>
+                </Col>
+                <Col xl="auto">
+                    <Form.Label htmlFor="inputComment">
+                        Comment
+                    </Form.Label>
+                    <Form.Control
+                        type="text"
+                        id="inputComment"
+                        name="Comment"
+                        value={formData.comment}
+                        onChange={handleInputChange}
+                        autoComplete="off"
+                    />
+                </Col>
+            </Row>
+            <Row>
+                <Button type="submit" id="SubmitButtonStandard">
+                    {editMode.isEditing && editMode.type === 'standard' ? "Update Record" : "Add Record"}
+                </Button>
+            </Row>
+            <Row>
+                {editMode.isEditing && editMode.type === 'standard' && (
+                    <Button type="button" onClick={resetForm} id="CancelButtonStandard">
+                        Cancel Edit
+                    </Button>
+                )}
+            </Row>
+        </Form>
+    )
+};
+
+function AdvancedTransferForm({ options, formData, handleInputChange, editMode, resetForm }) {
+    return (
+        <Form noValidate className="form" id="formAdvanced" onSubmit={(e) => {
+            e.preventDefault();
+            const form = e.target;
+            const formDataObj = new FormData(form);
+            const formObject = Object.fromEntries(formDataObj.entries());
+
+            // Validate form
+            if (formObject.ADVDate === "" || formObject.ADVSender === "" || formObject.ADVSSum === "" || formObject.ADVSCurrency === "" || formObject.ADVReceiver === "" || formObject.ADVRSum === "" || formObject.ADVRCurrency === "") {
+                alert("Please fill in all fields.");
+                return false;
+            }
+
+            if (isNaN(parseFloat(formObject.SSum)) || parseFloat(formObject.SSum) <= 0 || isNaN(parseFloat(formObject.RSum)) || parseFloat(formObject.RSum) <= 0) {
+                alert("Please enter valid sums.");
+                return false;
+            }
+
+            if (formObject.SCurrency === formObject.RCurrency) {
+                alert("Sender and Receiver currencies cannot be the same. Use standard transfer instead.");
+                return false;
+            }
+
+            if (parseFloat(formObject.ADVCurrencyRate) <= 0) {
+                alert("Please enter a valid currency rate.");
+                return false;
+            }
+
+            if (formObject.ADVSender === formObject.ADVReceiver) {
+                alert("Sender and Receiver cannot be the same.");
+                return false;
+            }
+
+            // Append transfer type to the formObject
+            formObject.transferType = 'advanced';
+
+            let endpoint;
+            if (editMode && editMode.isEditing && editMode.type === 'advanced') {
+                endpoint = 'http://localhost:5050/api/edit/transfer/' + editMode.id;
+            } else {
+                endpoint = 'http://localhost:5050/api/add/transfer';
+            }
+
+            // Send POST request
+            fetch(endpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formObject)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        window.location.reload();
+                    } else {
+                        alert('Error: ' + (data.message || 'Failed to add transfer'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Unexpected error:', error);
+                    alert('Unexpected error occurred');
+                });
+        }}
+            style={editMode.isEditing && editMode.type === 'standard' ? { display: 'none' } : null}
+        >
+            <Row className="adv1">
+                <Col xl="2">
+                    <Form.Label htmlFor="inputADVDate">
+                        Date
+                    </Form.Label>
+                    <input
+                        type="date"
+                        id="inputADVDate"
+                        name="ADVDate"
+                        value={formData.date}
+                        onChange={handleInputChange}
+                    />
+                </Col>
+                <Col xl="auto">
+                    <Form.Label htmlFor="inputADVSender">
+                        Sender
+                    </Form.Label>
+                    <Form.Select
+                        id="inputADVSender"
+                        name="ADVSender"
+                        value={formData.sender}
+                        onChange={handleInputChange}
+                    >
+                        <option value="" disabled></option>
+                        {options.pb.map((pb, index) => (
+                            <option value={pb} key={index}>{pb}</option>
+                        ))}
+                    </Form.Select>
+                </Col>
+                <Col xl="auto">
+                    <Form.Label htmlFor="inputADVSSum">
+                        Sum
+                    </Form.Label>
+                    <Form.Control
+                        type="text"
+                        id="inputADVSSum"
+                        name="SSum"
+                        value={formData.sSum}
+                        onChange={handleInputChange}
+                        autoComplete="off"
+                    />
+                </Col>
+                <Col xl="auto">
+                    <Form.Label htmlFor="inputADVSCurrency">
+                        Currency
+                    </Form.Label>
+                    <Form.Select
+                        id="inputADVSCurrency"
+                        name="SCurrency"
+                        value={formData.sCurrency}
+                        onChange={handleInputChange}
+                    >
+                        <option value="" disabled></option>
+                        {options.currency.map((currency, index) => (
+                            <option value={currency} key={index}>{currency}</option>
+                        ))}
+                    </Form.Select>
+                </Col>
+            </Row>
+            <Row className="adv2">
+                <Col xl="auto">
+                    <Form.Label htmlFor="inputADVReceiver">
+                        Receiver
+                    </Form.Label>
+                    <Form.Select
+                        id="inputADVReceiver"
+                        name="ADVReceiver"
+                        value={formData.receiver}
+                        onChange={handleInputChange}
+                    >
+                        <option value="" disabled></option>
+                        {options.pb.map((pb, index) => (
+                            <option value={pb} key={index}>{pb}</option>
+                        ))}
+                    </Form.Select>
+                </Col>
+                <Col xl="auto">
+                    <Form.Label htmlFor="inputADVRSum">
+                        Sum
+                    </Form.Label>
+                    <Form.Control
+                        type="text"
+                        id="inputADVRSum"
+                        name="RSum"
+                        value={formData.rSum}
+                        onChange={handleInputChange}
+                        autoComplete="off"
+                    />
+                </Col>
+                <Col xl="auto">
+                    <Form.Label htmlFor="inputADVRCurrency">
+                        Currency
+                    </Form.Label>
+                    <Form.Select
+                        id="inputADVRCurrency"
+                        name="RCurrency"
+                        value={formData.rCurrency}
+                        onChange={handleInputChange}
+                    >
+                        <option value="" disabled></option>
+                        {options.currency.map((currency, index) => (
+                            <option value={currency} key={index}>{currency}</option>
+                        ))}
+                    </Form.Select>
+                </Col>
+            </Row>
+            <Row className="adv3">
+                <Col xl="2">
+                    <Form.Label htmlFor="inputADVCurrencyRate">
+                        Currency Rate
+                    </Form.Label>
+                    <Form.Control
+                        type="text"
+                        id="inputADVCurrencyRate"
+                        name="CurrencyRate"
+                        value={formData.currencyRate}
+                        onChange={handleInputChange}
+                        autoComplete="off"
+                    />
+                </Col>
+                <Col xl="3">
+                    <Form.Label htmlFor="inputADVComment">
+                        Comment
+                    </Form.Label>
+                    <Form.Control
+                        type="text"
+                        id="inputADVComment"
+                        name="ADVComment"
+                        value={formData.comment}
+                        onChange={handleInputChange}
+                        autoComplete="off"
+                    />
+                </Col>
+            </Row>
+            <Row>
+                <Button type="submit" id="SubmitButtonAdvanced">
+                    {editMode.isEditing && editMode.type === 'advanced' ? "Update Record" : "Add Record"}
+                </Button>
+            </Row>
+            <Row>
+                {editMode.isEditing && editMode.type === 'advanced' && (
+                    <Button type="button" onClick={resetForm} id="CancelButtonAdvanced">
+                        Cancel Edit
+                    </Button>
+                )}
+            </Row>
+        </Form>
+    )
+};
+
+function Forms({ options, formDataSTD, formDataADV, handleInputChangeSTD, handleInputChangeADV, editMode, resetForm, selectedTable }) {
+    return (
+        <div className="forms">
+            <div className="form-standard row">
+                <div className="col-xl-12">
+                    <h2 style={editMode.isEditing && selectedTable === 'advanced' ? { display: 'none' } : null}>Standard Transfer</h2>
+                    <StandardTransferForm
+                        options={options}
+                        formData={formDataSTD}
+                        handleInputChange={handleInputChangeSTD}
+                        editMode={editMode}
+                        resetForm={resetForm}
+                    />
+                </div>
+            </div>
+            <br />
+            <div className="form-advanced row">
+                <div className="col-xl-12">
+                    <h2 style={editMode.isEditing && selectedTable === 'standard' ? { display: 'none' } : null}>Advanced Transfer</h2>
+                    <AdvancedTransferForm
+                        options={options}
+                        formData={formDataADV}
+                        handleInputChange={handleInputChangeADV}
+                        editMode={editMode}
+                        resetForm={resetForm}
+                    />
+                </div>
+            </div>
+        </div>
+    );
+}
+
 
 export default function TransferPage() {
     useEffect(() => {
@@ -18,20 +449,10 @@ export default function TransferPage() {
     const [historyADV, setHistoryADV] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [formDataSTD, setFormDataSTD] = useState(initialFormDataSTD);
+    const [formDataADV, setFormDataADV] = useState(initialFormDataADV);
     const [editMode, setEditMode] = useState({ isEditing: false, id: null, type: null });
-    const [selectedTable, setSelectedTable] = useState('standard')
-    const [formData, setFormData] = useState({
-        date: "",
-        sender: "",
-        receiver: "",
-        sum: "",
-        currency: "",
-        comment: "",
-        // for advanced form:
-        rSum: "",
-        rCurrency: "",
-        currencyRate: ""
-    });
+    const [selectedTable, setSelectedTable] = useState('standard');
 
     useEffect(() => {
         // Fetch options
@@ -67,148 +488,105 @@ export default function TransferPage() {
             });
     }, []);
 
-    const ValidateForm = (event, Edit = false, id = null) => {
-        let FormObject;
-        let formData = new FormData(event);
-        let endpoint;
+    const handleInputChangeSTD = (e) => {
+        const { name, value } = e.target;
+        const key = name.replace('input', '');
+        setFormDataSTD(prevData => ({
+            ...prevData,
+            [key.charAt(0).toLowerCase() + key.slice(1)]: value
+        }));
+    };
 
-        FormObject = Object.fromEntries(formData.entries());
-
-        if (selectedTable === 'standard') {
-            if (FormObject.inputDate === "" || FormObject.inputSender === "" || FormObject.inputReceiver === "" || FormObject.inputSum === "" || FormObject.inputCurrency === "") {
-                alert("Please fill in all fields.");
-                return false;
-            }
-
-            if (isNaN(parseFloat(FormObject.inputSum)) || parseFloat(FormObject.inputSum) <= 0) {
-                alert("Please enter a valid sum.");
-                return false;
-            }
-
-        } else if (selectedTable === 'advanced') {
-            if (FormObject.inputDate === "" || FormObject.inputSender === "" || FormObject.inputSSum === "" || FormObject.inputSCurrency === "" || FormObject.inputReceiver === "" || FormObject.inputRSum === "" || FormObject.inputRCurrency === "") {
-                alert("Please fill in all fields.");
-                return false;
-            }
-
-            if (isNaN(parseFloat(FormObject.inputSSum)) || parseFloat(FormObject.inputSSum) <= 0 || isNaN(parseFloat(FormObject.inputRSum)) || parseFloat(FormObject.inputRSum) <= 0) {
-                alert("Please enter valid sums.");
-                return false;
-            }
-
-            if (FormObject.inputSCurrency === FormObject.inputRCurrency) {
-                alert("Sender and Receiver currencies cannot be the same. Use standard transfer instead.");
-                return false;
-            }
-
-            if (parseFloat(FormObject.inputCurrencyRate) <= 0) {
-                alert("Please enter a valid currency rate.");
-                return false;
-            }
-        }
-
-        if (FormObject.inputSender === FormObject.inputReceiver) {
-            alert("Sender and Receiver cannot be the same.");
-            return false;
-        }
-
-        // Append transfer type to the FormObject
-        FormObject.transferType = selectedTable;
-
-        if (!Edit) {
-            endpoint = 'http://localhost:5050/api/add/transfer';
+    const handleInputChangeADV = (e) => {
+        const { name, value } = e.target;
+        let key;
+        
+        // Handle the special case for ADVComment
+        if (name === 'ADVComment') {
+            key = 'comment';
         } else {
-            endpoint = 'http://localhost:5050/api/edit/transfer/' + id;
+            key = name.replace('input', '').replace('ADV', '');
         }
+        
+        setFormDataADV(prevData => ({
+            ...prevData,
+            [key.charAt(0).toLowerCase() + key.slice(1)]: value
+        }));
+    };
 
-        // Send POST request
-        fetch(endpoint, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(FormObject)
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    window.location.reload();
-                } else {
-                    alert('Error: ' + (data.message || 'Failed to add transfer'));
-                }
-            })
-            .catch(error => {
-                console.error('Unexpected error:', error);
-                alert('Unexpected error occurred');
-            });
+    const resetForm = () => {
+        if (selectedTable === 'standard') {
+            setFormDataSTD(initialFormDataSTD);
+        } else {
+            setFormDataADV(initialFormDataADV);
+        }
+        setEditMode({ isEditing: false, id: null, type: null });
+
+        // Show all rows again
+        const rows = document.querySelectorAll('.history-table tbody tr');
+        rows.forEach(row => {
+            row.style.display = '';
+        });
+
+        // Show both forms again
+        const stdForm = document.querySelector('.form-standard');
+        const advForm = document.querySelector('.form-advanced');
+        if (stdForm) stdForm.style.display = '';
+        if (advForm) advForm.style.display = '';
     }
 
-
-    const EditRecord = (element) => { // TODO: Find a way to correctly populate forms with edit records data
+    const EditRecord = (element) => {
         const row = element.target.parentNode;
         const cells = row.getElementsByTagName("td");
         const id = cells[0].innerText;
 
-        setEditMode({ isEditing: true, id, selectedTable });
+        const clickedRow = element.target.closest('tr');
+        const rows = document.querySelectorAll('.history-table tbody tr');
+
+        rows.forEach(row => {
+            if (row !== clickedRow) {
+                row.style.display = 'none';
+            } else {
+                row.style.display = ''; // Ensure the clicked row remains visible
+            }
+        });
 
         if (selectedTable === 'standard') {
-            const clickedRow = element.target.closest('tr');
-            const rows = document.querySelectorAll('.history-table tbody tr');
-
-            rows.forEach(row => {
-                if (row !== clickedRow) {
-                    row.style.display = 'none';
-                } else {
-                    row.style.display = ''; // Ensure the clicked row remains visible
-                }
-            });
-
             // Hide advanced forms
             const advForm = document.querySelector('.form-advanced');
-            advForm.style.display = 'none';
+            if (advForm) advForm.style.display = 'none';
 
             // Populate form fields with the data from the selected row
-            setFormData({
+            setFormDataSTD({
                 date: cells[1].innerText,
                 sender: cells[2].innerText,
                 receiver: cells[3].innerText,
-                sum: parseFloat(cells[4].innerText).toFixed(2),
+                sum: Math.abs(parseFloat(cells[4].innerText)).toFixed(2),
                 currency: cells[5].innerText,
                 comment: cells[6].innerText
             });
 
-            const submitButton = document.getElementById("SubmitButtonStandard");
-            submitButton.innerText = "Edit";
+            setEditMode({ isEditing: true, id: id, type: 'standard' });
 
         } else if (selectedTable === 'advanced') {
-            const clickedRow = element.target.closest('tr');
-            const rows = document.querySelectorAll('.history-table tbody tr');
-
-            rows.forEach(row => {
-                if (row !== clickedRow) {
-                    row.style.display = 'none';
-                } else {
-                    row.style.display = ''; // Ensure the clicked row remains visible
-                }
-            });
-
             // Hide standard form
             const stdForm = document.querySelector('.form-standard');
-            stdForm.style.display = 'none';
+            if (stdForm) stdForm.style.display = 'none';
 
             // Populate form fields with the data from the selected row
-            document.getElementById("inputADVDate").value = cells[1].innerText;
-            document.getElementById("inputADVSender").value = cells[2].innerText;
-            document.getElementById("inputADVSSum").value = parseFloat(cells[3].innerText).toFixed(2);
-            document.getElementById("inputADVSCurrency").value = cells[4].innerText;
-            document.getElementById("inputADVReceiver").value = cells[5].innerText;
-            document.getElementById("inputADVRSum").value = parseFloat(cells[6].innerText).toFixed(2);
-            document.getElementById("inputADVRCurrency").value = cells[7].innerText;
-            document.getElementById("inputADVCurrencyRate").value = cells[8].innerText;
-            document.getElementById("inputADVComment").value = cells[9].innerText;
+            setFormDataADV({
+                date: cells[1].innerText,
+                sender: cells[2].innerText,
+                sSum: Math.abs(parseFloat(cells[3].innerText)).toFixed(2),
+                sCurrency: cells[4].innerText,
+                receiver: cells[5].innerText,
+                rSum: Math.abs(parseFloat(cells[6].innerText)).toFixed(2),
+                rCurrency: cells[7].innerText,
+                currencyRate: cells[8].innerText,
+                comment: cells[9].innerText
+            });
 
-            const submitButton = document.getElementById("SubmitButtonAdvanced");
-            submitButton.innerText = "Edit";
+            setEditMode({ isEditing: true, id: id, type: 'advanced' });
         }
     }
 
@@ -262,198 +640,6 @@ export default function TransferPage() {
             });
     }
 
-    const StandardTransferForm = ({ options, editMode }) => {
-        return (
-            <Form noValidate className="form" id="formStandard" onSubmit={(e) => {
-                e.preventDefault();
-                if (editMode.isEditing && editMode.type === 'standard') {
-                    ValidateForm(e, true, editMode.id);
-                } else {
-                    ValidateForm(e);
-                }
-            }}
-                style={editMode.isEditing && selectedTable === 'advanced' ? { display: 'none' } : null}
-            >
-                <Row>
-                    <Col xl="2">
-                        <Form.Label htmlFor="inputDate">
-                            Date
-                        </Form.Label>
-                        <input type="date" id="inputDate" name="Date" value={formData.date} />
-                    </Col>
-                    <Col xl="2">
-                        <Form.Label htmlFor="inputSender">
-                            Sender
-                        </Form.Label>
-                        <Form.Select id="inputSender" name="Sender" defaultValue={""} value={formData.sender}>
-                            <option value="" disabled></option>
-                            {options.pb.map((pb, index) => (
-                                <option value={pb} key={index}>{pb}</option>
-                            ))}
-                        </Form.Select>
-                    </Col>
-                    <Col xl="2">
-                        <Form.Label htmlFor="inputReceiver">
-                            Receiver
-                        </Form.Label>
-                        <Form.Select id="inputReceiver" name="Receiver" defaultValue={""} value={formData.receiver}>
-                            <option value="" disabled></option>
-                            {options.pb.map((pb, index) => (
-                                <option value={pb} key={index}>{pb}</option>
-                            ))}
-                        </Form.Select>
-                    </Col>
-                    <Col xl="1">
-                        <Form.Label htmlFor="inputSum">
-                            Sum
-                        </Form.Label>
-                        <Form.Control type="text" id="inputSum" name="Sum" value={formData.sum} />
-                    </Col>
-                    <Col xl="1">
-                        <Form.Label htmlFor="inputCurrency">
-                            Currency
-                        </Form.Label>
-                        <Form.Select id="inputCurrency" name="Currency" defaultValue={""} value={formData.currency}>
-                            <option value="" disabled></option>
-                            {options.currency.map((currency, index) => (
-                                <option value={currency} key={index}>{currency}</option>
-                            ))}
-                        </Form.Select>
-                    </Col>
-                    <Col xl="auto">
-                        <Form.Label htmlFor="inputComment">
-                            Comment
-                        </Form.Label>
-                        <Form.Control type="text" id="inputComment" name="Comment" value={formData.comment} />
-                    </Col>
-                </Row>
-                <Row>
-                    <Button type="submit" id="SubmitButtonStandard">Add Record</Button>
-                </Row>
-            </Form>
-        )
-    };
-
-    const AdvancedTransferForm = ({ options, editMode }) => {
-        return (
-            <Form noValidate className="form" id="formAdvanced" onSubmit={(e) => {
-                e.preventDefault();
-                if (editMode.isEditing && editMode.type === 'advanced') {
-                    ValidateForm(e, true, editMode.id);
-                } else {
-                    ValidateForm(e);
-                }
-            }}
-                style={editMode.isEditing && selectedTable === 'standard' ? { display: 'none' } : null}
-            >
-                <Row className="adv1">
-                    <Col xl="2">
-                        <Form.Label htmlFor="inputADVDate">
-                            Date
-                        </Form.Label>
-                        <DatePicker id="inputADVDate" name="Date" />
-                    </Col>
-                    <Col xl="auto">
-                        <Form.Label htmlFor="inputADVSender">
-                            Sender
-                        </Form.Label>
-                        <Form.Select id="inputADVSender" name="Sender" defaultValue={""}>
-                            <option value="" disabled></option>
-                            {options.pb.map((pb, index) => (
-                                <option value={pb} key={index}>{pb}</option>
-                            ))}
-                        </Form.Select>
-                    </Col>
-                    <Col xl="auto">
-                        <Form.Label htmlFor="inputADVSSum">
-                            Sum
-                        </Form.Label>
-                        <Form.Control type="text" id="inputADVSSum" name="SSum" />
-                    </Col>
-                    <Col xl="auto">
-                        <Form.Label htmlFor="inputADVSCurrency">
-                            Currency
-                        </Form.Label>
-                        <Form.Select id="inputADVSCurrency" name="SCurrency" defaultValue={""}>
-                            <option value="" disabled></option>
-                            {options.currency.map((currency, index) => (
-                                <option value={currency} key={index}>{currency}</option>
-                            ))}
-                        </Form.Select>
-                    </Col>
-                </Row>
-                <Row className="adv2">
-                    <Col xl="auto">
-                        <Form.Label htmlFor="inputADVReceiver">
-                            Receiver
-                        </Form.Label>
-                        <Form.Select id="inputADVReceiver" name="Receiver" defaultValue={""}>
-                            <option value="" disabled></option>
-                            {options.pb.map((pb, index) => (
-                                <option value={pb} key={index}>{pb}</option>
-                            ))}
-                        </Form.Select>
-                    </Col>
-                    <Col xl="auto">
-                        <Form.Label htmlFor="inputADVRSum">
-                            Sum
-                        </Form.Label>
-                        <Form.Control type="text" id="inputADVRSum" name="RSum" />
-                    </Col>
-                    <Col xl="auto">
-                        <Form.Label htmlFor="inputADVRCurrency">
-                            Currency
-                        </Form.Label>
-                        <Form.Select id="inputADVRCurrency" name="RCurrency" defaultValue={""}>
-                            <option value="" disabled></option>
-                            {options.currency.map((currency, index) => (
-                                <option value={currency} key={index}>{currency}</option>
-                            ))}
-                        </Form.Select>
-                    </Col>
-                </Row>
-                <Row className="adv3">
-                    <Col xl="2">
-                        <Form.Label htmlFor="inputADVCurrencyRate">
-                            Currency Rate
-                        </Form.Label>
-                        <Form.Control type="text" id="inputADVCurrencyRate" name="Currency rate" />
-                    </Col>
-                    <Col xl="3">
-                        <Form.Label htmlFor="inputADVComment">
-                            Comment
-                        </Form.Label>
-                        <Form.Control type="text" id="inputADVComment" name="Comment" />
-                    </Col>
-                </Row>
-                <Row>
-                    <Button type="submit" id="SubmitButtonAdvanced">Add Record</Button>
-                </Row>
-            </Form>
-        )
-    };
-
-    const Forms = ({ options, editMode }) => {
-        return (
-            <div className="forms">
-                <div className="form-standard row">
-                    <div className="col-xl-12">
-                        <h2 style={editMode.isEditing && selectedTable === 'advanced' ? { display: 'none' } : null}>Standard Transfer</h2>
-                        <StandardTransferForm options={options} editMode={editMode} />
-                    </div>
-                </div>
-                <br />
-                <div className="form-advanced row">
-                    <div className="col-xl-12">
-                        <h2 style={editMode.isEditing && selectedTable === 'standard' ? { display: 'none' } : null}>Advanced Transfer</h2>
-                        <AdvancedTransferForm options={options} editMode={editMode} />
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
-
     if (loading) {
         return (
             <>
@@ -485,7 +671,16 @@ export default function TransferPage() {
                 <h1>Transfer Records</h1>
                 <br />
                 <div className="row">
-                    {options && (<Forms options={options} editMode={editMode} />)}
+                    {options && (<Forms
+                        options={options}
+                        formDataSTD={formDataSTD}
+                        formDataADV={formDataADV}
+                        handleInputChangeSTD={handleInputChangeSTD}
+                        handleInputChangeADV={handleInputChangeADV}
+                        editMode={editMode}
+                        resetForm={resetForm}
+                        selectedTable={selectedTable}
+                    />)}
                     <br />
                 </div>
                 <br />
@@ -497,7 +692,13 @@ export default function TransferPage() {
                     <div className="col-xl-2">
                         <p
                             id="stdTitle"
-                            onClick={() => setSelectedTable('standard')}
+                            onClick={() => {
+                                setSelectedTable('standard');
+                                // Reset form when switching tables during edit mode
+                                if (editMode.isEditing) {
+                                    resetForm();
+                                }
+                            }}
                             className={selectedTable === 'standard' ? 'selectedTable' : ''}>
                             Standard Transfers
                         </p>
@@ -505,7 +706,13 @@ export default function TransferPage() {
                     <div className="col-xl-2">
                         <p
                             id="advTitle"
-                            onClick={() => setSelectedTable('advanced')}
+                            onClick={() => {
+                                setSelectedTable('advanced');
+                                // Reset form when switching tables during edit mode
+                                if (editMode.isEditing) {
+                                    resetForm();
+                                }
+                            }}
                             className={selectedTable === 'advanced' ? 'selectedTable' : ''}>
                             Advanced Transfers
                         </p>

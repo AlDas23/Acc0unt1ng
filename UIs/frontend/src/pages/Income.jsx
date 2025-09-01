@@ -8,7 +8,7 @@ import Row from 'react-bootstrap/Row';
 import '../assets/styles/IncomePageStyles.css';
 
 const initialFormData = {
-    date: '',
+    date: new Date().toISOString().split('T')[0],
     category: '',
     personBank: '',
     sum: '',
@@ -74,6 +74,7 @@ function Forms({ options, ValidateForm, handleInputChange, resetForm, editMode, 
                         name="Sum"
                         value={formData.sum}
                         onChange={handleInputChange}
+                        autoComplete="off"
                     />
                 </Col>
                 <Col xl="1">
@@ -102,6 +103,7 @@ function Forms({ options, ValidateForm, handleInputChange, resetForm, editMode, 
                         name="Comment"
                         value={formData.comment}
                         onChange={handleInputChange}
+                        autoComplete="off"
                     />
                 </Col>
             </Row>
