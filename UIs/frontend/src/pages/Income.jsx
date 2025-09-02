@@ -24,7 +24,6 @@ function Forms({ options, ValidateForm, handleInputChange, resetForm, editMode, 
                     <Form.Label htmlFor="inputDate">
                         Date
                     </Form.Label>
-                    <br />
                     <input type="date"
                         id={"inputDate"}
                         name={"Date"}
