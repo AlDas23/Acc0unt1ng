@@ -265,7 +265,7 @@ export default function DepositPage() {
             <>
                 <Header />
                 <div className="deposit-page">
-                    <h1>Transfer Records</h1>
+                    <h1>Deposit Records</h1>
                     <p>Loading...</p>
                 </div>
             </>
@@ -277,7 +277,7 @@ export default function DepositPage() {
             <>
                 <Header />
                 <div className="deposit-page">
-                    <h1>Transfer Records</h1>
+                    <h1>Deposit Records</h1>
                     <p>Error: {error}</p>
                 </div>
             </>

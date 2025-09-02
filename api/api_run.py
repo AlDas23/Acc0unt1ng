@@ -461,7 +461,9 @@ def Balance(source):
 
     try:
         if source == "tables":
-            if content.table == "allcurr":
+            table_name = content.get('table') if isinstance(content, dict) else content
+            
+            if table_name == "curr-table":
                 data_curr1 = ConvRead("norm", "allcurr", True)
                 data_curr2 = Read("allcurr")
 
@@ -486,7 +488,7 @@ def Balance(source):
                         "table": data_curr,
                     }
                 )
-            elif content.table == "owner-table":
+            elif table_name == "owner-table":
                 owners = ConvReadPlus("norm", "allmowner")
 
                 payload = jsonify(
@@ -495,7 +497,7 @@ def Balance(source):
                         "table": owners,
                     }
                 )
-            elif content.table == "type-table":
+            elif table_name == "type-table":
                 types = ConvRead("norm", "allmtype", True)
 
                 payload = jsonify(
@@ -504,7 +506,7 @@ def Balance(source):
                         "table": types,
                     }
                 )
-            elif content.table == "currType":
+            elif table_name == "curr-type-table":
                 currType = GenerateTable("currType+%")
                 payload = jsonify(
                     {
@@ -512,16 +514,32 @@ def Balance(source):
                         "table": currType,
                     }
                 )
+            else:
+                payload = jsonify(
+                    {
+                        "success": False,
+                        "message": "Invalid table name",
+                    }
+                )
 
         elif source == "balance":
-            if content.owner == "None" and content.type == "None":
+            # For balance source, content should be an object with owner and type
+            if isinstance(content, dict):
+                owner = content.get('owner', 'None')
+                type_val = content.get('type', 'None')
+            else:
+                # Handle case where content might be sent as a string
+                owner = 'None'
+                type_val = 'None'
+
+            if owner == "None" and type_val == "None":
                 data = MarkerRead("none")
-            elif content.owner != "None" and content.type == "None":
-                data = MarkerRead("byowner", content.owner)
-            elif content.owner == "None" and content.type != "None":
-                data = MarkerRead("bytype", content.type)
-            elif content.owner != "None" and content.type != "None":
-                data = MarkerRead("byall", content.owner + "," + content.type)
+            elif owner != "None" and type_val == "None":
+                data = MarkerRead("byowner", owner)
+            elif owner == "None" and type_val != "None":
+                data = MarkerRead("bytype", type_val)
+            elif owner != "None" and type_val != "None":
+                data = MarkerRead("byall", owner + "," + type_val)
 
             payload = jsonify(
                 {

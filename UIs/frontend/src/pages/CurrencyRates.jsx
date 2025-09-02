@@ -185,7 +185,7 @@ export default function CurrencyRatesPage() {
             <>
                 <Header />
                 <div className="currency-rates-page">
-                    <h1>Expense Records</h1>
+                    <h1>Currency Rates</h1>
                     <p>Loading...</p>
                 </div>
             </>
@@ -197,7 +197,7 @@ export default function CurrencyRatesPage() {
             <>
                 <Header />
                 <div className="currency-rates-page">
-                    <h1>Expense Records</h1>
+                    <h1>Currency Rates</h1>
                     <p>Error: {error}</p>
                 </div>
             </>
@@ -208,6 +208,7 @@ export default function CurrencyRatesPage() {
         <>
             <Header />
             <div className="currency-rates-page container">
+                <h1>Currency Rates</h1>
                 <div className="row">
                     {options && (<Forms
                         options={options}
