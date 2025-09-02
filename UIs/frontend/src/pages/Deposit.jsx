@@ -297,6 +297,7 @@ export default function DepositPage() {
                         {historyO && (<HistoryTable
                             columns={["Deposit Date", "Name", "Person-bank", "Sum", "Currency", "Months", "Closing Date", "%", "Currency rate", "Expected amount", "Comment"]}
                             data={historyO}
+                            tableId="openDepositsTable"
                         />)}
                     </div>
                 </div>
@@ -307,6 +308,7 @@ export default function DepositPage() {
                         {historyC && (<HistoryTable
                             columns={["Deposit Date", "Name", "Person-bank", "Sum", "Currency", "Months", "Closing Date", "%", "Currency rate", "Expected amount", "Comment"]}
                             data={historyC}
+                            tableId="closedDepositsTable"
                         />)}
                     </div>
                 </div>

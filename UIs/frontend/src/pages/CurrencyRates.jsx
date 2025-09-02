@@ -38,13 +38,13 @@ function Forms({ options }) {
                 });
         }}>
             <Row>
-                <Col xl={2}>
+                <Col xl="2">
                     <Form.Label htmlFor="inputDate">
                         Comment
                     </Form.Label>
                     <input type="date" id="inputDate" name="Date" defaultValue={new Date().toISOString().split('T')[0]} />
                 </Col>
-                <Col xl={2}>
+                <Col xl="2">
                     <Form.Label htmlFor="inputCurrency">
                         Currency
                     </Form.Label>
@@ -54,7 +54,7 @@ function Forms({ options }) {
                         ))}
                     </Form.Select>
                 </Col>
-                <Col xl={2}>
+                <Col xl="2">
                     <Form.Label htmlFor="inputRate">
                         Rate
                     </Form.Label>
@@ -221,6 +221,7 @@ export default function CurrencyRatesPage() {
                         {history && (<HistoryTable
                             columns={["Date", "Currency", "Rate"]}
                             data={history}
+                            tableId="CurrRateHistoryTable"
                         />)}
                     </div>
                     <div className="col-md-8">

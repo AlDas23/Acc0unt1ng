@@ -355,6 +355,7 @@ export default function IncomePage() {
                         columns={["ID", "Date", "Category", "Person-Bank", "Sum", "Currency", "Comment"]}
                         data={history}
                         EditRecord={EditRecord}
+                        tableId={"incomeHistoryTable"}
                     />)}
                 </div>
             </div>

@@ -500,14 +500,14 @@ export default function TransferPage() {
     const handleInputChangeADV = (e) => {
         const { name, value } = e.target;
         let key;
-        
+
         // Handle the special case for ADVComment
         if (name === 'ADVComment') {
             key = 'comment';
         } else {
             key = name.replace('input', '').replace('ADV', '');
         }
-        
+
         setFormDataADV(prevData => ({
             ...prevData,
             [key.charAt(0).toLowerCase() + key.slice(1)]: value
@@ -689,7 +689,7 @@ export default function TransferPage() {
                 </div>
                 <br />
                 <div className="row">
-                    <div className="col-xl-2">
+                    <div className="col-md-2">
                         <p
                             id="stdTitle"
                             onClick={() => {
@@ -703,7 +703,7 @@ export default function TransferPage() {
                             Standard Transfers
                         </p>
                     </div>
-                    <div className="col-xl-2">
+                    <div className="col-md-2">
                         <p
                             id="advTitle"
                             onClick={() => {
@@ -720,7 +720,7 @@ export default function TransferPage() {
                 </div>
                 <br />
                 <div className="row">
-                    <div className="col-xl-12">
+                    <div className="col-md-12">
                         {selectedTable === 'standard' && history && (<HistoryTableWithEdit
                             columns={["ID", "Date", "Sender", "Receiver", "Sum", "Currency", "Comment"]}
                             data={history}

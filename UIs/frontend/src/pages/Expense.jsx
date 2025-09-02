@@ -377,7 +377,9 @@ export default function ExpensePage() {
                         <HistoryTableWithEdit
                             columns={["ID", "Date", "Category", "Sub-category", "Person-Bank", "Sum", "Currency", "Comment"]}
                             data={history}
-                            EditRecord={EditRecord} />
+                            EditRecord={EditRecord}
+                            tableId={"expenseHistoryTable"}
+                             />
                     )}
                 </div>
             </div>
