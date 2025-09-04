@@ -461,8 +461,8 @@ def Balance(source):
 
     try:
         if source == "tables":
-            table_name = content.get('table') if isinstance(content, dict) else content
-            
+            table_name = content.get("table") if isinstance(content, dict) else content
+
             if table_name == "curr-table":
                 data_curr1 = ConvRead("norm", "allcurr", True)
                 data_curr2 = Read("allcurr")
@@ -525,12 +525,12 @@ def Balance(source):
         elif source == "balance":
             # For balance source, content should be an object with owner and type
             if isinstance(content, dict):
-                owner = content.get('owner', 'None')
-                type_val = content.get('type', 'None')
+                owner = content.get("owner", "None")
+                type_val = content.get("type", "None")
             else:
                 # Handle case where content might be sent as a string
-                owner = 'None'
-                type_val = 'None'
+                owner = "None"
+                type_val = "None"
 
             if owner == "None" and type_val == "None":
                 data = MarkerRead("none")

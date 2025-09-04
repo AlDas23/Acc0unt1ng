@@ -1,0 +1,49 @@
+.reports-page {
+    width: 100%;
+    margin-top: 16px;
+    margin-left: 20px;
+    margin-right: 20px;
+    margin-bottom: 20px;
+}
+
+.reports-page>.row:not(#rep-table) {
+    width: 40%;
+    margin-top: 8px;
+    margin-bottom: 8px;
+}
+
+.genRep_HeaderCell {
+    padding-left: 4px;
+    padding-right: 4px;
+    padding-top: 1px;
+    padding-bottom: 1px;
+    border: 1px solid;
+    text-align: center;
+    font-weight: bold;
+    min-width: 45px;
+    max-width: 150px;
+    background-color: #b7b7b7;
+}
+
+.genRep_DataCell {
+    padding-left: 4px;
+    padding-right: 4px;
+    padding-top: 1px;
+    padding-bottom: 1px;
+    border: 1px solid;
+    text-align: right;
+    min-width: 45px;
+    max-width: 100px;
+}
+
+#showTableButton {
+    width: 30%;
+    height: 32px;
+    margin-top: 4px;
+    padding-top: 2px;
+}
+
+#rep-table {
+    margin-top: 16px;
+    width: 90%;
+}
