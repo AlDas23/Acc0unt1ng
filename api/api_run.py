@@ -45,7 +45,7 @@ def GetList(source):
                     "subcategories": subCategories,
                 }
             )
-        elif source == "currencies":
+        elif source == "currency":
             currencies = read_csv(SPVcurrPath)
             payload = jsonify(
                 {
