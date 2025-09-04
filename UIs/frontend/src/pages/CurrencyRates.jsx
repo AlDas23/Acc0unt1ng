@@ -222,6 +222,7 @@ export default function CurrencyRatesPage() {
                             columns={["Date", "Currency", "Rate"]}
                             data={history}
                             tableId="CurrRateHistoryTable"
+                             numberColumns={["2-4"]}
                         />)}
                     </div>
                     <div className="col-md-8">

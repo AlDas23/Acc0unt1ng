@@ -188,7 +188,7 @@ def GetTransactionHistory(type):
                     row_list[2],  # category
                     row_list[3],  # sub_category
                     row_list[4],  # pb
-                    round(row_list[5], 2),  # sum
+                    round(-row_list[5], 2),  # sum
                     row_list[6],  # currency
                     row_list[7],  # comment
                 ]
@@ -334,8 +334,8 @@ def GenerateTable(flag):
                 SELECT owner AS person_bank, currency, -sum FROM deposit WHERE isOpen = 1
             ) p 
             JOIN Marker_type mt ON p.person_bank = mt.bank_rec
-            GROUP BY mt.type, p.currency
-            ORDER BY mt.type, p.currency
+            GROUP BY p.currency, mt.type
+            ORDER BY p.currency, mt.type
         """
 
         else:

@@ -254,6 +254,7 @@ export default function BalancePage() {
                             columns={["Currency", "Sum", "Sum RON", "%"]}
                             data={groupedData.currTable || []}
                             tableId="curr-table"
+                            numberColumns={["1-2", "3-1"]}
                         />)}
                         <br />
                         <h3 onClick={() => toggleTable("owner-table")} className="toggleableTitle">Group by Owner</h3>
@@ -262,6 +263,7 @@ export default function BalancePage() {
                             columns={["Owner", "Currency", "Sum", "Sum RON"]}
                             data={groupedData.ownerTable || []}
                             tableId="owner-table"
+                            numberColumns={["2-2"]}
                         />)}
                         <br />
                         <h3 onClick={() => toggleTable("type-table")} className="toggleableTitle">Group by Type</h3>
@@ -270,6 +272,7 @@ export default function BalancePage() {
                             columns={["Type", "Sum RON", "%"]}
                             data={groupedData.typeTable || []}
                             tableId="type-table"
+                            numberColumns={["2-1"]}
                         />)}
                         <br />
                         <h3 onClick={() => toggleTable("curr-type-table")} className="toggleableTitle">
@@ -280,6 +283,7 @@ export default function BalancePage() {
                             columns={["Currency", "Type", "Sum", "%"]}
                             data={groupedData.currTypeTable || []}
                             tableId="curr-type-table"
+                            numberColumns={["2-2", "3-1"]}
                         />)}
                     </div>
                     <div className="col-md-6">
@@ -295,6 +299,7 @@ export default function BalancePage() {
                             columns={["Person bank", "Currency", "Sum"]}
                             data={balanceData}
                             tableId="balance-table"
+                            numberColumns={["2-2"]}
                         />)}
                     </div>
                 </div>

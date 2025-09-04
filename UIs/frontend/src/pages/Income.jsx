@@ -356,6 +356,7 @@ export default function IncomePage() {
                         data={history}
                         EditRecord={EditRecord}
                         tableId={"incomeHistoryTable"}
+                        numberColumns={["4-2"]}
                     />)}
                 </div>
             </div>

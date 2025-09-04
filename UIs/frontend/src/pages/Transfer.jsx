@@ -726,12 +726,14 @@ export default function TransferPage() {
                             data={history}
                             EditRecord={EditRecord}
                             tableId={"StandardTransferTable"}
+                            numberColumns={["4-2"]}
                         />)}
                         {selectedTable === 'advanced' && historyADV && (<HistoryTableWithEdit
                             columns={["ID", "Date", "Sender", "Sum", "Currency", "Receiver", "Sum", "Currency", "Currency Rate", "Comment"]}
                             data={historyADV}
                             EditRecord={EditRecord}
                             tableId={"AdvancedTransferTable"}
+                            numberColumns={["3-2", "6-2", "8-4"]}
                         />)}
                     </div>
                 </div>

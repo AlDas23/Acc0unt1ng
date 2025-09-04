@@ -298,6 +298,7 @@ export default function DepositPage() {
                             columns={["Deposit Date", "Name", "Person-bank", "Sum", "Currency", "Months", "Closing Date", "%", "Currency rate", "Expected amount", "Comment"]}
                             data={historyO}
                             tableId="openDepositsTable"
+                            numberColumns={["3-2", "7-1", "8-4", "9-2"]}
                         />)}
                     </div>
                 </div>
@@ -309,6 +310,7 @@ export default function DepositPage() {
                             columns={["Deposit Date", "Name", "Person-bank", "Sum", "Currency", "Months", "Closing Date", "%", "Currency rate", "Expected amount", "Comment"]}
                             data={historyC}
                             tableId="closedDepositsTable"
+                            numberColumns={["3-2", "7-1", "8-4", "9-2"]}
                         />)}
                     </div>
                 </div>

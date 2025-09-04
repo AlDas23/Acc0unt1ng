@@ -379,6 +379,7 @@ export default function ExpensePage() {
                             data={history}
                             EditRecord={EditRecord}
                             tableId={"expenseHistoryTable"}
+                            numberColumns={["5-2"]}
                              />
                     )}
                 </div>

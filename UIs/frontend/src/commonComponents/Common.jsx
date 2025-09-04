@@ -1,6 +1,13 @@
 import { memo } from 'react';
 
-function TableBody({ data, EditRecord }) {
+function TableBody({ data, EditRecord, numberColumns = [] }) {
+    // Parse number column settings
+    const formatSettings = numberColumns.reduce((acc, setting) => {
+        const [colIndex, decimals] = setting.split('-').map(Number);
+        acc[colIndex] = decimals;
+        return acc;
+    }, {});
+
     return (
         <tbody>
             {data.map((row, rowIndex) => (
@@ -11,7 +18,9 @@ function TableBody({ data, EditRecord }) {
                             key={`cell-${rowIndex}-${cellIndex}`}
                             {...(EditRecord && cellIndex === 0 ? { onClick: (e) => EditRecord(e) } : {})}
                         >
-                            {cell}
+                            {cellIndex in formatSettings && !isNaN(cell)
+                                ? Number(cell).toFixed(formatSettings[cellIndex])
+                                : cell}
                         </td>
                     ))}
                 </tr>
@@ -20,7 +29,7 @@ function TableBody({ data, EditRecord }) {
     );
 }
 
-export const HistoryTable = memo(function HistoryTable({ columns, data, tableId }) {
+export const HistoryTable = memo(function HistoryTable({ columns, data, tableId, numberColumns }) {
     return (
         <table className="history-table table-bordered" id={tableId || undefined}>
             <thead>
@@ -30,14 +39,14 @@ export const HistoryTable = memo(function HistoryTable({ columns, data, tableId 
                     ))}
                 </tr>
             </thead>
-            <TableBody data={data} />
+            <TableBody data={data} numberColumns={numberColumns} />
         </table>
     );
 });
 
-export const HistoryTableWithEdit = memo(function HistoryTableWithEdit({ columns, data, EditRecord, tableId }) {
+export const HistoryTableWithEdit = memo(function HistoryTableWithEdit({ columns, data, EditRecord, tableId, numberColumns }) {
     return (
-        <table className="history-table table-bordered"  id={tableId || undefined}>
+        <table className="history-table table-bordered" id={tableId || undefined}>
             <thead>
                 <tr>
                     {columns.map((col, index) => (
@@ -45,7 +54,7 @@ export const HistoryTableWithEdit = memo(function HistoryTableWithEdit({ columns
                     ))}
                 </tr>
             </thead>
-            <TableBody data={data} EditRecord={EditRecord} />
+            <TableBody data={data} EditRecord={EditRecord} numberColumns={numberColumns} />
         </table>
     );
 });
