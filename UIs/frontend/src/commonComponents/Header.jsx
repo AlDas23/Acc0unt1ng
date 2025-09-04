@@ -1,9 +1,9 @@
-import Container from 'react-bootstrap/Container';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
 import NavDropdown from 'react-bootstrap/NavDropdown';
 
 function NavBar() {
+
     return (
         <Navbar expand="lg" bg="dark" data-bs-theme="dark">
             <Navbar.Toggle aria-controls="navbar-nav" />
@@ -19,6 +19,7 @@ function NavBar() {
                         <NavDropdown.Item href="/view/reports/table">View Reports Table</NavDropdown.Item>
                         <NavDropdown.Item href="/view/reports/year">View Year Report</NavDropdown.Item>
                     </NavDropdown>
+                    <Nav.Link href="/invest">Invest managment</Nav.Link>
                 </Nav>
             </Navbar.Collapse>
         </Navbar>

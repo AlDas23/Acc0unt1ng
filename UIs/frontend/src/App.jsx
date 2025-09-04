@@ -11,6 +11,7 @@ import CurrencyPage from "./pages/CurrencyRates";
 import BalancePage from "./pages/Balance";
 import ReportsPage from "./pages/Reports";
 import YearPage from "./pages/YearReport";
+import InvestPage from "./pages/Invest";
 
 export default function RoutesMap() {
   return (
@@ -24,6 +25,7 @@ export default function RoutesMap() {
         <Route path='/view/acc' element={<BalancePage />} />
         <Route path='/view/reports/table' element={<ReportsPage />} />
         <Route path='/view/reports/year' element={<YearPage />} />
+        <Route path='/invest' element={<InvestPage />} />
         <Route path='/' element={<ExpensePage />} >
         </Route>
       </Routes>
