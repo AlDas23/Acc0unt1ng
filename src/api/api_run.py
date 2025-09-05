@@ -13,11 +13,6 @@ app.register_blueprint(investPage, url_prefix="/")
 CORS(app, resources=r"/api/*")
 
 
-# @app.after_request
-# def AfterRequest():
-#     Re_Calculate_deposit()
-
-
 @app.route("/api/get/list/<string:source>", methods=["GET"])
 def GetList(source):
     try:
@@ -151,6 +146,7 @@ def GetHistory(source):
         elif source == "transferADV":
             history = GetTransactionHistory("advtransfer")
         elif source == "depositO":
+            Re_Calculate_deposit()
             history = GetTransactionHistory("depositO")
         elif source == "depositC":
             history = GetTransactionHistory("depositC")
@@ -459,6 +455,7 @@ def Balance(source):
     if content is None:
         return "Error: No JSON data received", 400
 
+    Re_Calculate_deposit()
     try:
         if source == "tables":
             table_name = content.get("table") if isinstance(content, dict) else content
@@ -604,3 +601,7 @@ def YearReport(type):
 
 def api_start():
     app.run(debug=True, port=5050)
+
+
+if __name__ == "__main__":
+    api_start()
