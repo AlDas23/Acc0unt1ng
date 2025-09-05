@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { HistoryTableWithEdit } from "../commonComponents/Common";
+import { HistoryTableWithEdit, backendURL } from "../commonComponents/Common";
 import Header from "../commonComponents/Header";
 import Button from 'react-bootstrap/Button';
 import Col from 'react-bootstrap/Col';
@@ -160,7 +160,7 @@ export default function IncomePage() {
     }, []);
 
     const GetOptions = () => {
-        return fetch('http://localhost:5050/api/get/options/income')
+        return fetch(`http://${backendURL}/api/get/options/income`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
@@ -182,7 +182,7 @@ export default function IncomePage() {
     }
 
     const GetHistory = () => {
-        return fetch('http://localhost:5050/api/get/history/income')
+        return fetch(`http://${backendURL}/api/get/history/income`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
@@ -224,8 +224,8 @@ export default function IncomePage() {
         };
 
         const endpoint = editMode
-            ? `http://localhost:5050/api/edit/income/${editingId}`
-            : 'http://localhost:5050/api/add/income';
+            ? `http://${backendURL}/api/edit/income/${editingId}`
+            : `http://${backendURL}/api/add/income`;
 
         // Send POST request
         fetch(endpoint, {

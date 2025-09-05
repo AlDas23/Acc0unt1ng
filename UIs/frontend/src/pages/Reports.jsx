@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { backendURL } from "../commonComponents/Common";
 import Header from "../commonComponents/Header";
 import Button from 'react-bootstrap/Button';
 import "../assets/styles/ReportsPageStyles.css";
@@ -58,7 +59,7 @@ export default function ReportsPage() {
     }, []);
 
     const fetchCategories = () => {
-        return fetch('http://localhost:5050/api/get/list/categories_exp',)
+        return fetch(`http://${backendURL}/api/get/list/categories_exp`,)
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
@@ -107,7 +108,7 @@ export default function ReportsPage() {
 
 
         // Fetch report data based on selected type and format
-        fetch('http://localhost:5050/api/get/report', {
+        fetch(`http://${backendURL}/api/get/report`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

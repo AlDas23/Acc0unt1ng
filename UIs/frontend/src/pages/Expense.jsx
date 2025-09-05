@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { HistoryTableWithEdit } from "../commonComponents/Common";
+import { HistoryTableWithEdit, backendURL } from "../commonComponents/Common";
 import Header from "../commonComponents/Header";
 import Button from 'react-bootstrap/Button';
 import Col from 'react-bootstrap/Col';
@@ -202,8 +202,8 @@ export default function ExpensePage() {
         };
 
         const endpoint = editMode
-            ? `http://localhost:5050/api/edit/expense/${editingId}`
-            : 'http://localhost:5050/api/add/expense';
+            ? `http://${backendURL}/api/edit/expense/${editingId}`
+            : `http://${backendURL}/api/add/expense`;
 
         // Send POST request
         fetch(endpoint, {
@@ -250,7 +250,7 @@ export default function ExpensePage() {
     }
 
     const GetOptions = () => {
-        return fetch('http://localhost:5050/api/get/options/expense')
+        return fetch(`http://${backendURL}/api/get/options/expense`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
@@ -273,7 +273,7 @@ export default function ExpensePage() {
     }
 
     const GetHistory = () => {
-        return fetch('http://localhost:5050/api/get/history/expense')
+        return fetch(`http://${backendURL}/api/get/history/expense`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);

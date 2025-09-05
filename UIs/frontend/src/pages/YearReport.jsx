@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { HistoryTable } from "../commonComponents/Common"
+import { HistoryTable, backendURL } from "../commonComponents/Common"
 import Header from "../commonComponents/Header";
 import '../assets/styles/ReportsPageStyles.css';
 
@@ -53,7 +53,7 @@ export default function YearReportPage() {
     }, []);
 
     const GetCurrencyList = () => {
-        return fetch('http://localhost:5050/api/get/list/currency')
+        return fetch(`http://${backendURL}/api/get/list/currency`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
@@ -74,7 +74,7 @@ export default function YearReportPage() {
     }
 
     const GetData = (type) => {
-        const url = `http://localhost:5050/api/get/report/year/${type}`;
+        const url = `http://${backendURL}/api/get/report/year/${type}`;
 
         return fetch(url)
             .then(response => {

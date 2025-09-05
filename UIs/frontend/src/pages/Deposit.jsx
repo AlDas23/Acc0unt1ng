@@ -1,13 +1,11 @@
 import { useEffect, useState } from "react";
-import { HistoryTable } from "../commonComponents/Common";
+import { HistoryTable, backendURL } from "../commonComponents/Common";
 import Header from "../commonComponents/Header";
 import Button from 'react-bootstrap/Button';
 import Col from 'react-bootstrap/Col';
 import Form from 'react-bootstrap/Form';
 import Row from 'react-bootstrap/Row';
 import '../assets/styles/DepositPageStyles.css'
-
-
 
 
 function Forms({ options }) {
@@ -44,7 +42,7 @@ function Forms({ options }) {
             }
 
             // Send POST request
-            fetch('http://localhost:5050/api/add/deposit', {
+            fetch(`http://${backendURL}/api/add/deposit`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -195,7 +193,7 @@ export default function DepositPage() {
     }, []);
 
     const GetOptions = () => {
-        return fetch('http://localhost:5050/api/get/options/deposit')
+        return fetch(`http://${backendURL}/api/get/options/deposit`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
@@ -218,7 +216,7 @@ export default function DepositPage() {
 
     const GetHistory = (isActive) => {
         if (isActive) {
-            return fetch('http://localhost:5050/api/get/history/depositO')
+            return fetch(`http://${backendURL}/api/get/history/depositO`)
                 .then(response => {
                     if (!response.ok) {
                         throw new Error(`HTTP error! Status: ${response.status}`);
@@ -238,7 +236,7 @@ export default function DepositPage() {
                     throw error;
                 });
         } else {
-            return fetch('http://localhost:5050/api/get/history/depositC')
+            return fetch(`http://${backendURL}/api/get/history/depositC`)
                 .then(response => {
                     if (!response.ok) {
                         throw new Error(`HTTP error! Status: ${response.status}`);

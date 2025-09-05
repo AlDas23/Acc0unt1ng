@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { HistoryTable } from "../commonComponents/Common";
+import { HistoryTable, backendURL } from "../commonComponents/Common";
 import Header from "../commonComponents/Header";
 import Button from 'react-bootstrap/Button';
 import Col from 'react-bootstrap/Col';
@@ -17,7 +17,7 @@ function Forms({ options }) {
             const formObject = Object.fromEntries(formDataObj.entries());
 
             // Send POST request
-            fetch("http://localhost:5050/api/add/currencyrates", {
+            fetch("http://${backendURL}/api/add/currencyrates", {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -115,7 +115,7 @@ export default function CurrencyRatesPage() {
     }, []);
 
     const GetOptions = () => {
-        return fetch('http://localhost:5050/api/get/options/currencyrates')
+        return fetch(`http://${backendURL}/api/get/options/currencyrates`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
@@ -137,7 +137,7 @@ export default function CurrencyRatesPage() {
     }
 
     const GetHistory = () => {
-        return fetch('http://localhost:5050/api/get/history/currencyrates')
+        return fetch(`http://${backendURL}/api/get/history/currencyrates`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
@@ -159,7 +159,7 @@ export default function CurrencyRatesPage() {
     }
 
     const GetPlot = () => {
-        return fetch('http://localhost:5050/api/get/plot/currencyrates')
+        return fetch(`http://${backendURL}/api/get/plot/currencyrates`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
