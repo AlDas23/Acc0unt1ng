@@ -13,6 +13,11 @@ app.register_blueprint(investPage, url_prefix="/")
 CORS(app, resources=r"/api/*")
 
 
+@app.route("/health", methods=["GET"])
+def health_check():
+    return jsonify({"status": "ok"}), 200
+
+
 @app.route("/api/get/list/<string:source>", methods=["GET"])
 def GetList(source):
     try:
@@ -597,11 +602,3 @@ def YearReport(type):
     elif type == "income":
         data = GetYearlyData("yearincrep")
     return jsonify({"success": True, "data": data})
-
-
-def api_start():
-    app.run(debug=True, port=5050)
-
-
-if __name__ == "__main__":
-    api_start()
