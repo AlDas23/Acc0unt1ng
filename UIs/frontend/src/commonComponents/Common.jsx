@@ -1,7 +1,5 @@
 import { memo } from 'react';
 
-export const backendURL = "backend-service:5050";
-
 function TableBody({ data, EditRecord, numberColumns = [] }) {
     // Parse number column settings
     const formatSettings = numberColumns.reduce((acc, setting) => {

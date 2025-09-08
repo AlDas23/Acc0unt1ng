@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { HistoryTableWithEdit, backendURL } from "../commonComponents/Common";
+import { HistoryTableWithEdit } from "../commonComponents/Common";
 import Header from "../commonComponents/Header";
 import Button from 'react-bootstrap/Button';
 import Col from 'react-bootstrap/Col';
@@ -57,9 +57,9 @@ function StandardTransferForm({ options, formData, handleInputChange, editMode, 
 
             let endpoint;
             if (editMode && editMode.isEditing && editMode.type === 'standard') {
-                endpoint = `http://${backendURL}/api/edit/transfer/${editMode.id}`;
+                endpoint = `/api/edit/transfer/${editMode.id}`;
             } else {
-                endpoint = `http://${backendURL}/api/add/transfer`;
+                endpoint = `/api/add/transfer`;
             }
 
             // Send POST request
@@ -228,9 +228,9 @@ function AdvancedTransferForm({ options, formData, handleInputChange, editMode, 
 
             let endpoint;
             if (editMode && editMode.isEditing && editMode.type === 'advanced') {
-                endpoint = `http://${backendURL}/api/edit/transfer/${editMode.id}`;
+                endpoint = `/api/edit/transfer/${editMode.id}`;
             } else {
-                endpoint = `http://${backendURL}/api/add/transfer`;
+                endpoint = `/api/add/transfer`;
             }
 
             // Send POST request
@@ -591,7 +591,7 @@ export default function TransferPage() {
     }
 
     const GetOptions = () => {
-        return fetch(`http://${backendURL}/api/get/options/transfer`)
+        return fetch(`/api/get/options/transfer`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
@@ -615,9 +615,9 @@ export default function TransferPage() {
     const GetHistory = (type) => {
         let endpoint;
         if (type === 'standard') {
-            endpoint = `http://${backendURL}/api/get/history/transfer`
+            endpoint = `/api/get/history/transfer`
         } else if (type === 'advanced') {
-            endpoint = `http://${backendURL}/api/get/history/transferADV`
+            endpoint = `/api/get/history/transferADV`
         }
         return fetch(endpoint)
             .then(response => {

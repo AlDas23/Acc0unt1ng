@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { HistoryTableWithEdit, backendURL } from "../commonComponents/Common";
+import { HistoryTableWithEdit } from "../commonComponents/Common";
 import Header from "../commonComponents/Header";
 import Button from 'react-bootstrap/Button';
 import Col from 'react-bootstrap/Col';
@@ -54,7 +54,7 @@ function Forms({ options, ValidateForm, handleInputChange, resetForm, editMode, 
                     </Form.Label>
                     <Form.Select
                         id="inputSubCategory"
-                        name="Sub-category"
+                        name="SubCategory"
                         value={formData.subCategory}
                         onChange={handleInputChange}
                     >
@@ -202,8 +202,8 @@ export default function ExpensePage() {
         };
 
         const endpoint = editMode
-            ? `http://${backendURL}/api/edit/expense/${editingId}`
-            : `http://${backendURL}/api/add/expense`;
+            ? `/api/edit/expense/${editingId}`
+            : `/api/add/expense`;
 
         // Send POST request
         fetch(endpoint, {
@@ -250,7 +250,7 @@ export default function ExpensePage() {
     }
 
     const GetOptions = () => {
-        return fetch(`http://${backendURL}/api/get/options/expense`)
+        return fetch(`/api/get/options/expense`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
@@ -273,7 +273,7 @@ export default function ExpensePage() {
     }
 
     const GetHistory = () => {
-        return fetch(`http://${backendURL}/api/get/history/expense`)
+        return fetch(`/api/get/history/expense`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);

@@ -10,7 +10,7 @@ from api.api_invest import investPage
 
 app = Flask(__name__)
 app.register_blueprint(investPage, url_prefix="/")
-CORS(app, resources=r"/api/*")
+CORS(app, resources=r"/*")
 
 
 @app.route("/health", methods=["GET"])
@@ -18,7 +18,7 @@ def health_check():
     return jsonify({"status": "ok"}), 200
 
 
-@app.route("/api/get/list/<string:source>", methods=["GET"])
+@app.route("/get/list/<string:source>", methods=["GET"])
 def GetList(source):
     try:
         if source == "categories_exp":
@@ -69,7 +69,7 @@ def GetList(source):
         return payload
 
 
-@app.route("/api/get/options/<string:source>", methods=["GET"])
+@app.route("/get/options/<string:source>", methods=["GET"])
 def GetOptions(source):
     try:
         if source == "expense":
@@ -139,7 +139,7 @@ def GetOptions(source):
         return payload
 
 
-@app.route("/api/get/history/<string:source>", methods=["GET"])
+@app.route("/get/history/<string:source>", methods=["GET"])
 def GetHistory(source):
     try:
         if source == "expense":
@@ -181,7 +181,7 @@ def GetHistory(source):
         return payload
 
 
-@app.route("/api/get/plot/<string:source>", methods=["GET"])
+@app.route("/get/plot/<string:source>", methods=["GET"])
 def GetPlot(source):
     if source == "currencyrates":
         try:
@@ -204,7 +204,7 @@ def GetPlot(source):
             return payload
 
 
-@app.route("/api/add/expense", methods=["POST"])
+@app.route("/add/expense", methods=["POST"])
 def AddExpense():
     content = request.get_json()
     if content is None:
@@ -230,7 +230,7 @@ def AddExpense():
         )
 
 
-@app.route("/api/edit/expense/<int:id>", methods=["POST"])
+@app.route("/edit/expense/<int:id>", methods=["POST"])
 def EditExpense(id):
     content = request.get_json()
     if content is None:
@@ -257,7 +257,7 @@ def EditExpense(id):
         )
 
 
-@app.route("/api/add/income", methods=["POST"])
+@app.route("/add/income", methods=["POST"])
 def AddIncome():
     content = request.get_json()
     if content is None:
@@ -283,7 +283,7 @@ def AddIncome():
         )
 
 
-@app.route("/api/edit/income/<int:id>", methods=["POST"])
+@app.route("/edit/income/<int:id>", methods=["POST"])
 def EditIncome(id):
     if request.method == "POST":
         content = request.get_json()
@@ -311,7 +311,7 @@ def EditIncome(id):
             )
 
 
-@app.route("/api/add/transfer", methods=["POST"])
+@app.route("/add/transfer", methods=["POST"])
 def AddTransfer():
     content = request.get_json()
     if content is None:
@@ -355,7 +355,7 @@ def AddTransfer():
             )
 
 
-@app.route("/api/edit/transfer/<int:id>", methods=["POST"])
+@app.route("/edit/transfer/<int:id>", methods=["POST"])
 def EditTransfer(id):
     if request.method == "POST":
         content = request.get_json()
@@ -402,7 +402,7 @@ def EditTransfer(id):
                 )
 
 
-@app.route("/api/add/deposit", methods=["POST"])
+@app.route("/add/deposit", methods=["POST"])
 def AddDeposit():
     content = request.get_json()
     if content is None:
@@ -428,7 +428,7 @@ def AddDeposit():
         )
 
 
-@app.route("/api/add/currencyrates", methods=["POST"])
+@app.route("/add/currencyrates", methods=["POST"])
 def AddCurrencyRate():
     content = request.get_json()
     if content is None:
@@ -454,7 +454,7 @@ def AddCurrencyRate():
         )
 
 
-@app.route("/api/get/balance/<string:source>", methods=["POST"])
+@app.route("/get/balance/<string:source>", methods=["POST"])
 def Balance(source):
     content = request.get_json()
     if content is None:
@@ -566,7 +566,7 @@ def Balance(source):
         return payload
 
 
-@app.route("/api/get/report", methods=["POST"])
+@app.route("/get/report", methods=["POST"])
 def Report():
     content = request.get_json()
     if content is None:
@@ -593,7 +593,7 @@ def Report():
         )
 
 
-@app.route("/api/get/report/year/<string:type>", methods=["GET"])
+@app.route("/get/report/year/<string:type>", methods=["GET"])
 def YearReport(type):
     if type == "total":
         data = GetYearlyData("yeartotalrep")

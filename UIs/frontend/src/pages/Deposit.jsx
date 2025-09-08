@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { HistoryTable, backendURL } from "../commonComponents/Common";
+import { HistoryTable } from "../commonComponents/Common";
 import Header from "../commonComponents/Header";
 import Button from 'react-bootstrap/Button';
 import Col from 'react-bootstrap/Col';
@@ -42,7 +42,7 @@ function Forms({ options }) {
             }
 
             // Send POST request
-            fetch(`http://${backendURL}/api/add/deposit`, {
+            fetch(`/api/add/deposit`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -193,7 +193,7 @@ export default function DepositPage() {
     }, []);
 
     const GetOptions = () => {
-        return fetch(`http://${backendURL}/api/get/options/deposit`)
+        return fetch(`/api/get/options/deposit`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
@@ -216,7 +216,7 @@ export default function DepositPage() {
 
     const GetHistory = (isActive) => {
         if (isActive) {
-            return fetch(`http://${backendURL}/api/get/history/depositO`)
+            return fetch(`/api/get/history/depositO`)
                 .then(response => {
                     if (!response.ok) {
                         throw new Error(`HTTP error! Status: ${response.status}`);
@@ -236,7 +236,7 @@ export default function DepositPage() {
                     throw error;
                 });
         } else {
-            return fetch(`http://${backendURL}/api/get/history/depositC`)
+            return fetch(`/api/get/history/depositC`)
                 .then(response => {
                     if (!response.ok) {
                         throw new Error(`HTTP error! Status: ${response.status}`);

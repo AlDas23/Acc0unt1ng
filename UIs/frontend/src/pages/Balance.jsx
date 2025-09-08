@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { HistoryTable, backendURL } from "../commonComponents/Common";
+import { HistoryTable } from "../commonComponents/Common";
 import Header from "../commonComponents/Header";
 import "../assets/styles/BalancePageStyles.css";
 
@@ -114,8 +114,8 @@ export default function BalancePage() {
 
     // Fetch data based on mode
     const GetData = (mode, table = null) => {
-        const endpointStandard = `http://${backendURL}/api/get/balance/tables`;
-        const endpointBalance = `http://${backendURL}/api/get/balance/balance`;
+        const endpointStandard = `/api/get/balance/tables`;
+        const endpointBalance = `/api/get/balance/balance`;
 
         if (mode === "standard") {
             return fetch(endpointStandard, {
@@ -177,7 +177,7 @@ export default function BalancePage() {
 
     // Fetch filter options
     const GetOptions = () => {
-        return fetch("http://${backendURL}/api/get/options/balance")
+        return fetch("/api/get/options/balance")
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);

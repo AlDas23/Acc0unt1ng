@@ -1,6 +1,7 @@
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
 import NavDropdown from 'react-bootstrap/NavDropdown';
+import bannerImage from '/src/assets/imgs/Banner.png';
 
 function NavBar() {
 
@@ -30,7 +31,7 @@ function NavBar() {
 function Banner() {
     return (
         <>
-            <img style={{width: '100%', height: 'auto', display: 'block'}} className="banner" src="/src/assets/imgs/Banner.png" alt="Acc0unt1ng Banner" />
+            <img style={{width: '100%', height: 'auto', display: 'block'}} className="banner" src={bannerImage} alt="Acc0unt1ng Banner" />
         </>
     )
 }
