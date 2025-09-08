@@ -19,7 +19,7 @@ services:
 
   frontend:
     build:
-      context: ./UIs/frontend
+      context: ./UI/frontend
       dockerfile: Dockerfile
     container_name: frontend-service
     ports:
