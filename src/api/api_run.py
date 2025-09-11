@@ -2,8 +2,8 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 
 from db_scripts.script import *
-from db_scripts.baseScripts import Add, MarkerRead, Re_Calculate_deposit, Read
-from db_scripts.csvScripts import read_csv
+from db_scripts.baseScripts import Add, MarkerRead, Re_Calculate_deposit, Read, CheckDB
+from db_scripts.csvScripts import read_csv, SPVconf
 from db_scripts.consts import *
 from helpers.genPlot import plot_to_img_tag
 from api.api_invest import investPage
@@ -602,3 +602,72 @@ def YearReport(type):
     elif type == "income":
         data = GetYearlyData("yearincrep")
     return jsonify({"success": True, "data": data})
+
+
+@app.route("/database/status", methods=["GET"])
+def DBStatus():
+    status = CheckDB()
+    if status == 0:
+        return jsonify({"success": True})
+    elif status == 1:
+        return jsonify({"success": False, "corrupt": False})
+    else:
+        return jsonify({"success": False, "corrupt": True})
+
+
+@app.route("/spv", methods=["GET", "POST"])
+def SPVControl():
+    if request.method == "GET":
+        try:
+            expCat = read_csv(SPVcatExpPath)
+            incCat = read_csv(SPVcatIncPath)
+            subCat = read_csv(SPVsubcatPath)
+            curr = read_csv(SPVcurrPath)
+            data = {
+                "currency": curr,
+                "incomeCategories": incCat,
+                "expenseCategories": expCat,
+                "subCategories": subCat,
+            }
+            return jsonify(
+                {
+                    "success": True,
+                    "data": data,
+                }
+            )
+        except Exception as e:
+            print(f"Error occurred: {str(e)}")
+            error_message = str(e)
+            return (
+                jsonify(
+                    {
+                        "success": False,
+                        "message": error_message,
+                    }
+                ),
+                400,
+            )
+
+    elif request.method == "POST":
+        content = request.get_json()
+        if content is None:
+            return "Error: No JSON data received", 400
+
+        try:
+            SPVconf(content.get("curr", []), SPVcurrPath)
+            SPVconf(content.get("incCat", []), SPVcatIncPath)
+            SPVconf(content.get("expCat", []), SPVcatExpPath)
+            SPVconf(content.get("subCat", []), SPVsubcatPath)
+            return jsonify({"success": True})
+        except Exception as e:
+            print(f"Error occurred: {str(e)}")
+            error_message = str(e)
+            return (
+                jsonify(
+                    {
+                        "success": False,
+                        "message": error_message,
+                    }
+                ),
+                400,
+            )

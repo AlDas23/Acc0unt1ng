@@ -12,6 +12,7 @@ import BalancePage from "./pages/Balance";
 import ReportsPage from "./pages/Reports";
 import YearPage from "./pages/YearReport";
 import InvestPage from "./pages/Invest";
+import { OptionsDBPage, OptionsPBPage } from "./pages/Options";
 
 export default function RoutesMap() {
   return (
@@ -25,6 +26,8 @@ export default function RoutesMap() {
         <Route path='/view/acc' element={<BalancePage />} />
         <Route path='/view/reports/table' element={<ReportsPage />} />
         <Route path='/view/reports/year' element={<YearPage />} />
+        <Route path='/options/db' element={<OptionsDBPage />} />
+        <Route path='/options/pb' element={<OptionsPBPage />} />
         <Route path='/invest' element={<InvestPage />} />
         <Route path='/' element={<ExpensePage />} >
         </Route>

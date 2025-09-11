@@ -127,6 +127,98 @@ def NewDBase():
         conn.commit()
 
 
+def CheckDB():
+    expected_tables = {
+        "main": [
+            "id",
+            "date",
+            "category",
+            "sub_category",
+            "person_bank",
+            "sum",
+            "currency",
+            "comment",
+        ],
+        "exc_rate": ["date", "currency", "rate"],
+        "deposit": [
+            "date_in",
+            "name",
+            "owner",
+            "sum",
+            "currency",
+            "months",
+            "date_out",
+            "percent",
+            "currency_rate",
+            "expect",
+            "comment",
+            "isOpen",
+        ],
+        "transfer": [
+            "id",
+            "date",
+            "person_bank_from",
+            "person_bank_to",
+            "sum",
+            "currency",
+            "comment",
+        ],
+        "advtransfer": [
+            "id",
+            "date",
+            "person_bank_from",
+            "sum_from",
+            "currency_from",
+            "person_bank_to",
+            "sum_to",
+            "currency_to",
+            "currency_rate",
+            "comment",
+        ],
+        "Init_PB": ["person_bank", "sum", "currency"],
+        "Marker_owner": ["bank_rec", "owner"],
+        "Marker_type": ["bank_rec", "type"],
+        "investTransaction": [
+            "id",
+            "date",
+            "PB",
+            "amount",
+            "currency",
+            "investPB",
+            "investAmount",
+            "stock",
+            "fee",
+        ],
+        "investPB": ["name", "stock"],
+        "investStockPrice": ["id", "date", "stock", "price"],
+    }
+
+    if not os.path.exists(dbPath):
+        return 1
+
+    with sqlite3.connect(dbPath) as conn:
+        c = conn.cursor()
+        c.execute("SELECT name FROM sqlite_master WHERE type='table';")
+        existing_tables = [row[0] for row in c.fetchall()]
+        missing_tables = []
+        for table in expected_tables.keys():
+            if table not in existing_tables:
+                missing_tables.append(table)
+        if missing_tables:
+            print(f"Missing tables: {missing_tables}")
+            return 2
+        # Verify table structures
+        for table, expected_columns in expected_tables.items():
+            c.execute(f"PRAGMA table_info({table})")
+            actual_columns = [row[1] for row in c.fetchall()]
+            # Check if all expected columns exist
+            for column in expected_columns:
+                if column not in actual_columns:
+                    print(f"Table {table} missing column: {column}")
+                    return 3
+        return 0
+
+
 def Add(input_field, mode):
     # Function for adding main, transfer, advtransfer, deposit records and currency rates
     with sqlite3.connect(dbPath) as conn:

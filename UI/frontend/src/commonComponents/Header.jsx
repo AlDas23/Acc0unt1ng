@@ -20,6 +20,10 @@ function NavBar() {
                         <NavDropdown.Item href="/view/reports/table">View Reports Table</NavDropdown.Item>
                         <NavDropdown.Item href="/view/reports/year">View Year Report</NavDropdown.Item>
                     </NavDropdown>
+                    <NavDropdown title="Options" id="nav-dropdown-options">
+                        <NavDropdown.Item href="/options/db">Database options</NavDropdown.Item>
+                        <NavDropdown.Item href="/options/pb">Accounts options</NavDropdown.Item>
+                    </NavDropdown>
                     <Nav.Link href="/invest">Invest managment</Nav.Link>
                 </Nav>
             </Navbar.Collapse>

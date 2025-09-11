@@ -5,15 +5,18 @@ from db_scripts.consts import *
 
 def read_csv(file_name):
     values = []
-    with open(file_name, newline="") as csvfile:
-        reader = csv.reader(csvfile)
-        for row in reader:
-            if row:
-                values.append(row[0])
+    try:
+        with open(file_name, newline="") as csvfile:
+            reader = csv.reader(csvfile)
+            for row in reader:
+                if row:
+                    values.append(row[0])
+    except FileNotFoundError:
+        print(f"File {file_name} not found.")
     return values
 
 
-def SPVconf(pth, new_SPV, inpMode):
+def SPVconf(pth, new_SPV):
     # Function for configuring categories and currencies
     if pth == "catinc":
         path = SPVcatIncPath
@@ -26,23 +29,11 @@ def SPVconf(pth, new_SPV, inpMode):
 
     new_SPV = new_SPV.split(",")
 
-    if inpMode == "A" or inpMode == "a":
-        new_SPV = "," + new_SPV
-        with open(path, mode="a", newline="") as file:
-            csvWriter = csv.writer(file)
-            for i in new_SPV:
-                csvWriter.writerow([i])
+    with open(path, mode="w", newline="") as file:
+        csvWriter = csv.writer(file)
+        for i in new_SPV:
+            csvWriter.writerow([i])
         return "Success!"
-
-    elif inpMode == "R" or inpMode == "r":
-        with open(path, mode="w", newline="") as file:
-            csvWriter = csv.writer(file)
-            for i in new_SPV:
-                csvWriter.writerow([i])
-        return "Success!"
-
-    else:
-        raise Exception("Unknown command! Expected A, a, R, r")
 
 
 def ShowExistingSPV(x):

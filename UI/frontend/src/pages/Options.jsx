@@ -4,11 +4,17 @@ import Form from 'react-bootstrap/Form';
 import Modal from 'react-bootstrap/Modal';
 import Button from "react-bootstrap/esm/Button";
 
-export function OptionsPB() {
-    // TODO: Implement Person-Bank set-up page
+export function OptionsPBPage() {
+    return (
+        <>
+            <Header />
+            <div className="options-page container">
+            </div>
+        </>
+    )
 }
 
-export function OptionsDB() {
+export function OptionsDBPage() {
     const [currentLists, setCurrentLists] = useState({ curr: [], incCat: [], expCat: [], subCat: [] });
     const [isDBExists, setIsDBExists] = useState(false);
     const [show, setShow] = useState(false);
@@ -38,7 +44,11 @@ export function OptionsDB() {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    setIsDBExists(data.exists);
+                    setIsDBExists(true);
+                } else if (data.corrupt) {
+                    setIsDBExists(true); // DB exists but is corrupted
+                } else if (!data.success && !data.corrupt) {
+                    setIsDBExists(false); // DB does not exist
                 } else {
                     console.error('Failed to fetch DB status:', data.message);
                 }
