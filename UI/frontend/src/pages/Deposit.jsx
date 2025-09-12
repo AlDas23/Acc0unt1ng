@@ -203,6 +203,9 @@ export default function DepositPage() {
             .then(data => {
                 if (data.success) {
                     return data.options;
+                } else if (data.redirect) {
+                    alert('Database is missng or corrupted. You will be redirected to the setup page.');
+                    window.location.href = data.redirect;
                 } else {
                     throw new Error(data.message || 'Failed to load options');
                 }
@@ -226,6 +229,9 @@ export default function DepositPage() {
                 .then(data => {
                     if (data.success) {
                         return data.history;
+                    } else if (data.redirect) {
+                        alert('Database is missng or corrupted. You will be redirected to the setup page.');
+                        window.location.href = data.redirect;
                     } else {
                         throw new Error(data.message || 'Failed to load history');
                     }
@@ -246,6 +252,9 @@ export default function DepositPage() {
                 .then(data => {
                     if (data.success) {
                         return data.history;
+                    } else if (data.redirect) {
+                        alert('Database is missng or corrupted. You will be redirected to the setup page.');
+                        window.location.href = data.redirect;
                     } else {
                         throw new Error(data.message || 'Failed to load history');
                     }

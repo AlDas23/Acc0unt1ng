@@ -168,6 +168,12 @@ export default function IncomePage() {
                 return response.json();
             })
             .then(data => {
+                if (data.redirect) {
+                    alert('Database is missing or corrupted. You will be redirected to the setup page.');
+                    window.location.href = data.redirect;
+                    return Promise.reject('Redirect initiated');
+                }
+
                 if (data.success) {
                     return data.options;
                 } else {
@@ -190,6 +196,12 @@ export default function IncomePage() {
                 return response.json();
             })
             .then(data => {
+                if (data.redirect) {
+                    alert('Database is missing or corrupted. You will be redirected to the setup page.');
+                    window.location.href = data.redirect;
+                    return Promise.reject('Redirect initiated');
+                }
+
                 if (data.success) {
                     return data.history;
                 } else {

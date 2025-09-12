@@ -133,6 +133,12 @@ export default function BalancePage() {
                     return response.json();
                 })
                 .then(data => {
+                    if (data.redirect) {
+                        alert('Database is missing or corrupted. You will be redirected to the setup page.');
+                        window.location.href = data.redirect;
+                        return Promise.reject('Redirect initiated');
+                    }
+
                     if (data.success) {
                         return data.table;
                     } else {
@@ -161,6 +167,12 @@ export default function BalancePage() {
                     return response.json();
                 })
                 .then(data => {
+                    if (data.redirect) {
+                        alert('Database is missing or corrupted. You will be redirected to the setup page.');
+                        window.location.href = data.redirect;
+                        return Promise.reject('Redirect initiated');
+                    }
+
                     if (data.success) {
                         return data.data;
                     } else {
@@ -186,6 +198,12 @@ export default function BalancePage() {
                 return response.json();
             })
             .then(data => {
+                if (data.redirect) {
+                    alert('Database is missing or corrupted. You will be redirected to the setup page.');
+                    window.location.href = data.redirect;
+                    return Promise.reject('Redirect initiated');
+                }
+
                 if (data.success) {
                     return data.options;
                 } else {

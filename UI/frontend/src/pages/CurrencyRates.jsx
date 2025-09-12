@@ -123,6 +123,12 @@ export default function CurrencyRatesPage() {
                 return response.json();
             })
             .then(data => {
+                if (data.redirect) {
+                    alert('Database is missing or corrupted. You will be redirected to the setup page.');
+                    window.location.href = data.redirect;
+                    return Promise.reject('Redirect initiated');
+                }
+
                 if (data.success) {
                     return data.options;
                 } else {
@@ -145,6 +151,12 @@ export default function CurrencyRatesPage() {
                 return response.json();
             })
             .then(data => {
+                if (data.redirect) {
+                    alert('Database is missing or corrupted. You will be redirected to the setup page.');
+                    window.location.href = data.redirect;
+                    return Promise.reject('Redirect initiated');
+                }
+
                 if (data.success) {
                     return data.history;
                 } else {
@@ -167,6 +179,12 @@ export default function CurrencyRatesPage() {
                 return response.json();
             })
             .then(data => {
+                if (data.redirect) {
+                    alert('Database is missing or corrupted. You will be redirected to the setup page.');
+                    window.location.href = data.redirect;
+                    return Promise.reject('Redirect initiated');
+                }
+
                 if (data.success) {
                     return data.plot;
                 } else {
@@ -222,7 +240,7 @@ export default function CurrencyRatesPage() {
                             columns={["Date", "Currency", "Rate"]}
                             data={history}
                             tableId="CurrRateHistoryTable"
-                             numberColumns={["2-4"]}
+                            numberColumns={["2-4"]}
                         />)}
                     </div>
                     <div className="col-md-8">

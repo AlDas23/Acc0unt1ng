@@ -83,7 +83,7 @@ export function OptionsDBPage() {
         const action = isDBExists ? 'recreate' : 'create';
 
         // Call the API to perform the database action
-        fetch('/api/database/' + action, {
+        fetch('/api/database/create', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
         })

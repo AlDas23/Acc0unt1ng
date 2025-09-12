@@ -1,9 +1,17 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from db_scripts.script import *
-from db_scripts.baseScripts import Add, MarkerRead, Re_Calculate_deposit, Read, CheckDB
+from db_scripts.baseScripts import (
+    Add,
+    MarkerRead,
+    Re_Calculate_deposit,
+    Read,
+    CheckDB,
+    NewDBase,
+)
 from db_scripts.csvScripts import read_csv, SPVconf
 from db_scripts.consts import *
+from helpers.decorators import db_required
 from helpers.genPlot import plot_to_img_tag
 from api.api_invest import investPage
 
@@ -69,6 +77,7 @@ def GetList(source):
 
 
 @app.route("/get/options/<string:source>", methods=["GET"])
+@db_required
 def GetOptions(source):
     try:
         if source == "expense":
@@ -139,6 +148,7 @@ def GetOptions(source):
 
 
 @app.route("/get/history/<string:source>", methods=["GET"])
+@db_required
 def GetHistory(source):
     try:
         if source == "expense":
@@ -181,6 +191,7 @@ def GetHistory(source):
 
 
 @app.route("/get/plot/<string:source>", methods=["GET"])
+@db_required
 def GetPlot(source):
     if source == "currencyrates":
         try:
@@ -454,6 +465,7 @@ def AddCurrencyRate():
 
 
 @app.route("/get/balance/<string:source>", methods=["POST"])
+@db_required
 def Balance(source):
     content = request.get_json()
     if content is None:
@@ -566,6 +578,7 @@ def Balance(source):
 
 
 @app.route("/get/report", methods=["POST"])
+@db_required
 def Report():
     content = request.get_json()
     if content is None:
@@ -593,6 +606,7 @@ def Report():
 
 
 @app.route("/get/report/year/<string:type>", methods=["GET"])
+@db_required
 def YearReport(type):
     if type == "total":
         data = GetYearlyData("yeartotalrep")
@@ -612,6 +626,17 @@ def DBStatus():
         return jsonify({"success": False, "corrupt": False})
     else:
         return jsonify({"success": False, "corrupt": True})
+
+
+@app.route("/database/create", methods=["POST"])
+def DBCreate():
+    try:
+        NewDBase()
+        print("Database created.")
+        return (jsonify({"success": True}), 200)
+    except Exception as e:
+        print("Error: " + str(e))
+        return (jsonify({"success": False, "message": f"{str(e)}"}))
 
 
 @app.route("/spv", methods=["GET", "POST"])
@@ -654,9 +679,9 @@ def SPVControl():
 
         try:
             SPVconf("curr", content.get("curr", []))
-            SPVconf("inccat",content.get("incCat", []))
-            SPVconf("expcat",content.get("expCat", []))
-            SPVconf("subcat",content.get("subCat", []))
+            SPVconf("inccat", content.get("incCat", []))
+            SPVconf("expcat", content.get("expCat", []))
+            SPVconf("subcat", content.get("subCat", []))
             return jsonify({"success": True})
         except Exception as e:
             print(f"Error occurred: {str(e)}")
