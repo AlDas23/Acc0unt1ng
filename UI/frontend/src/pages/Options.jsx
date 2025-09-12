@@ -1,8 +1,11 @@
 import { useState, useEffect } from "react";
 import Header from "../commonComponents/Header";
+import Col from 'react-bootstrap/Col';
 import Form from 'react-bootstrap/Form';
+import Row from 'react-bootstrap/Row';
 import Modal from 'react-bootstrap/Modal';
 import Button from "react-bootstrap/esm/Button";
+import '../assets/styles/OptionsPageStyles.css';
 
 export function OptionsPBPage() {
     return (
@@ -19,18 +22,26 @@ export function OptionsDBPage() {
     const [isDBExists, setIsDBExists] = useState(false);
     const [show, setShow] = useState(false);
     const [confirmationText, setConfirmationText] = useState('');
+    const [currencyValues, setCurrencyValues] = useState('');
+    const [incCatValues, setIncCatValues] = useState('');
+    const [expCatValues, setExpCatValues] = useState('');
+    const [subCatValues, setSubCatValues] = useState('');
 
     useEffect(() => {
         fetch('/api/spv')
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    setCurrentLists({
-                        curr: data.data.currency || [],
-                        incCat: data.data.incomeCategories || [],
-                        expCat: data.data.expenseCategories || [],
-                        subCat: data.data.subCategories || []
-                    });
+                    const curr = data.data.currency || [];
+                    const incCat = data.data.incomeCategories || [];
+                    const expCat = data.data.expenseCategories || [];
+                    const subCat = data.data.subCategories || [];
+                    
+                    setCurrentLists({ curr, incCat, expCat, subCat });
+                    setCurrencyValues(curr.join("\n"));
+                    setIncCatValues(incCat.join("\n"));
+                    setExpCatValues(expCat.join("\n"));
+                    setSubCatValues(subCat.join("\n"));
                 } else {
                     console.error('Failed to fetch SPVs:', data.message);
                 }
@@ -126,44 +137,40 @@ export function OptionsDBPage() {
         <>
             <Header />
             <div className="options-page container">
+                <h2>Special Values Control</h2>
                 <div className="row">
-                    <h2>Special Values Control</h2>
                     <Form noValidate id="spv-form" onSubmit={saveChanges}>
-                        <div className="col">
-                            <Form.Label htmlFor="currency-values">Currency Values</Form.Label>
-                            {currentLists &&
-                                (<textarea form="spv-form" id="currency-values" name="currency-values" rows="25" cols="30">
-                                    {currentLists.curr.join("\n")}
-                                </textarea>)}
-                            <br />
+                        <Row>
+                            <Col>
+                                <Form.Label htmlFor="currency-values">Currency Values</Form.Label>
+                                {currentLists &&
+                                    (<textarea form="spv-form" value={currencyValues} onChange={(e) => setCurrencyValues(e.target.value)} id="currency-values" name="currency-values" rows="13" cols="25" />)}
+                            </Col>
+                            <Col>
+                                <Form.Label htmlFor="inccat-values">Income Category Values</Form.Label>
+                                {currentLists &&
+                                    (<textarea form="spv-form" value={incCatValues} onChange={(e) => setIncCatValues(e.target.value)} id="inccat-values" name="inccat-values" rows="13" cols="25" />)}
+                            </Col>
+                            <Col>
+                                <Form.Label htmlFor="expcat-values">Expense Category Values</Form.Label>
+                                {currentLists &&
+                                    (<textarea form="spv-form" value={expCatValues} onChange={(e) => setExpCatValues(e.target.value)} id="expcat-values" name="expcat-values" rows="13" cols="25" />)}
+                            </Col>
+                            <Col>
+                                <Form.Label htmlFor="subcat-values">Subcategory Values</Form.Label>
+                                {currentLists &&
+                                    (<textarea form="spv-form" value={subCatValues} onChange={(e) => setSubCatValues(e.target.value)} id="subcat-values" name="subcat-values" rows="13" cols="25" />)}
+                            </Col>
+                        </Row>
+                        <br />
+                        <Row>
                             <Button variant="primary" type="submit" id="save-spv-btn">
                                 Save Changes
                             </Button>
-                        </div>
-                        <div className="col">
-                            <Form.Label htmlFor="inccat-values">Income Category Values</Form.Label>
-                            {currentLists &&
-                                (<textarea form="spv-form" id="inccat-values" name="inccat-values" rows="25" cols="30">
-                                    {currentLists.incCat.join("\n")}
-                                </textarea>)}
-                        </div>
-                        <div className="col">
-                            <Form.Label htmlFor="expcat-values">Expense Category Values</Form.Label>
-                            {currentLists &&
-                                (<textarea form="spv-form" id="expcat-values" name="expcat-values" rows="25" cols="30">
-                                    {currentLists.expCat.join("\n")}
-                                </textarea>)}
-                        </div>
-                        <div className="col">
-                            <Form.Label htmlFor="subcat-values">Subcategory Values</Form.Label>
-                            {currentLists &&
-                                (<textarea form="spv-form" id="subcat-values" name="subcat-values" rows="25" cols="30">
-                                    {currentLists.subCat.join("\n")}
-                                </textarea>)}
-                        </div>
+                        </Row>
                     </Form>
                 </div>
-                <div className="row">
+                <div className="row" id="db-control-section">
                     <h2>Database Control</h2>
                     <Button
                         variant={isDBExists ? 'danger' : 'primary'}
@@ -207,7 +214,7 @@ export function OptionsDBPage() {
                         </Modal.Footer>
                     </Modal>
                 </div>
-            </div>
+            </div >
         </>
     )
 }

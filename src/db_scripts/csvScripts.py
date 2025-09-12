@@ -18,16 +18,14 @@ def read_csv(file_name):
 
 def SPVconf(pth, new_SPV):
     # Function for configuring categories and currencies
-    if pth == "catinc":
+    if pth == "inccat":
         path = SPVcatIncPath
-    elif pth == "catexp":
+    elif pth == "expcat":
         path = SPVcatExpPath
     elif pth == "subcat":
         path = SPVsubcatPath
     elif pth == "curr":
         path = SPVcurrPath
-
-    new_SPV = new_SPV.split(",")
 
     with open(path, mode="w", newline="") as file:
         csvWriter = csv.writer(file)

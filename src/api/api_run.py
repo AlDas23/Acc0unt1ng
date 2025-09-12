@@ -1,6 +1,5 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-
 from db_scripts.script import *
 from db_scripts.baseScripts import Add, MarkerRead, Re_Calculate_deposit, Read, CheckDB
 from db_scripts.csvScripts import read_csv, SPVconf
@@ -654,10 +653,10 @@ def SPVControl():
             return "Error: No JSON data received", 400
 
         try:
-            SPVconf(content.get("curr", []), SPVcurrPath)
-            SPVconf(content.get("incCat", []), SPVcatIncPath)
-            SPVconf(content.get("expCat", []), SPVcatExpPath)
-            SPVconf(content.get("subCat", []), SPVsubcatPath)
+            SPVconf("curr", content.get("curr", []))
+            SPVconf("inccat",content.get("incCat", []))
+            SPVconf("expcat",content.get("expCat", []))
+            SPVconf("subcat",content.get("subCat", []))
             return jsonify({"success": True})
         except Exception as e:
             print(f"Error occurred: {str(e)}")
