@@ -26,6 +26,7 @@ def health_check():
 
 
 @app.route("/get/list/<string:source>", methods=["GET"])
+@db_required
 def GetList(source):
     try:
         if source == "categories_exp":
@@ -59,6 +60,20 @@ def GetList(source):
                     "success": True,
                     "currencies": currencies,
                 }
+            )
+        elif source == "pb":
+            pb = Read("initpb")
+            payload = jsonify(
+                {
+                    "success": True,
+                    "data": pb,
+                }
+            )
+        elif source == "markers":
+            owners = Read("exowner")
+            types = Read("extype")
+            payload = jsonify(
+                {"success": True, "data": {"owners": owners, "types": types}}
             )
     except Exception as e:
         print(f"Error occurred: {str(e)}")
@@ -636,7 +651,7 @@ def DBCreate():
         return (jsonify({"success": True}), 200)
     except Exception as e:
         print("Error: " + str(e))
-        return (jsonify({"success": False, "message": f"{str(e)}"}))
+        return jsonify({"success": False, "message": f"{str(e)}"})
 
 
 @app.route("/spv", methods=["GET", "POST"])
@@ -684,6 +699,29 @@ def SPVControl():
             SPVconf("subcat", content.get("subCat", []))
             return jsonify({"success": True})
         except Exception as e:
+            print(f"Error occurred: {str(e)}")
+            error_message = str(e)
+            return (
+                jsonify(
+                    {
+                        "success": False,
+                        "message": error_message,
+                    }
+                ),
+                400,
+            )
+
+
+@app.route("/spv/pb/add", methods=["POST"])
+def AddPB():
+    content = request.get_json()
+    if content is None:
+        return "Error: No JSON data received", 400
+
+    try:
+        pass
+        # TODO: Use InitPB() function from baseScripts
+    except Exception as e:
             print(f"Error occurred: {str(e)}")
             error_message = str(e)
             return (

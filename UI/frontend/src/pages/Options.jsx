@@ -8,10 +8,227 @@ import Button from "react-bootstrap/esm/Button";
 import '../assets/styles/OptionsPageStyles.css';
 
 export function OptionsPBPage() {
+    const [personBanks, setPersonBanks] = useState([])
+    const [markers, setMarkers] = useState({ owners: [], types: [] })
+    const [currencyList, setCurrencyList] = useState([])
+    const [useOwnerInput, setUseOwnerInput] = useState(false)
+    const [useTypeInput, setUseTypeInput] = useState(false)
+
+    useEffect(() => {
+        document.title = "PB options"
+
+        // Fetch person banks data
+        fetch('/api/get/list/pb')
+            .then(response => response.json())
+            .then(data => {
+                if (data.redirect) {
+                    alert('Database is missing or corrupted. You will be redirected to the setup page.');
+                    window.location.href = data.redirect;
+                    return Promise.reject('Redirect initiated');
+                }
+
+                if (data.success) {
+                    setPersonBanks(data.data);
+                } else {
+                    console.error('Failed to fetch person banks:', data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching person banks:', error);
+            });
+
+        // Fetch markers data
+        fetch('/api/get/list/markers')
+            .then(response => response.json())
+            .then(data => {
+                if (data.redirect) {
+                    alert('Database is missing or corrupted. You will be redirected to the setup page.');
+                    window.location.href = data.redirect;
+                    return Promise.reject('Redirect initiated');
+                }
+
+                if (data.success) {
+                    setMarkers({ owners: data.data.owners || [], types: data.data.types || [] });
+                } else {
+                    console.error('Failed to fetch markers:', data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching markers:', error);
+            });
+
+        // Fetch currency list
+        fetch('/api/get/list/currency')
+            .then(response => response.json())
+            .then(data => {
+                if (data.redirect) {
+                    alert('Database is missing or corrupted. You will be redirected to the setup page.');
+                    window.location.href = data.redirect;
+                    return Promise.reject('Redirect initiated');
+                }
+
+                if (data.success) {
+                    setCurrencyList(data.currencies);
+                } else {
+                    console.error('Failed to fetch markers:', data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching markers:', error);
+            });
+    }, []);
+
+    const markPB = (e) => {
+        e.preventDefault();
+        // TODO: Form submission logic
+        console.log('Form submitted');
+    };
+
+    const addPB = (e) => {
+        e.preventDefault();
+
+        const form = e.target;
+        const formDataObj = new FormData(form);
+        const formObject = Object.fromEntries(formDataObj.entries());
+        const regex = /[!@#$%^&*()+={}[\]:;"'<>,.?/|\\]/;
+
+        if (regex.test(formObject.PersonBank)) {
+            alert("Person-bank name contains special characters!")
+            return false;
+        }
+        if (isNaN(parseFloat(formObject.Sum))) {
+            alert("Amount is Not A Number!")
+            return false;
+        }
+
+        fetch("/api/spv/pb/add", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formObject)
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.reload();
+                } else {
+                    alert('Error: ' + (data.message || 'Failed to add Person-bank'));
+                }
+            })
+            .catch(error => {
+                console.error('Unexpected error:', error);
+                alert('Unexpected error occurred');
+            });
+    };
+
     return (
         <>
             <Header />
             <div className="options-page container">
+                <div className="row">
+                    <h3>Modify markers</h3>
+                    <br />
+                    <p>
+                        Markers are used by system to understand <b>WHO</b> owns the account and what <b>TYPE</b> of account it is.
+                        Account without markers can be used, but it might not appear on balance sheet and be left out from calculation of some data.
+                    </p>
+                    <br />
+                    <Form noValidate id="mark-form" onSubmit={markPB}>
+                        <Row>
+                            <Col xl="4">
+                                <Form.Label htmlFor="select-pb">Person-Bank</Form.Label>
+                                <Form.Select id="select-pb" name="person-bank-select">
+                                    {personBanks && personBanks.map((pb, index) => (
+                                        <option key={index} value={pb}>{pb}</option>
+                                    ))}
+                                </Form.Select>
+                            </Col>
+                            <Col xl="4">
+                                <Form.Label htmlFor="select-owner">Owner</Form.Label>
+                                <div className="d-flex align-items-center">
+                                    {useOwnerInput ? (
+                                        <Form.Control type="text" id="input-owner" name="owner-input" />
+                                    ) : (
+                                        <Form.Select id="select-owner" name="owner-select">
+                                            {markers.owners.map((owner, index) => (
+                                                <option key={index} value={owner}>{owner}</option>
+                                            ))}
+                                        </Form.Select>
+                                    )}
+                                    <Button
+                                        variant="outline-secondary"
+                                        className="ms-2"
+                                        onClick={() => setUseOwnerInput(!useOwnerInput)}
+                                    >
+                                        {useOwnerInput ? 'Use Select' : 'Use Text'}
+                                    </Button>
+                                </div>
+                            </Col>
+                            <Col xl="4">
+                                <Form.Label htmlFor="select-type">Type</Form.Label>
+                                <div className="d-flex align-items-center">
+                                    {useTypeInput ? (
+                                        <Form.Control type="text" id="input-type" name="type-input" />
+                                    ) : (
+                                        <Form.Select id="select-type" name="type-select">
+                                            {markers.types.map((type, index) => (
+                                                <option key={index} value={type}>{type}</option>
+                                            ))}
+                                        </Form.Select>
+                                    )}
+                                    <Button
+                                        variant="outline-secondary"
+                                        className="ms-2"
+                                        onClick={() => setUseTypeInput(!useTypeInput)}
+                                    >
+                                        {useTypeInput ? 'Use Select' : 'Use Text'}
+                                    </Button>
+                                </div>
+                            </Col>
+                        </Row>
+                        <Row className="mt-3">
+                            <Col>
+                                <Button variant="primary" type="submit">
+                                    Update Markers
+                                </Button>
+                            </Col>
+                        </Row>
+                    </Form>
+                </div>
+                <br />
+                <div className="row">
+                    <h3>Add Person-Bank</h3>
+                    <Form noValidate id="pb-form" onSubmit={addPB}>
+                        <Col xl="2">
+                            <Form.Label htmlFor="input-pb">
+                                Enter Person-Bank account name. Name is <b>FINAL</b> and <b>CANNOT</b> be changed later
+                            </Form.Label>
+                            <Form.Control type="text" id="input-pb" name="PersonBank" />
+                        </Col>
+                        <Col xl="1">
+                            <Form.Label htmlFor="input-sum">
+                                Initial amount
+                            </Form.Label>
+                            <Form.Control type="text" id="input-sum" name="Sum" />
+                        </Col>
+                        <Col xl="1">
+                            <Form.Label htmlFor="input-curr">
+                                Select currency for Person-Bank
+                            </Form.Label>
+                            <Form.Select type="text" id="input-curr" name="Currency">
+                                {currencyList.map((currency, index) => (
+                                    <option value={currency} key={index}>{currency}</option>
+                                ))}
+                            </Form.Select>
+                        </Col>
+                        <Col xl="1">
+                            <Button variant="primary" type="submit" id="btn-add-pb">
+                                Add Person-Bank
+                            </Button>
+                        </Col>
+                    </Form>
+                </div>
             </div>
         </>
     )
@@ -28,6 +245,8 @@ export function OptionsDBPage() {
     const [subCatValues, setSubCatValues] = useState('');
 
     useEffect(() => {
+        document.title = "Database options";
+
         fetch('/api/spv')
             .then(response => response.json())
             .then(data => {
@@ -36,7 +255,7 @@ export function OptionsDBPage() {
                     const incCat = data.data.incomeCategories || [];
                     const expCat = data.data.expenseCategories || [];
                     const subCat = data.data.subCategories || [];
-                    
+
                     setCurrentLists({ curr, incCat, expCat, subCat });
                     setCurrencyValues(curr.join("\n"));
                     setIncCatValues(incCat.join("\n"));
