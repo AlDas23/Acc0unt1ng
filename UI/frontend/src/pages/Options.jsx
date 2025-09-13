@@ -13,6 +13,8 @@ export function OptionsPBPage() {
     const [currencyList, setCurrencyList] = useState([])
     const [useOwnerInput, setUseOwnerInput] = useState(false)
     const [useTypeInput, setUseTypeInput] = useState(false)
+    const [personBankName, setPersonBankName] = useState('');
+    const [submitStatus, setSubmitStatus] = useState('idle');
 
     useEffect(() => {
         document.title = "PB options"
@@ -111,7 +113,10 @@ export function OptionsPBPage() {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    window.location.reload();
+                    setSubmitStatus('success');
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 3000);
                 } else {
                     alert('Error: ' + (data.message || 'Failed to add Person-bank'));
                 }
@@ -136,7 +141,7 @@ export function OptionsPBPage() {
                     <br />
                     <Form noValidate id="mark-form" onSubmit={markPB}>
                         <Row>
-                            <Col xl="4">
+                            <Col xl="3">
                                 <Form.Label htmlFor="select-pb">Person-Bank</Form.Label>
                                 <Form.Select id="select-pb" name="person-bank-select">
                                     {personBanks && personBanks.map((pb, index) => (
@@ -144,7 +149,7 @@ export function OptionsPBPage() {
                                     ))}
                                 </Form.Select>
                             </Col>
-                            <Col xl="4">
+                            <Col xl="3">
                                 <Form.Label htmlFor="select-owner">Owner</Form.Label>
                                 <div className="d-flex align-items-center">
                                     {useOwnerInput ? (
@@ -158,14 +163,14 @@ export function OptionsPBPage() {
                                     )}
                                     <Button
                                         variant="outline-secondary"
-                                        className="ms-2"
+                                        className="ms-2 toggle-input"
                                         onClick={() => setUseOwnerInput(!useOwnerInput)}
                                     >
                                         {useOwnerInput ? 'Use Select' : 'Use Text'}
                                     </Button>
                                 </div>
                             </Col>
-                            <Col xl="4">
+                            <Col xl="3">
                                 <Form.Label htmlFor="select-type">Type</Form.Label>
                                 <div className="d-flex align-items-center">
                                     {useTypeInput ? (
@@ -179,7 +184,7 @@ export function OptionsPBPage() {
                                     )}
                                     <Button
                                         variant="outline-secondary"
-                                        className="ms-2"
+                                        className="ms-2 toggle-input"
                                         onClick={() => setUseTypeInput(!useTypeInput)}
                                     >
                                         {useTypeInput ? 'Use Select' : 'Use Text'}
@@ -199,34 +204,52 @@ export function OptionsPBPage() {
                 <br />
                 <div className="row">
                     <h3>Add Person-Bank</h3>
+                    <p>
+                        Person-Bank is name of account used for keeping balance.
+                        Person-Bank name should generally follow <i>Person</i> - <i>Bank</i> name convention and be unique.
+                        When adding Person-Bank, account must have a currency and initial sum for that currency.
+                        You can add multiple currencies to each accout by writing it's name again and selecting new currency.
+                    </p>
                     <Form noValidate id="pb-form" onSubmit={addPB}>
-                        <Col xl="2">
-                            <Form.Label htmlFor="input-pb">
-                                Enter Person-Bank account name. Name is <b>FINAL</b> and <b>CANNOT</b> be changed later
-                            </Form.Label>
-                            <Form.Control type="text" id="input-pb" name="PersonBank" />
-                        </Col>
-                        <Col xl="1">
-                            <Form.Label htmlFor="input-sum">
-                                Initial amount
-                            </Form.Label>
-                            <Form.Control type="text" id="input-sum" name="Sum" />
-                        </Col>
-                        <Col xl="1">
-                            <Form.Label htmlFor="input-curr">
-                                Select currency for Person-Bank
-                            </Form.Label>
-                            <Form.Select type="text" id="input-curr" name="Currency">
-                                {currencyList.map((currency, index) => (
-                                    <option value={currency} key={index}>{currency}</option>
-                                ))}
-                            </Form.Select>
-                        </Col>
-                        <Col xl="1">
-                            <Button variant="primary" type="submit" id="btn-add-pb">
-                                Add Person-Bank
-                            </Button>
-                        </Col>
+                        <Row>
+                            <Col xl="3">
+                                <Form.Label htmlFor="input-pb">
+                                    Person-Bank account name
+                                </Form.Label>
+                                <Form.Control type="text" id="input-pb" name="PersonBank" autoComplete="off" value={personBankName}
+                                    onChange={(e) => setPersonBankName(e.target.value)} />
+                            </Col>
+                            <Col xl="2">
+                                <Form.Label htmlFor="input-sum">
+                                    Initial amount
+                                </Form.Label>
+                                <Form.Control type="text" id="input-sum" name="Sum" autoComplete="off" />
+                            </Col>
+                            <Col xl="2">
+                                <Form.Label htmlFor="input-curr">
+                                    Currency for Person-Bank
+                                </Form.Label>
+                                <Form.Select type="text" id="input-curr" name="Currency">
+                                    {currencyList.map((currency, index) => (
+                                        <option value={currency} key={index}>{currency}</option>
+                                    ))}
+                                </Form.Select>
+                            </Col>
+                        </Row>
+                        <br />
+                        <Button
+                            variant={submitStatus === 'success' ? 'success' : 'primary'}
+                            type="submit"
+                            id="btn-add-pb"
+                            disabled={submitStatus === 'success'}
+                        >
+                            {submitStatus === 'success'
+                                ? 'Success!'
+                                : personBanks.some(pb => pb === personBankName)
+                                    ? 'Update Person-Bank'
+                                    : 'Add Person-Bank'}
+                            {/* BUG: Button does not render "Update Person-Bank" when adding existing person-bank */}
+                        </Button>
                     </Form>
                 </div>
             </div>
@@ -433,7 +456,7 @@ export function OptionsDBPage() {
                         </Modal.Footer>
                     </Modal>
                 </div>
-            </div >
+            </div>
         </>
     )
 }

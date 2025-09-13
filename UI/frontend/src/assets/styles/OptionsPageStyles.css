@@ -9,3 +9,12 @@
 #db-control-section {
     margin-top: 20px;
 }
+
+.toggle-input {
+    height: 40px;
+    width: 70%;
+}
+
+#mark-form {
+    margin-left: 8px;
+}

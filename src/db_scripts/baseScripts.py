@@ -409,6 +409,11 @@ def Read(x):
         elif x == "initpb":
             c.execute("SELECT * FROM Init_PB ORDER BY person_bank DESC")
             return c.fetchall()
+        elif x == "initpbnames":
+            c.execute(
+                "SELECT DISTINCT person_bank FROM Init_PB ORDER BY person_bank DESC"
+            )
+            return c.fetchall()
         elif x == "allacc":
             c.execute(
                 """
@@ -949,29 +954,27 @@ def Re_Calculate_deposit():
         conn.commit()
 
 
-def InitPB(new_pb):
+def InitPB(name, sum, curr):
     # Person_bank initialization function
     with sqlite3.connect(dbPath) as conn:
         c = conn.cursor()
 
-        new_pb = new_pb.split(",")
-
         c.execute(
             "SELECT 1 FROM Init_PB WHERE person_bank = ? AND currency = ?",
-            (new_pb[0], new_pb[2]),
+            (name, curr),
         )
         exists = c.fetchone()
         if exists != None:
-            print("Record already exists!\n\n")
-            return
+            raise Exception("PB - Currency combination already exists!")
         else:
             c.execute(
                 "INSERT INTO Init_PB (person_bank, sum, currency) VALUES (?, ?, ?)",
-                (new_pb[0], new_pb[1], new_pb[2]),
+                (name, sum, curr),
             )
-            print("Success!\n\n")
 
         conn.commit()
+
+    return
 
 
 def Mark(marker, mode):

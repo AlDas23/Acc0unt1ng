@@ -3,6 +3,7 @@ from flask_cors import CORS
 from db_scripts.script import *
 from db_scripts.baseScripts import (
     Add,
+    InitPB,
     MarkerRead,
     Re_Calculate_deposit,
     Read,
@@ -62,7 +63,7 @@ def GetList(source):
                 }
             )
         elif source == "pb":
-            pb = Read("initpb")
+            pb = Read("initpbnames")
             payload = jsonify(
                 {
                     "success": True,
@@ -719,17 +720,17 @@ def AddPB():
         return "Error: No JSON data received", 400
 
     try:
-        pass
-        # TODO: Use InitPB() function from baseScripts
+        InitPB(content["PersonBank"], content["Sum"], content["Currency"])
+        return jsonify({"success": True})
     except Exception as e:
-            print(f"Error occurred: {str(e)}")
-            error_message = str(e)
-            return (
-                jsonify(
-                    {
-                        "success": False,
-                        "message": error_message,
-                    }
-                ),
-                400,
-            )
+        print(f"Error occurred: {str(e)}")
+        error_message = str(e)
+        return (
+            jsonify(
+                {
+                    "success": False,
+                    "message": error_message,
+                }
+            ),
+            400,
+        )
