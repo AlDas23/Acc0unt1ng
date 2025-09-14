@@ -14,7 +14,8 @@ export function OptionsPBPage() {
     const [useOwnerInput, setUseOwnerInput] = useState(false)
     const [useTypeInput, setUseTypeInput] = useState(false)
     const [personBankName, setPersonBankName] = useState('');
-    const [submitStatus, setSubmitStatus] = useState('idle');
+    const [submitStatusPB, setSubmitStatusPB] = useState('idle');
+    const [submitStatusMARK, setSubmitStatusMARK] = useState('idle');
 
     useEffect(() => {
         document.title = "PB options"
@@ -82,8 +83,44 @@ export function OptionsPBPage() {
 
     const markPB = (e) => {
         e.preventDefault();
-        // TODO: Form submission logic
-        console.log('Form submitted');
+
+        const form = e.target;
+        const formDataObj = new FormData(form);
+        const formObject = Object.fromEntries(formDataObj.entries());
+        const regex = /[!@#$%^&*()+={}[\]:;"'<>,.?/|\\]/;
+
+        if (regex.test(formObject.Owner) || regex.test(formObject.Type)) {
+            alert("Owner/Type name contains special characters!")
+            return false;
+        }
+
+        if (formObject.Type === 'deposit') {
+            alert("Prohibited type: deposit")
+            return false;
+        }
+
+        fetch("/api/spv/mark", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formObject)
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    setSubmitStatusMARK('success');
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 3000);
+                } else {
+                    alert('Error: ' + (data.message || 'Failed to mark Person-bank'));
+                }
+            })
+            .catch(error => {
+                console.error('Unexpected error:', error);
+                alert('Unexpected error occurred');
+            });
     };
 
     const addPB = (e) => {
@@ -113,7 +150,7 @@ export function OptionsPBPage() {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    setSubmitStatus('success');
+                    setSubmitStatusPB('success');
                     setTimeout(() => {
                         window.location.reload();
                     }, 3000);
@@ -143,7 +180,7 @@ export function OptionsPBPage() {
                         <Row>
                             <Col xl="3">
                                 <Form.Label htmlFor="select-pb">Person-Bank</Form.Label>
-                                <Form.Select id="select-pb" name="person-bank-select">
+                                <Form.Select id="select-pb" name="PersonBank">
                                     {personBanks && personBanks.map((pb, index) => (
                                         <option key={index} value={pb}>{pb}</option>
                                     ))}
@@ -153,9 +190,9 @@ export function OptionsPBPage() {
                                 <Form.Label htmlFor="select-owner">Owner</Form.Label>
                                 <div className="d-flex align-items-center">
                                     {useOwnerInput ? (
-                                        <Form.Control type="text" id="input-owner" name="owner-input" />
+                                        <Form.Control type="text" id="input-owner" name="Owner" />
                                     ) : (
-                                        <Form.Select id="select-owner" name="owner-select">
+                                        <Form.Select id="select-owner" name="Owner">
                                             {markers.owners.map((owner, index) => (
                                                 <option key={index} value={owner}>{owner}</option>
                                             ))}
@@ -174,9 +211,9 @@ export function OptionsPBPage() {
                                 <Form.Label htmlFor="select-type">Type</Form.Label>
                                 <div className="d-flex align-items-center">
                                     {useTypeInput ? (
-                                        <Form.Control type="text" id="input-type" name="type-input" />
+                                        <Form.Control type="text" id="input-type" name="Type" />
                                     ) : (
-                                        <Form.Select id="select-type" name="type-select">
+                                        <Form.Select id="select-type" name="Type">
                                             {markers.types.map((type, index) => (
                                                 <option key={index} value={type}>{type}</option>
                                             ))}
@@ -194,8 +231,10 @@ export function OptionsPBPage() {
                         </Row>
                         <Row className="mt-3">
                             <Col>
-                                <Button variant="primary" type="submit">
-                                    Update Markers
+                                <Button type="submit"
+                                    variant={submitStatusMARK === "success" ? "success" : "primary"}
+                                >
+                                    {submitStatusMARK === "success" ? "Success!" : "Update Markers"}
                                 </Button>
                             </Col>
                         </Row>
@@ -238,12 +277,12 @@ export function OptionsPBPage() {
                         </Row>
                         <br />
                         <Button
-                            variant={submitStatus === 'success' ? 'success' : 'primary'}
+                            variant={submitStatusPB === 'success' ? 'success' : 'primary'}
                             type="submit"
                             id="btn-add-pb"
-                            disabled={submitStatus === 'success'}
+                            disabled={submitStatusPB === 'success'}
                         >
-                            {submitStatus === 'success'
+                            {submitStatusPB === 'success'
                                 ? 'Success!'
                                 : personBanks.some(pb => pb === personBankName)
                                     ? 'Update Person-Bank'

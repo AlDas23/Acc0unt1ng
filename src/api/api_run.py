@@ -4,6 +4,7 @@ from db_scripts.script import *
 from db_scripts.baseScripts import (
     Add,
     InitPB,
+    Mark,
     MarkerRead,
     Re_Calculate_deposit,
     Read,
@@ -721,6 +722,29 @@ def AddPB():
 
     try:
         InitPB(content["PersonBank"], content["Sum"], content["Currency"])
+        return jsonify({"success": True})
+    except Exception as e:
+        print(f"Error occurred: {str(e)}")
+        error_message = str(e)
+        return (
+            jsonify(
+                {
+                    "success": False,
+                    "message": error_message,
+                }
+            ),
+            400,
+        )
+
+
+@app.route("/spv/mark", methods=["POST"])
+def MarkPB():
+    content = request.get_json()
+    if content is None:
+        return "Error: No JSON data received", 400
+
+    try:
+        Mark(content["PersonBank"], content["Owner"], content["Type"])
         return jsonify({"success": True})
     except Exception as e:
         print(f"Error occurred: {str(e)}")

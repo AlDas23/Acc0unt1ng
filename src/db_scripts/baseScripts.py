@@ -693,7 +693,7 @@ def Read(x):
             return c.fetchall()
 
         elif x == "extype":
-            c.execute("SELECT DISTINCT type FROM Marker_type")
+            c.execute("SELECT DISTINCT type FROM Marker_type WHERE type != 'deposit'")
             return c.fetchall()
         elif x == "exowner":
             c.execute("SELECT DISTINCT owner FROM Marker_owner")
@@ -977,52 +977,56 @@ def InitPB(name, sum, curr):
     return
 
 
-def Mark(marker, mode):
+def Mark(pb, owner=None, type=None):
     # Function pushing special record into DB with marker: whose or what type of account is this
+    if owner == None and type == None:
+        print("At least one marker is required")
+        return 1
+
     with sqlite3.connect(dbPath) as conn:
         c = conn.cursor()
 
-        marker = marker.split(",")
         c.execute(
-            "SELECT 1 FROM (Init_PB pb, deposit pbd) WHERE pb.person_bank = ? OR pbd.name = ?",
-            (marker[0], marker[0]),
+            "SELECT 1 FROM Init_PB pb WHERE pb.person_bank = ?",
+            (pb,),
         )
         exists = c.fetchone()
         if exists is None:
             print("Account record does not exist!\n\n")
             return
 
-        if mode == "type":
-            c.execute("SELECT 1 FROM Marker_type WHERE bank_rec = ?", (marker[0],))
+        if type != None:
+            c.execute("SELECT 1 FROM Marker_type WHERE bank_rec = ?", (pb,))
             exists = c.fetchone()
             if exists != None:
                 c.execute(
                     "UPDATE Marker_type SET bank_rec = ?, type = ? WHERE bank_rec = ?",
-                    (marker[0], marker[1], marker[0]),
+                    (pb, type, pb),
                 )
             else:
                 c.execute(
                     "INSERT INTO Marker_type (bank_rec, type) VALUES (?, ?)",
-                    (marker[0], marker[1]),
+                    (pb, type),
                 )
                 print("Success!\n\n")
 
-        elif mode == "owner":
-            c.execute("SELECT 1 FROM Marker_owner WHERE bank_rec = ?", (marker[0],))
+        if owner != None:
+            c.execute("SELECT 1 FROM Marker_owner WHERE bank_rec = ?", (pb,))
             exists = c.fetchone()
             if exists != None:
                 c.execute(
                     "UPDATE Marker_owner SET bank_rec = ?, owner = ? WHERE bank_rec = ?",
-                    (marker[0], marker[1], marker[0]),
+                    (pb, owner, pb),
                 )
             else:
                 c.execute(
                     "INSERT INTO Marker_owner (bank_rec, owner) VALUES (?, ?)",
-                    (marker[0], marker[1]),
+                    (pb, owner),
                 )
-                print("Success!\n\n")
 
         conn.commit()
+
+        return 0
 
 
 def DelPB(pb):
