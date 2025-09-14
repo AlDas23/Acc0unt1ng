@@ -40,7 +40,7 @@ function Forms({ options }) {
             <Row>
                 <Col xl="2">
                     <Form.Label htmlFor="inputDate">
-                        Comment
+                        Date
                     </Form.Label>
                     <input type="date" id="inputDate" name="Date" defaultValue={new Date().toISOString().split('T')[0]} />
                 </Col>
@@ -227,7 +227,7 @@ export default function CurrencyRatesPage() {
             <Header />
             <div className="currency-rates-page container">
                 <h1>Currency Rates</h1>
-                <div className="row">
+                <div className="row" id="cr-forms">
                     {options && (<Forms
                         options={options}
                     />)}
@@ -243,7 +243,7 @@ export default function CurrencyRatesPage() {
                             numberColumns={["2-4"]}
                         />)}
                     </div>
-                    <div className="col-md-8">
+                    <div className="col-md-8" id="plot-col">
                         <h3>Currency dynamics plot</h3>
                         {imageUrl && (<img id="CurrRatePlot" src={imageUrl} alt="Currency dynamics plot" />)}
                     </div>
