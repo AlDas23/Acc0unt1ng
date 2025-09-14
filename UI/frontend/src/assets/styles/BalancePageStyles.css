@@ -1,0 +1,60 @@
+.balance-page {
+    width: 100%;
+    margin-top: 16px;
+    margin-left: 20px;
+    margin-right: 20px;
+    margin-bottom: 20px;
+}
+
+h3 {
+    margin-left: 16px;
+    margin-bottom: 12px;
+}
+
+#curr-table,
+#owner-table,
+#type-table,
+#curr-type-table {
+    width: 80%;
+}
+
+#balance-table {
+    width: 90%;
+}
+
+#curr-table .ht-cell,
+#owner-table .ht-cell,
+#type-table .ht-cell,
+#curr-type-table .ht-cell,
+#balance-table .ht-cell {
+    width: fit-content;
+    text-align: right;
+    margin-top: 8px;
+    padding-left: 6px;
+    padding-right: 6px;
+    padding-top: 1px;
+    padding-bottom: 1px;
+}
+
+
+.balance-page>.row>.col,
+.row>[class^="col-"] {
+    margin-bottom: 0 !important;
+    padding-right: 4px;
+    padding-left: 4px;
+}
+
+.toggleableTitle {
+    display: inline-block;
+    padding-right: 0px;
+}
+
+.toggleableTitle:hover {
+    cursor: pointer;
+    background-color: grey;
+}
+
+#owner-filter,
+#type-filter {
+    margin-left: 10px;
+}
