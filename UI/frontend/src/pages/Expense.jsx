@@ -202,8 +202,8 @@ export default function ExpensePage() {
         };
 
         const endpoint = editMode
-            ? `/api/edit/expense/${editingId}`
-            : `/api/add/expense`;
+            ? `/edit/expense/${editingId}`
+            : `/add/expense`;
 
         // Send POST request
         fetch(endpoint, {
@@ -250,7 +250,7 @@ export default function ExpensePage() {
     }
 
     const GetOptions = () => {
-        return fetch(`/api/get/options/expense`)
+        return fetch(`/get/options/expense`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
@@ -279,7 +279,7 @@ export default function ExpensePage() {
     }
 
     const GetHistory = () => {
-        return fetch(`/api/get/history/expense`)
+        return fetch(`/get/history/expense`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);

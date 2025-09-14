@@ -114,8 +114,8 @@ export default function BalancePage() {
 
     // Fetch data based on mode
     const GetData = (mode, table = null) => {
-        const endpointStandard = `/api/get/balance/tables`;
-        const endpointBalance = `/api/get/balance/balance`;
+        const endpointStandard = `/get/balance/tables`;
+        const endpointBalance = `/get/balance/balance`;
 
         if (mode === "standard") {
             return fetch(endpointStandard, {
@@ -189,7 +189,7 @@ export default function BalancePage() {
 
     // Fetch filter options
     const GetOptions = () => {
-        return fetch("/api/get/options/balance")
+        return fetch("/get/options/balance")
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);

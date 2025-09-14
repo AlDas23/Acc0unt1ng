@@ -17,7 +17,7 @@ function Forms({ options }) {
             const formObject = Object.fromEntries(formDataObj.entries());
 
             // Send POST request
-            fetch("/api/add/currencyrates", {
+            fetch("/add/currencyrates", {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -115,7 +115,7 @@ export default function CurrencyRatesPage() {
     }, []);
 
     const GetOptions = () => {
-        return fetch(`/api/get/options/currencyrates`)
+        return fetch(`/get/options/currencyrates`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
@@ -143,7 +143,7 @@ export default function CurrencyRatesPage() {
     }
 
     const GetHistory = () => {
-        return fetch(`/api/get/history/currencyrates`)
+        return fetch(`/get/history/currencyrates`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
@@ -171,7 +171,7 @@ export default function CurrencyRatesPage() {
     }
 
     const GetPlot = () => {
-        return fetch(`/api/get/plot/currencyrates`)
+        return fetch(`/get/plot/currencyrates`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
