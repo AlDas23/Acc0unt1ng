@@ -1,4 +1,5 @@
-from flask import Flask, jsonify, request
+import os
+from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 from db_scripts.script import *
 from db_scripts.baseScripts import (
@@ -17,14 +18,19 @@ from helpers.decorators import db_required
 from helpers.genPlot import plot_to_img_tag
 from api.api_invest import investPage
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder="../../UI/frontend/dist", static_url_path="/")
 app.register_blueprint(investPage, url_prefix="/")
 CORS(app, resources=r"/*")
 
 
-@app.route("/health", methods=["GET"])
-def health_check():
-    return jsonify({"status": "ok"}), 200
+@app.route("/", defaults={"path": ""})
+@app.route("/<path:path>")
+def serve_react_app(path):
+    if path != "" and os.path.exists(os.path.join(app.static_folder, path)):
+        return send_from_directory(app.static_folder, path)
+    else:
+        return send_from_directory(app.static_folder, "index.html")
+
 
 
 @app.route("/get/list/<string:source>", methods=["GET"])

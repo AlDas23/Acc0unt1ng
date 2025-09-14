@@ -1,4 +1,5 @@
 flask
+pyngrok
 Jinja2
 pandas
 matplotlib

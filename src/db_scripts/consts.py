@@ -1,9 +1,9 @@
-dbPath = "./db/Main.db"
-SPVcatIncPath = "./db/catInc.csv"
-SPVcatExpPath = "./db/catExp.csv"
-SPVsubcatPath = "./db/subcat.csv"
-SPVcurrPath = "./db/curr.csv"
-SPVstockPath = "./db/stock.csv"
+dbPath = "/content/drive/MyDrive/Acc0unt1ng/Main.db"
+SPVcatIncPath = "/content/drive/MyDrive/Acc0unt1ng/catInc.csv"
+SPVcatExpPath = "/content/drive/MyDrive/Acc0unt1ng/catExp.csv"
+SPVsubcatPath = "/content/drive/MyDrive/Acc0unt1ng/subcat.csv"
+SPVcurrPath = "/content/drive/MyDrive/Acc0unt1ng/curr.csv"
+SPVstockPath = "/content/drive/MyDrive/Acc0unt1ng/stock.csv"
 
 keys = [
     "date",
@@ -49,4 +49,3 @@ dp_keys = [
     "comment",
     "isOpen",
 ]
-curr_keys = ["date", "RON", "UAH", "EUR", "USD", "GBP", "CHF", "HUF"]
