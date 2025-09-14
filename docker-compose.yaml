@@ -7,7 +7,7 @@ services:
     ports:
       - "5050:5050"
     volumes:
-      - ./db:/backend/db
+      - ./content/drive/MyDrive/Acc0unt1ng:/backend/db
     networks:
       - standard-network
     healthcheck:
