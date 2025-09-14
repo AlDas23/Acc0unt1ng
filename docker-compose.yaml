@@ -1,0 +1,35 @@
+services:
+  backend:
+    build:
+      context: ./src
+      dockerfile: Dockerfile
+    container_name: backend-service
+    ports:
+      - "5050:5050"
+    volumes:
+      - ./db:/backend/db
+    networks:
+      - standard-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5050/health"]
+      interval: 1m
+      timeout: 15s
+      retries: 2
+      start_period: 10s
+
+  frontend:
+    build:
+      context: ./UI/frontend
+      dockerfile: Dockerfile
+    container_name: frontend-service
+    ports:
+      - "80:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - standard-network
+  
+networks:
+  standard-network:
+    driver: bridge

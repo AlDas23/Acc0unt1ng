@@ -1,0 +1,59 @@
+.currRate-page {
+    width: 100%;
+    margin-top: 16px;
+    margin-left: 20px;
+    margin-right: 20px;
+    margin-bottom: 20px;
+}
+
+h3 {
+    margin-left: 16px;
+    margin-bottom: 18px;
+}
+
+#CurrRateHistoryTable .ht-cell {
+    width: max-content;
+    text-align: center;
+    margin-top: 8px;
+    padding-left: 12px;
+    padding-right: 12px;
+    padding-top: 1px;
+    padding-bottom: 1px;
+}
+
+#CurrRateHistoryTable {
+    width: 100%;
+}
+
+
+.form {
+    padding: 8px 0 !important;
+}
+
+.form .row>.col,
+.form .row>[class^="col-"] {
+    margin-bottom: 0 !important;
+    padding-right: 4px;
+    padding-left: 4px;
+}
+
+.form label {
+    margin-bottom: 4px;
+}
+
+#inputDate {
+    height: 36px;
+    width: 100%;
+}
+
+#SubmitButton {
+    margin-top: 16px;
+    width: 10%;
+}
+
+#CurrRatePlot {
+    display: block;
+    margin: 0 auto;
+    max-width: 100%;
+    height: auto;
+}
