@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { HistoryTable } from "../commonComponents/Common";
+import { useNavigate } from "react-router-dom";
 import Header from "../commonComponents/Header";
 import Button from 'react-bootstrap/Button';
 import Col from 'react-bootstrap/Col';
@@ -75,6 +76,8 @@ export default function CurrencyRatesPage() {
     const [error, setError] = useState(null);
     const [imageUrl, setImageUrl] = useState(null);
 
+    const navigate = useNavigate();
+
     useEffect(() => {
         document.title = "Currency Rates";
     }, []);
@@ -125,7 +128,7 @@ export default function CurrencyRatesPage() {
             .then(data => {
                 if (data.redirect) {
                     alert('Database is missing or corrupted. You will be redirected to the setup page.');
-                    window.location.href = data.redirect;
+                    navigate(data.redirect);
                     return Promise.reject('Redirect initiated');
                 }
 
@@ -153,7 +156,7 @@ export default function CurrencyRatesPage() {
             .then(data => {
                 if (data.redirect) {
                     alert('Database is missing or corrupted. You will be redirected to the setup page.');
-                    window.location.href = data.redirect;
+                    navigate(data.redirect);
                     return Promise.reject('Redirect initiated');
                 }
 
@@ -181,7 +184,7 @@ export default function CurrencyRatesPage() {
             .then(data => {
                 if (data.redirect) {
                     alert('Database is missing or corrupted. You will be redirected to the setup page.');
-                    window.location.href = data.redirect;
+                    navigate(data.redirect);
                     return Promise.reject('Redirect initiated');
                 }
 

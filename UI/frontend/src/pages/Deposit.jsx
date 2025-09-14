@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { HistoryTable } from "../commonComponents/Common";
+import { useNavigate } from "react-router-dom";
 import Header from "../commonComponents/Header";
 import Button from 'react-bootstrap/Button';
 import Col from 'react-bootstrap/Col';
@@ -154,6 +155,8 @@ export default function DepositPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
+    const navigate = useNavigate();
+
     useEffect(() => {
         document.title = "Deposit Records";
     }, []);
@@ -205,7 +208,7 @@ export default function DepositPage() {
                     return data.options;
                 } else if (data.redirect) {
                     alert('Database is missng or corrupted. You will be redirected to the setup page.');
-                    window.location.href = data.redirect;
+                    navigate(data.redirect);
                 } else {
                     throw new Error(data.message || 'Failed to load options');
                 }
@@ -231,7 +234,7 @@ export default function DepositPage() {
                         return data.history;
                     } else if (data.redirect) {
                         alert('Database is missng or corrupted. You will be redirected to the setup page.');
-                        window.location.href = data.redirect;
+                        navigate(data.redirect);
                     } else {
                         throw new Error(data.message || 'Failed to load history');
                     }
@@ -254,7 +257,7 @@ export default function DepositPage() {
                         return data.history;
                     } else if (data.redirect) {
                         alert('Database is missng or corrupted. You will be redirected to the setup page.');
-                        window.location.href = data.redirect;
+                        navigate(data.redirect);
                     } else {
                         throw new Error(data.message || 'Failed to load history');
                     }

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Header from "../commonComponents/Header";
 import Button from 'react-bootstrap/Button';
 import "../assets/styles/ReportsPageStyles.css";
@@ -48,6 +49,8 @@ export default function ReportsPage() {
     const [tableData, setTableData] = useState(null);
     const [categories, setCategories] = useState([]);
 
+    const navigate = useNavigate();
+
     useEffect(() => {
         document.title = "Reports";
         // Fetch categories from backend when component mounts
@@ -69,7 +72,7 @@ export default function ReportsPage() {
             .then(data => {
                 if (data.redirect) {
                     alert('Database is missing or corrupted. You will be redirected to the setup page.');
-                    window.location.href = data.redirect;
+                    navigate(data.redirect);
                     return Promise.reject('Redirect initiated');
                 }
 

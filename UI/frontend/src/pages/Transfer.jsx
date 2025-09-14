@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { HistoryTableWithEdit } from "../commonComponents/Common";
+import { useNavigate } from "react-router-dom";
 import Header from "../commonComponents/Header";
 import Button from 'react-bootstrap/Button';
 import Col from 'react-bootstrap/Col';
@@ -454,6 +455,8 @@ export default function TransferPage() {
     const [editMode, setEditMode] = useState({ isEditing: false, id: null, type: null });
     const [selectedTable, setSelectedTable] = useState('standard');
 
+    const navigate = useNavigate();
+
     useEffect(() => {
         // Fetch options
         GetOptions()
@@ -601,7 +604,7 @@ export default function TransferPage() {
             .then(data => {
                 if (data.redirect) {
                     alert('Database is missing or corrupted. You will be redirected to the setup page.');
-                    window.location.href = data.redirect;
+                    navigate(data.redirect);
                     return Promise.reject('Redirect initiated');
                 }
 
@@ -635,7 +638,7 @@ export default function TransferPage() {
             .then(data => {
                 if (data.redirect) {
                     alert('Database is missing or corrupted. You will be redirected to the setup page.');
-                    window.location.href = data.redirect;
+                    navigate(data.redirect);
                     return Promise.reject('Redirect initiated');
                 }
 

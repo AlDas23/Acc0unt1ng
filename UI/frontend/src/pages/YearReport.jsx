@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { HistoryTable } from "../commonComponents/Common"
+import { useNavigate } from "react-router-dom";
 import Header from "../commonComponents/Header";
 import '../assets/styles/ReportsPageStyles.css';
 
@@ -12,6 +13,8 @@ export default function YearReportPage() {
         expense: [],
         total: []
     });
+
+    const navigate = useNavigate();
 
     useEffect(() => {
         document.title = "Yearly Report";
@@ -63,7 +66,7 @@ export default function YearReportPage() {
             .then(data => {
                 if (data.redirect) {
                     alert('Database is missing or corrupted. You will be redirected to the setup page.');
-                    window.location.href = data.redirect;
+                    navigate(data.redirect);
                     return Promise.reject('Redirect initiated');
                 }
 
@@ -93,7 +96,7 @@ export default function YearReportPage() {
             .then(data => {
                 if (data.redirect) {
                     alert('Database is missing or corrupted. You will be redirected to the setup page.');
-                    window.location.href = data.redirect;
+                    navigate(data.redirect);
                     return Promise.reject('Redirect initiated');
                 }
 

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { HistoryTableWithEdit } from "../commonComponents/Common";
+import { useNavigate } from "react-router-dom";
 import Header from "../commonComponents/Header";
 import Button from 'react-bootstrap/Button';
 import Col from 'react-bootstrap/Col';
@@ -148,6 +149,8 @@ export default function ExpensePage() {
     const [editMode, setEditMode] = useState(false);
     const [editingId, setEditingId] = useState(null);
 
+    const navigate = useNavigate();
+
     useEffect(() => {
         document.title = "Expense Records";
     }, []);
@@ -261,7 +264,7 @@ export default function ExpensePage() {
             .then(data => {
                 if (data.redirect) {
                     alert('Database is missing or corrupted. You will be redirected to the setup page.');
-                    window.location.href = data.redirect;
+                    navigate(data.redirect);
                     return Promise.reject('Redirect initiated');
                 }
 
@@ -289,7 +292,7 @@ export default function ExpensePage() {
             .then(data => {
                 if (data.redirect) {
                     alert('Database is missing or corrupted. You will be redirected to the setup page.');
-                    window.location.href = data.redirect;
+                    navigate(data.redirect);
                     return Promise.reject('Redirect initiated');
                 }
 

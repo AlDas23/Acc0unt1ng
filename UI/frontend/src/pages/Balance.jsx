@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { HistoryTable } from "../commonComponents/Common";
+import { useNavigate } from "react-router-dom";
 import Header from "../commonComponents/Header";
 import "../assets/styles/BalancePageStyles.css";
 
@@ -48,6 +49,8 @@ export default function BalancePage() {
     const [groupedData, setGroupedData] = useState({ currTable: [], ownerTable: [], typeTable: [], currTypeTable: [] });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+
+    const navigate = useNavigate();
 
     // Fetch initial data and options
     useEffect(() => {
@@ -135,7 +138,7 @@ export default function BalancePage() {
                 .then(data => {
                     if (data.redirect) {
                         alert('Database is missing or corrupted. You will be redirected to the setup page.');
-                        window.location.href = data.redirect;
+                        navigate(data.redirect);
                         return Promise.reject('Redirect initiated');
                     }
 
@@ -169,7 +172,7 @@ export default function BalancePage() {
                 .then(data => {
                     if (data.redirect) {
                         alert('Database is missing or corrupted. You will be redirected to the setup page.');
-                        window.location.href = data.redirect;
+                        navigate(data.redirect);
                         return Promise.reject('Redirect initiated');
                     }
 
@@ -200,7 +203,7 @@ export default function BalancePage() {
             .then(data => {
                 if (data.redirect) {
                     alert('Database is missing or corrupted. You will be redirected to the setup page.');
-                    window.location.href = data.redirect;
+                    navigate(data.redirect);
                     return Promise.reject('Redirect initiated');
                 }
 

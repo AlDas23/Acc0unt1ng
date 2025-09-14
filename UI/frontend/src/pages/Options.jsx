@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Header from "../commonComponents/Header";
 import Col from 'react-bootstrap/Col';
 import Form from 'react-bootstrap/Form';
@@ -17,6 +18,8 @@ export function OptionsPBPage() {
     const [submitStatusPB, setSubmitStatusPB] = useState('idle');
     const [submitStatusMARK, setSubmitStatusMARK] = useState('idle');
 
+    const navigate = useNavigate();
+
     useEffect(() => {
         document.title = "PB options"
 
@@ -26,7 +29,7 @@ export function OptionsPBPage() {
             .then(data => {
                 if (data.redirect) {
                     alert('Database is missing or corrupted. You will be redirected to the setup page.');
-                    window.location.href = data.redirect;
+                    navigate(data.redirect);
                     return Promise.reject('Redirect initiated');
                 }
 
@@ -46,7 +49,7 @@ export function OptionsPBPage() {
             .then(data => {
                 if (data.redirect) {
                     alert('Database is missing or corrupted. You will be redirected to the setup page.');
-                    window.location.href = data.redirect;
+                    navigate(data.redirect);
                     return Promise.reject('Redirect initiated');
                 }
 
@@ -66,7 +69,7 @@ export function OptionsPBPage() {
             .then(data => {
                 if (data.redirect) {
                     alert('Database is missing or corrupted. You will be redirected to the setup page.');
-                    window.location.href = data.redirect;
+                    navigate(data.redirect);
                     return Promise.reject('Redirect initiated');
                 }
 
