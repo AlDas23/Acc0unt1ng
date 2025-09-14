@@ -4,16 +4,11 @@ A python based project for managing accounting.
 
 ## Getting started
 
-### Requirements
-
-* Docker
-* Docker Compose
-
-Run notebook from <a target="_blank" href="https://colab.research.google.com/github/AlDas23/Acc0unt1ng/blob/colab/Acc0unt1ng.ipynb">
+Run notebook: <a target="_blank" href="https://colab.research.google.com/github/AlDas23/Acc0unt1ng/blob/colab/Acc0unt1ng.ipynb">
   <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
 </a>
 
-Run Setup cell after acquiring cloud machine (always).
+Run Setup cell after acquiring cloud machine.
 
 Paste your ngrok authtoken into "ngrok_authtoken" field and run webui. If you want notebook to remember that authtoken, after pasting it into the field, you will need to save that notebook as your own copy.
 
@@ -28,6 +23,7 @@ After installing requirements using Colab cell, you will need to add some parame
 There are 4 .csv files that need to be initialized/placed into the *Acc0unt1ng* folder on your drive.
 
 ![dbPreview](preview/dbPreview.png)
+
 Each of them should have next structure:
 
 ![csvStructure](preview/csvStructure.png)
@@ -35,7 +31,7 @@ Each of them should have next structure:
 Each currency/category/sub-category name is written on the new line
 and the last row should **should not** be empty line, otherwise it would count as additional variable name.
 
-If you would prefer to not create those files but let the app do it for you, it is possible to configure all of those csv's using *Terminal UI* cell.
+If you would prefer to not create those files but let the app do it for you, it is possible to configure all of those csv's using *Database Options* in Web-interface.
 
 ![terminalSPVPreview](preview/DatabseOptions.jpg)
 
