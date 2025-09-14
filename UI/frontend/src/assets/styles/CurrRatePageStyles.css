@@ -1,4 +1,4 @@
-.currRate-page {
+.currency-rates-page {
     width: 100%;
     margin-top: 16px;
     margin-left: 20px;
@@ -8,7 +8,6 @@
 
 h3 {
     margin-left: 16px;
-    margin-bottom: 18px;
 }
 
 #CurrRateHistoryTable .ht-cell {
@@ -37,6 +36,10 @@ h3 {
     padding-left: 4px;
 }
 
+#cr-forms {
+    padding-left: 20px;
+}
+
 .form label {
     margin-bottom: 4px;
 }
@@ -55,5 +58,6 @@ h3 {
     display: block;
     margin: 0 auto;
     max-width: 100%;
+    padding-left: 10px;
     height: auto;
 }
