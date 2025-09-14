@@ -18,12 +18,12 @@ from helpers.decorators import db_required
 from helpers.genPlot import plot_to_img_tag
 from api.api_invest import investPage
 
-app = Flask(__name__, static_folder="../../UI/frontend/dist", static_url_path="/")
+app = Flask(__name__, static_folder="../../UI/frontend/dist", static_url_path="")
 app.register_blueprint(investPage, url_prefix="/")
 CORS(app, resources=r"/*")
 
 
-@app.route("/get/list/<string:source>", methods=["GET"])
+@app.route("/api/get/list/<string:source>", methods=["GET"])
 @db_required
 def GetList(source):
     try:
@@ -89,7 +89,7 @@ def GetList(source):
         return payload
 
 
-@app.route("/get/options/<string:source>", methods=["GET"])
+@app.route("/api/get/options/<string:source>", methods=["GET"])
 @db_required
 def GetOptions(source):
     try:
@@ -160,7 +160,7 @@ def GetOptions(source):
         return payload
 
 
-@app.route("/get/history/<string:source>", methods=["GET"])
+@app.route("/api/get/history/<string:source>", methods=["GET"])
 @db_required
 def GetHistory(source):
     try:
@@ -203,7 +203,7 @@ def GetHistory(source):
         return payload
 
 
-@app.route("/get/plot/<string:source>", methods=["GET"])
+@app.route("/api/get/plot/<string:source>", methods=["GET"])
 @db_required
 def GetPlot(source):
     if source == "currencyrates":
@@ -227,7 +227,7 @@ def GetPlot(source):
             return payload
 
 
-@app.route("/add/expense", methods=["POST"])
+@app.route("/api/add/expense", methods=["POST"])
 def AddExpense():
     content = request.get_json()
     if content is None:
@@ -253,7 +253,7 @@ def AddExpense():
         )
 
 
-@app.route("/edit/expense/<int:id>", methods=["POST"])
+@app.route("/api/edit/expense/<int:id>", methods=["POST"])
 def EditExpense(id):
     content = request.get_json()
     if content is None:
@@ -280,7 +280,7 @@ def EditExpense(id):
         )
 
 
-@app.route("/add/income", methods=["POST"])
+@app.route("/api/add/income", methods=["POST"])
 def AddIncome():
     content = request.get_json()
     if content is None:
@@ -306,7 +306,7 @@ def AddIncome():
         )
 
 
-@app.route("/edit/income/<int:id>", methods=["POST"])
+@app.route("/api/edit/income/<int:id>", methods=["POST"])
 def EditIncome(id):
     if request.method == "POST":
         content = request.get_json()
@@ -334,7 +334,7 @@ def EditIncome(id):
             )
 
 
-@app.route("/add/transfer", methods=["POST"])
+@app.route("/api/add/transfer", methods=["POST"])
 def AddTransfer():
     content = request.get_json()
     if content is None:
@@ -378,7 +378,7 @@ def AddTransfer():
             )
 
 
-@app.route("/edit/transfer/<int:id>", methods=["POST"])
+@app.route("/api/edit/transfer/<int:id>", methods=["POST"])
 def EditTransfer(id):
     if request.method == "POST":
         content = request.get_json()
@@ -425,7 +425,7 @@ def EditTransfer(id):
                 )
 
 
-@app.route("/add/deposit", methods=["POST"])
+@app.route("/api/add/deposit", methods=["POST"])
 def AddDeposit():
     content = request.get_json()
     if content is None:
@@ -451,7 +451,7 @@ def AddDeposit():
         )
 
 
-@app.route("/add/currencyrates", methods=["POST"])
+@app.route("/api/add/currencyrates", methods=["POST"])
 def AddCurrencyRate():
     content = request.get_json()
     if content is None:
@@ -477,7 +477,7 @@ def AddCurrencyRate():
         )
 
 
-@app.route("/get/balance/<string:source>", methods=["POST"])
+@app.route("/api/get/balance/<string:source>", methods=["POST"])
 @db_required
 def Balance(source):
     content = request.get_json()
@@ -590,7 +590,7 @@ def Balance(source):
         return payload
 
 
-@app.route("/get/report", methods=["POST"])
+@app.route("/api/get/report", methods=["POST"])
 @db_required
 def Report():
     content = request.get_json()
@@ -618,7 +618,7 @@ def Report():
         )
 
 
-@app.route("/get/report/year/<string:type>", methods=["GET"])
+@app.route("/api/get/report/year/<string:type>", methods=["GET"])
 @db_required
 def YearReport(type):
     if type == "total":
@@ -630,7 +630,7 @@ def YearReport(type):
     return jsonify({"success": True, "data": data})
 
 
-@app.route("/database/status", methods=["GET"])
+@app.route("/api/database/status", methods=["GET"])
 def DBStatus():
     status = CheckDB()
     if status == 0:
@@ -641,7 +641,7 @@ def DBStatus():
         return jsonify({"success": False, "corrupt": True})
 
 
-@app.route("/database/create", methods=["POST"])
+@app.route("/api/database/create", methods=["POST"])
 def DBCreate():
     try:
         NewDBase()
@@ -652,7 +652,7 @@ def DBCreate():
         return jsonify({"success": False, "message": f"{str(e)}"})
 
 
-@app.route("/spv", methods=["GET", "POST"])
+@app.route("/api/spv", methods=["GET", "POST"])
 def SPVControl():
     if request.method == "GET":
         try:
@@ -710,7 +710,7 @@ def SPVControl():
             )
 
 
-@app.route("/spv/pb/add", methods=["POST"])
+@app.route("/api/spv/pb/add", methods=["POST"])
 def AddPB():
     content = request.get_json()
     if content is None:
@@ -733,7 +733,7 @@ def AddPB():
         )
 
 
-@app.route("/spv/mark", methods=["POST"])
+@app.route("/api/spv/mark", methods=["POST"])
 def MarkPB():
     content = request.get_json()
     if content is None:
@@ -759,7 +759,10 @@ def MarkPB():
 @app.route("/", defaults={"path": ""})
 @app.route("/<path:path>")
 def serve_react_app(path):
-    if path != "" and os.path.exists(os.path.join(app.static_folder, path)):
+    # if request is for a real static asset, return it
+    file_path = os.path.join(app.static_folder, path)
+    if path != "" and os.path.exists(file_path):
         return send_from_directory(app.static_folder, path)
-    else:
-        return send_from_directory(app.static_folder, "index.html")
+
+    # otherwise, return React index.html
+    return send_from_directory(app.static_folder, "index.html")

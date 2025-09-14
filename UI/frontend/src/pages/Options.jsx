@@ -24,7 +24,7 @@ export function OptionsPBPage() {
         document.title = "PB options"
 
         // Fetch person banks data
-        fetch('/get/list/pb')
+        fetch('/api/api/get/list/pb')
             .then(response => response.json())
             .then(data => {
                 if (data.redirect) {
@@ -44,7 +44,7 @@ export function OptionsPBPage() {
             });
 
         // Fetch markers data
-        fetch('/get/list/markers')
+        fetch('/api/get/list/markers')
             .then(response => response.json())
             .then(data => {
                 if (data.redirect) {
@@ -64,7 +64,7 @@ export function OptionsPBPage() {
             });
 
         // Fetch currency list
-        fetch('/get/list/currency')
+        fetch('/api/get/list/currency')
             .then(response => response.json())
             .then(data => {
                 if (data.redirect) {
@@ -102,7 +102,7 @@ export function OptionsPBPage() {
             return false;
         }
 
-        fetch("/spv/mark", {
+        fetch("/api/spv/mark", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -143,7 +143,7 @@ export function OptionsPBPage() {
             return false;
         }
 
-        fetch("/spv/pb/add", {
+        fetch("/api/spv/pb/add", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -312,7 +312,7 @@ export function OptionsDBPage() {
     useEffect(() => {
         document.title = "Database options";
 
-        fetch('/spv')
+        fetch('/api/spv')
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
@@ -335,7 +335,7 @@ export function OptionsDBPage() {
             });
 
         // Fetch DB status
-        fetch('/database/status')
+        fetch('/api/database/status')
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
@@ -367,7 +367,7 @@ export function OptionsDBPage() {
         const action = isDBExists ? 'recreate' : 'create';
 
         // Call the API to perform the database action
-        fetch('/database/create', {
+        fetch('/api/database/create', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
         })
@@ -399,7 +399,7 @@ export function OptionsDBPage() {
             subCat: formData.get("subcat-values").split("\n").map(item => item.trim()).filter(item => item),
         };
 
-        fetch('/spv', {
+        fetch('/api/spv', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(updatedLists),

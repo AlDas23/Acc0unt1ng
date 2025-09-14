@@ -56,7 +56,7 @@ export default function YearReportPage() {
     }, []);
 
     const GetCurrencyList = () => {
-        return fetch(`/get/list/currency`)
+        return fetch(`/api/get/list/currency`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
@@ -83,7 +83,7 @@ export default function YearReportPage() {
     }
 
     const GetData = (type) => {
-        const url = `/get/report/year/${type}`;
+        const url = `/api/get/report/year/${type}`;
 
         return fetch(url)
             .then(response => {

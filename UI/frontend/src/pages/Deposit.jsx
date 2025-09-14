@@ -43,7 +43,7 @@ function Forms({ options }) {
             }
 
             // Send POST request
-            fetch(`/add/deposit`, {
+            fetch(`/api/add/deposit`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -196,7 +196,7 @@ export default function DepositPage() {
     }, []);
 
     const GetOptions = () => {
-        return fetch(`/get/options/deposit`)
+        return fetch(`/api/get/options/deposit`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
@@ -222,7 +222,7 @@ export default function DepositPage() {
 
     const GetHistory = (isActive) => {
         if (isActive) {
-            return fetch(`/get/history/depositO`)
+            return fetch(`/api/get/history/depositO`)
                 .then(response => {
                     if (!response.ok) {
                         throw new Error(`HTTP error! Status: ${response.status}`);
@@ -245,7 +245,7 @@ export default function DepositPage() {
                     throw error;
                 });
         } else {
-            return fetch(`/get/history/depositC`)
+            return fetch(`/api/get/history/depositC`)
                 .then(response => {
                     if (!response.ok) {
                         throw new Error(`HTTP error! Status: ${response.status}`);

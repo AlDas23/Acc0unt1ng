@@ -61,7 +61,7 @@ export default function ReportsPage() {
     }, []);
 
     const fetchCategories = () => {
-        return fetch(`/get/list/categories_exp`,)
+        return fetch(`/api/get/list/categories_exp`,)
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
@@ -116,7 +116,7 @@ export default function ReportsPage() {
 
 
         // Fetch report data based on selected type and format
-        fetch(`/get/report`, {
+        fetch(`/api/get/report`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

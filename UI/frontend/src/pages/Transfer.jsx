@@ -58,9 +58,9 @@ function StandardTransferForm({ options, formData, handleInputChange, editMode, 
 
             let endpoint;
             if (editMode && editMode.isEditing && editMode.type === 'standard') {
-                endpoint = `/edit/transfer/${editMode.id}`;
+                endpoint = `/api/edit/transfer/${editMode.id}`;
             } else {
-                endpoint = `/add/transfer`;
+                endpoint = `/api/add/transfer`;
             }
 
             // Send POST request
@@ -229,9 +229,9 @@ function AdvancedTransferForm({ options, formData, handleInputChange, editMode, 
 
             let endpoint;
             if (editMode && editMode.isEditing && editMode.type === 'advanced') {
-                endpoint = `/edit/transfer/${editMode.id}`;
+                endpoint = `/api/edit/transfer/${editMode.id}`;
             } else {
-                endpoint = `/add/transfer`;
+                endpoint = `/api/add/transfer`;
             }
 
             // Send POST request
@@ -594,7 +594,7 @@ export default function TransferPage() {
     }
 
     const GetOptions = () => {
-        return fetch(`/get/options/transfer`)
+        return fetch(`/api/get/options/transfer`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
@@ -624,9 +624,9 @@ export default function TransferPage() {
     const GetHistory = (type) => {
         let endpoint;
         if (type === 'standard') {
-            endpoint = `/get/history/transfer`
+            endpoint = `/api/get/history/transfer`
         } else if (type === 'advanced') {
-            endpoint = `/get/history/transferADV`
+            endpoint = `/api/get/history/transferADV`
         }
         return fetch(endpoint)
             .then(response => {

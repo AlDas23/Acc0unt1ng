@@ -163,7 +163,7 @@ export default function IncomePage() {
     }, []);
 
     const GetOptions = () => {
-        return fetch(`/get/options/income`)
+        return fetch(`/api/get/options/income`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
@@ -191,7 +191,7 @@ export default function IncomePage() {
     }
 
     const GetHistory = () => {
-        return fetch(`/get/history/income`)
+        return fetch(`/api/get/history/income`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
@@ -239,8 +239,8 @@ export default function IncomePage() {
         };
 
         const endpoint = editMode
-            ? `/edit/income/${editingId}`
-            : `/add/income`;
+            ? `/api/edit/income/${editingId}`
+            : `/api/add/income`;
 
         // Send POST request
         fetch(endpoint, {

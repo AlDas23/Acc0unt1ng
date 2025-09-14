@@ -1,3 +1,4 @@
+import { NavLink } from "react-router-dom";
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
 import NavDropdown from 'react-bootstrap/NavDropdown';
@@ -10,21 +11,21 @@ function NavBar() {
             <Navbar.Toggle aria-controls="navbar-nav" />
             <Navbar.Collapse id="navbar-nav">
                 <Nav fill variant="pills">
-                    <Nav.Link href="/add/expense">Add Expense</Nav.Link>
-                    <Nav.Link href="/add/income">Add Income</Nav.Link>
-                    <Nav.Link href="/add/transfer">Add Transfer</Nav.Link>
-                    <Nav.Link href="/add/deposit">Add Deposit</Nav.Link>
-                    <Nav.Link href="/add/currencyrates">Currency Rates</Nav.Link>
-                    <Nav.Link href="/view/acc">View Accounts</Nav.Link>
+                    <Nav.Link as={NavLink} to="/add/expense">Add Expense</Nav.Link>
+                    <Nav.Link as={NavLink} to="/add/income">Add Income</Nav.Link>
+                    <Nav.Link as={NavLink} to="/add/transfer">Add Transfer</Nav.Link>
+                    <Nav.Link as={NavLink} to="/add/deposit">Add Deposit</Nav.Link>
+                    <Nav.Link as={NavLink} to="/add/currencyrates">Currency Rates</Nav.Link>
+                    <Nav.Link as={NavLink} to="/view/acc">View Accounts</Nav.Link>
                     <NavDropdown title="Reports" id="nav-dropdown-reports">
-                        <NavDropdown.Item href="/view/reports/table">View Reports Table</NavDropdown.Item>
-                        <NavDropdown.Item href="/view/reports/year">View Year Report</NavDropdown.Item>
+                        <NavDropdown.Item as={NavLink} to="/view/reports/table">View Reports Table</NavDropdown.Item>
+                        <NavDropdown.Item as={NavLink} to="/view/reports/year">View Year Report</NavDropdown.Item>
                     </NavDropdown>
                     <NavDropdown title="Options" id="nav-dropdown-options">
-                        <NavDropdown.Item href="/options/db">Database options</NavDropdown.Item>
-                        <NavDropdown.Item href="/options/pb">Accounts options</NavDropdown.Item>
+                        <NavDropdown.Item as={NavLink} to="/options/db">Database options</NavDropdown.Item>
+                        <NavDropdown.Item as={NavLink} to="/options/pb">Accounts options</NavDropdown.Item>
                     </NavDropdown>
-                    <Nav.Link href="/invest">Invest managment</Nav.Link>
+                    <Nav.Link as={NavLink} to="/invest">Invest managment</Nav.Link>
                 </Nav>
             </Navbar.Collapse>
         </Navbar>
