@@ -114,7 +114,7 @@ export function OptionsPBPage() {
                 if (data.success) {
                     setSubmitStatusMARK('success');
                     setTimeout(() => {
-                        window.location.reload();
+                        navigate(0);
                     }, 3000);
                 } else {
                     alert('Error: ' + (data.message || 'Failed to mark Person-bank'));
@@ -155,7 +155,7 @@ export function OptionsPBPage() {
                 if (data.success) {
                     setSubmitStatusPB('success');
                     setTimeout(() => {
-                        window.location.reload();
+                        navigate(0);
                     }, 3000);
                 } else {
                     alert('Error: ' + (data.message || 'Failed to add Person-bank'));
@@ -309,6 +309,8 @@ export function OptionsDBPage() {
     const [expCatValues, setExpCatValues] = useState('');
     const [subCatValues, setSubCatValues] = useState('');
 
+    const navigate = useNavigate();
+
     useEffect(() => {
         document.title = "Database options";
 
@@ -407,7 +409,7 @@ export function OptionsDBPage() {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    window.location.reload();
+                    navigate(0);
                 } else {
                     alert('Error: ' + (data.message || 'Failed to update special values'));
                 }

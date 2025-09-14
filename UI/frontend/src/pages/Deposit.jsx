@@ -9,7 +9,7 @@ import Row from 'react-bootstrap/Row';
 import '../assets/styles/DepositPageStyles.css'
 
 
-function Forms({ options }) {
+function Forms({ options, navFunc }) {
     return (
         <Form noValidate className="form" id="form" onSubmit={(e) => {
             e.preventDefault();
@@ -58,7 +58,7 @@ function Forms({ options }) {
                 })
                 .then(data => {
                     if (data.success) {
-                        window.location.reload();
+                        navFunc(0);
                     } else {
                         alert('Error: ' + (data.message || 'Failed to add deposit'));
                     }
@@ -299,7 +299,7 @@ export default function DepositPage() {
             <Header />
             <div className="deposit-page container">
                 <h1>Deposit Records</h1>
-                {options && (<Forms options={options} />)}
+                {options && (<Forms options={options} navFunc={navigate} />)}
                 <br />
                 <div className="row">
                     <div className="col xl-12">

@@ -220,7 +220,7 @@ export default function ExpensePage() {
             .then(data => {
                 if (data.success) {
                     resetForm();
-                    window.location.reload();
+                    navigate(0);
                 } else {
                     alert('Error: ' + (data.message || 'Failed to process transaction'));
                 }

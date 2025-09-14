@@ -258,7 +258,7 @@ export default function IncomePage() {
             })
             .then(data => {
                 if (data.success) {
-                    window.location.reload();
+                    navigate(0);
                 } else {
                     alert('Error: ' + (data.message || 'Failed to add transaction'));
                 }

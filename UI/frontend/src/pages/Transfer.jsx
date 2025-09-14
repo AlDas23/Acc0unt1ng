@@ -29,7 +29,7 @@ const initialFormDataADV = {
     comment: ''
 };
 
-function StandardTransferForm({ options, formData, handleInputChange, editMode, resetForm }) {
+function StandardTransferForm({ options, formData, handleInputChange, editMode, resetForm, navFunc }) {
     return (
         <Form noValidate className="form" id="formStandard" onSubmit={(e) => {
             e.preventDefault();
@@ -74,7 +74,7 @@ function StandardTransferForm({ options, formData, handleInputChange, editMode, 
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        window.location.reload();
+                        navFunc(0);
                     } else {
                         alert('Error: ' + (data.message || 'Failed to add transfer'));
                     }
@@ -190,7 +190,7 @@ function StandardTransferForm({ options, formData, handleInputChange, editMode, 
     )
 };
 
-function AdvancedTransferForm({ options, formData, handleInputChange, editMode, resetForm }) {
+function AdvancedTransferForm({ options, formData, handleInputChange, editMode, resetForm, navFunc }) {
     return (
         <Form noValidate className="form" id="formAdvanced" onSubmit={(e) => {
             e.preventDefault();
@@ -245,7 +245,7 @@ function AdvancedTransferForm({ options, formData, handleInputChange, editMode, 
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        window.location.reload();
+                        navFunc(0);
                     } else {
                         alert('Error: ' + (data.message || 'Failed to add transfer'));
                     }
@@ -407,7 +407,7 @@ function AdvancedTransferForm({ options, formData, handleInputChange, editMode, 
     )
 };
 
-function Forms({ options, formDataSTD, formDataADV, handleInputChangeSTD, handleInputChangeADV, editMode, resetForm, selectedTable }) {
+function Forms({ options, formDataSTD, formDataADV, handleInputChangeSTD, handleInputChangeADV, editMode, resetForm, selectedTable, navFunc }) {
     return (
         <div className="forms">
             <div className="form-standard row">
@@ -419,6 +419,7 @@ function Forms({ options, formDataSTD, formDataADV, handleInputChangeSTD, handle
                         handleInputChange={handleInputChangeSTD}
                         editMode={editMode}
                         resetForm={resetForm}
+                        navFunc={navFunc}
                     />
                 </div>
             </div>
@@ -432,6 +433,7 @@ function Forms({ options, formDataSTD, formDataADV, handleInputChangeSTD, handle
                         handleInputChange={handleInputChangeADV}
                         editMode={editMode}
                         resetForm={resetForm}
+                        navFunc={navFunc}
                     />
                 </div>
             </div>
@@ -695,6 +697,7 @@ export default function TransferPage() {
                         editMode={editMode}
                         resetForm={resetForm}
                         selectedTable={selectedTable}
+                        navFunc={navigate}
                     />)}
                     <br />
                 </div>

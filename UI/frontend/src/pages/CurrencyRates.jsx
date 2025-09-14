@@ -8,7 +8,7 @@ import Form from 'react-bootstrap/Form';
 import Row from 'react-bootstrap/Row';
 import '../assets/styles/CurrRatePageStyles.css'
 
-function Forms({ options }) {
+function Forms({ options, navFunc }) {
     return (
         <Form noValidate className="form" id="form" onSubmit={(e) => {
             e.preventDefault();
@@ -28,7 +28,7 @@ function Forms({ options }) {
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        window.location.reload();
+                        navFunc(0);
                     } else {
                         alert('Error: ' + (data.message || 'Failed to add currency rate'));
                     }
@@ -233,6 +233,7 @@ export default function CurrencyRatesPage() {
                 <div className="row" id="cr-forms">
                     {options && (<Forms
                         options={options}
+                        navFunc={navigate}
                     />)}
                 </div>
                 <br />
