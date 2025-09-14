@@ -7,8 +7,8 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 def plot_to_img_tag(data, title, xlabel, ylabel):
-    plt.clf()
-    plt.figure(figsize=(12, 6))
+    # Use subplots for better control over the figure and axes
+    fig, ax = plt.subplots(figsize=(12, 6))
 
     # Convert data to DataFrame with proper structure
     df = pd.DataFrame(data, columns=['date', 'currency', 'rate'])
@@ -21,32 +21,32 @@ def plot_to_img_tag(data, title, xlabel, ylabel):
     
     # Plot each currency's rate over time
     for currency in pivot_df.columns[1:]:  # Skip the 'date' column
-        plt.plot(pivot_df["date"], pivot_df[currency], marker="o", label=currency)
+        ax.plot(pivot_df["date"], pivot_df[currency], marker="o", label=currency)
 
-    plt.title(title)
-    plt.xlabel(xlabel)
-    plt.ylabel(ylabel)
-    plt.legend()
-    plt.grid(True)
+    ax.set_title(title)
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
+    ax.legend()
+    ax.grid(True)
 
     # Rotate and align the tick labels so they look better
-    plt.xticks(rotation=45, ha="right")
-
-    # Use automatic layout adjustment to prevent label overlap
-    plt.tight_layout()
+    plt.setp(ax.get_xticklabels(), rotation=45, ha="right")
 
     # If still too crowded, show fewer x-axis ticks
     if len(pivot_df) > 20:
         # Show approximately 15 evenly spaced ticks
-        plt.gca().xaxis.set_major_locator(plt.MaxNLocator(15))
+        ax.xaxis.set_major_locator(plt.MaxNLocator(15))
 
-    # Save plot to a BytesIO object
+    # Use automatic layout adjustment to prevent label overlap
+    fig.tight_layout()
+
+     # Save plot to a BytesIO object
     img = io.BytesIO()
-    plt.savefig(img, format="png", bbox_inches="tight")
+    fig.savefig(img, format="png")
     img.seek(0)
 
     # Encode image to base64 string
     img_tag = base64.b64encode(img.getvalue()).decode()
-    plt.close()
+    plt.close(fig)
     
     return f"data:image/png;base64,{img_tag}"
