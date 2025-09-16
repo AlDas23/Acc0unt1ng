@@ -21,68 +21,48 @@ export function OptionsPBPage() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        document.title = "PB options"
-
-        // Fetch person banks data
-        fetch('/api/api/get/list/pb')
-            .then(response => response.json())
-            .then(data => {
-                if (data.redirect) {
-                    alert('Database is missing or corrupted. You will be redirected to the setup page.');
-                    navigate(data.redirect);
-                    return Promise.reject('Redirect initiated');
-                }
-
-                if (data.success) {
-                    setPersonBanks(data.data);
-                } else {
-                    console.error('Failed to fetch person banks:', data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error fetching person banks:', error);
-            });
-
-        // Fetch markers data
-        fetch('/api/get/list/markers')
-            .then(response => response.json())
-            .then(data => {
-                if (data.redirect) {
-                    alert('Database is missing or corrupted. You will be redirected to the setup page.');
-                    navigate(data.redirect);
-                    return Promise.reject('Redirect initiated');
-                }
-
-                if (data.success) {
-                    setMarkers({ owners: data.data.owners || [], types: data.data.types || [] });
-                } else {
-                    console.error('Failed to fetch markers:', data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error fetching markers:', error);
-            });
-
-        // Fetch currency list
-        fetch('/api/get/list/currency')
-            .then(response => response.json())
-            .then(data => {
-                if (data.redirect) {
-                    alert('Database is missing or corrupted. You will be redirected to the setup page.');
-                    navigate(data.redirect);
-                    return Promise.reject('Redirect initiated');
-                }
-
-                if (data.success) {
-                    setCurrencyList(data.currencies);
-                } else {
-                    console.error('Failed to fetch markers:', data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error fetching markers:', error);
-            });
+        document.title = "PB options";
+        fetchPageData();
     }, []);
+
+    const fetchPageData = async () => {
+        try {
+            const [pbResponse, markersResponse, currencyResponse] = await Promise.all([
+                fetch('/api/api/get/list/pb'),
+                fetch('/api/get/list/markers'),
+                fetch('/api/get/list/currency')
+            ]);
+
+            const pbData = await pbResponse.json();
+            if (pbData.success) {
+                setPersonBanks(pbData.data);
+            } else {
+                console.error('Failed to fetch person banks:', pbData.message);
+            }
+
+            const markersData = await markersResponse.json();
+            if (markersData.success) {
+                setMarkers({ owners: markersData.data.owners || [], types: markersData.data.types || [] });
+            } else {
+                console.error('Failed to fetch markers:', markersData.message);
+            }
+
+            const currencyData = await currencyResponse.json();
+            if (currencyData.success) {
+                setCurrencyList(currencyData.currencies);
+            } else {
+                console.error('Failed to fetch currency list:', currencyData.message);
+            }
+
+            // Handle potential redirects from any of the calls
+            if (pbData.redirect || markersData.redirect || currencyData.redirect) {
+                alert('Database is missing or corrupted. You will be redirected to the setup page.');
+                navigate(pbData.redirect);
+            }
+        } catch (error) {
+            console.error('Error fetching page data:', error);
+        }
+    };
 
     const markPB = (e) => {
         e.preventDefault();
@@ -113,8 +93,9 @@ export function OptionsPBPage() {
             .then(data => {
                 if (data.success) {
                     setSubmitStatusMARK('success');
+                    fetchPageData();
                     setTimeout(() => {
-                        navigate(0);
+                        setSubmitStatusMARK('idle');
                     }, 3000);
                 } else {
                     alert('Error: ' + (data.message || 'Failed to mark Person-bank'));
@@ -154,8 +135,10 @@ export function OptionsPBPage() {
             .then(data => {
                 if (data.success) {
                     setSubmitStatusPB('success');
+                    setPersonBankName('');
+                    fetchPageData();
                     setTimeout(() => {
-                        navigate(0);
+                        setSubmitStatusPB('idle');
                     }, 3000);
                 } else {
                     alert('Error: ' + (data.message || 'Failed to add Person-bank'));
@@ -309,11 +292,12 @@ export function OptionsDBPage() {
     const [expCatValues, setExpCatValues] = useState('');
     const [subCatValues, setSubCatValues] = useState('');
 
-    const navigate = useNavigate();
-
     useEffect(() => {
         document.title = "Database options";
+        fetchPageData()
+    }, []);
 
+    const fetchPageData = () => {
         fetch('/api/spv')
             .then(response => response.json())
             .then(data => {
@@ -353,7 +337,7 @@ export function OptionsDBPage() {
             .catch(error => {
                 console.error('Error fetching DB status:', error);
             });
-    }, []);
+    };
 
     const handleClose = () => {
         setShow(false);
@@ -409,7 +393,7 @@ export function OptionsDBPage() {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    navigate(0);
+                    fetchPageData();
                 } else {
                     alert('Error: ' + (data.message || 'Failed to update special values'));
                 }

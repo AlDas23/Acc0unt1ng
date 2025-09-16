@@ -9,65 +9,9 @@ import Row from 'react-bootstrap/Row';
 import '../assets/styles/DepositPageStyles.css'
 
 
-function Forms({ options, navFunc }) {
+function Forms({ options, ValidateForm }) {
     return (
-        <Form noValidate className="form" id="form" onSubmit={(e) => {
-            e.preventDefault();
-            const form = e.target;
-            const formDataObj = new FormData(form);
-            const formObject = Object.fromEntries(formDataObj.entries());
-
-            if (!formObject.DateIn || !formObject.Name || !formObject.Owner || isNaN(formObject.Sum) || !formObject.Currency || !formObject.DateOut) {
-                alert("Please fill in all reqired fields.\n Deposit date, name, owner, sum, currency, percent are required.");
-                return false;
-            }
-
-            if (isNaN(formObject.Sum) || formObject.Sum <= 0) {
-                alert("Please enter a valid sum.");
-                return false;
-            }
-
-            if (!formObject.Months && (isNaN(formObject.Months) || formObject.Months <= 0)) {
-                alert("Please enter a valid number of months.");
-                return false;
-            }
-
-            if (isNaN(formObject.Percent) || formObject.Percent < 0 || formObject.Percent > 100) {
-                alert("Please enter a valid percent.");
-                return false;
-            }
-
-            if (formObject.CurrencyRate && (isNaN(formObject.CurrencyRate) || formObject.CurrencyRate <= 0)) {
-                alert("Please enter a valid currency rate.");
-                return false;
-            }
-
-            // Send POST request
-            fetch(`/api/add/deposit`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formObject)
-            })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! Status: ${response.status}`);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.success) {
-                        navFunc(0);
-                    } else {
-                        alert('Error: ' + (data.message || 'Failed to add deposit'));
-                    }
-                })
-                .catch(error => {
-                    console.error('Unexpected error:', error);
-                    alert('Unexpected error occurred');
-                });
-        }}>
+        <Form noValidate className="form" id="form" onSubmit={ValidateForm}>
             <Row>
                 <Col>
                     <Form.Label htmlFor="inputDateIn">
@@ -270,6 +214,71 @@ export default function DepositPage() {
         }
     }
 
+    const ValidateForm = (e) => {
+        e.preventDefault();
+        const form = e.target;
+        const formDataObj = new FormData(form);
+        const formObject = Object.fromEntries(formDataObj.entries());
+
+        if (!formObject.DateIn || !formObject.Name || !formObject.Owner || isNaN(formObject.Sum) || !formObject.Currency || !formObject.DateOut) {
+            alert("Please fill in all reqired fields.\n Deposit date, name, owner, sum, currency, percent are required.");
+            return false;
+        }
+
+        if (isNaN(formObject.Sum) || formObject.Sum <= 0) {
+            alert("Please enter a valid sum.");
+            return false;
+        }
+
+        if (!formObject.Months && (isNaN(formObject.Months) || formObject.Months <= 0)) {
+            alert("Please enter a valid number of months.");
+            return false;
+        }
+
+        if (isNaN(formObject.Percent) || formObject.Percent < 0 || formObject.Percent > 100) {
+            alert("Please enter a valid percent.");
+            return false;
+        }
+
+        if (formObject.CurrencyRate && (isNaN(formObject.CurrencyRate) || formObject.CurrencyRate <= 0)) {
+            alert("Please enter a valid currency rate.");
+            return false;
+        }
+
+        // Send POST request
+        fetch(`/api/add/deposit`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formObject)
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    GetHistory(true)
+                        .then(historyData => {
+                            setHistoryO(historyData);
+                        })
+                    GetHistory(false)
+                        .then(historyData => {
+                            setHistoryO(historyData);
+                        })
+                } else {
+                    alert('Error: ' + (data.message || 'Failed to add deposit'));
+                }
+            })
+            .catch(error => {
+                console.error('Unexpected error:', error);
+                alert('Unexpected error occurred');
+            });
+    }
+
     if (loading) {
         return (
             <>
@@ -299,7 +308,7 @@ export default function DepositPage() {
             <Header />
             <div className="deposit-page container">
                 <h1>Deposit Records</h1>
-                {options && (<Forms options={options} navFunc={navigate} />)}
+                {options && (<Forms options={options} ValidateForm={ValidateForm} />)}
                 <br />
                 <div className="row">
                     <div className="col xl-12">

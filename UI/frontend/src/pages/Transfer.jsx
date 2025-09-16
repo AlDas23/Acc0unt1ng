@@ -29,61 +29,9 @@ const initialFormDataADV = {
     comment: ''
 };
 
-function StandardTransferForm({ options, formData, handleInputChange, editMode, resetForm, navFunc }) {
+function StandardTransferForm({ options, formData, handleInputChange, editMode, resetForm, ValidateForm }) {
     return (
-        <Form noValidate className="form" id="formStandard" onSubmit={(e) => {
-            e.preventDefault();
-            const form = e.target;
-            const formDataObj = new FormData(form);
-            const formObject = Object.fromEntries(formDataObj.entries());
-
-            // Validate form
-            if (formObject.Date === "" || formObject.Sender === "" || formObject.Receiver === "" || formObject.Sum === "" || formObject.Currency === "") {
-                alert("Please fill in all fields.");
-                return false;
-            }
-
-            if (isNaN(parseFloat(formObject.Sum)) || parseFloat(formObject.Sum) <= 0) {
-                alert("Please enter a valid sum.");
-                return false;
-            }
-
-            if (formObject.Sender === formObject.Receiver) {
-                alert("Sender and Receiver cannot be the same.");
-                return false;
-            }
-
-            // Append transfer type to the formObject
-            formObject.transferType = 'standard';
-
-            let endpoint;
-            if (editMode && editMode.isEditing && editMode.type === 'standard') {
-                endpoint = `/api/edit/transfer/${editMode.id}`;
-            } else {
-                endpoint = `/api/add/transfer`;
-            }
-
-            // Send POST request
-            fetch(endpoint, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formObject)
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        navFunc(0);
-                    } else {
-                        alert('Error: ' + (data.message || 'Failed to add transfer'));
-                    }
-                })
-                .catch(error => {
-                    console.error('Unexpected error:', error);
-                    alert('Unexpected error occurred');
-                });
-        }}
+        <Form noValidate className="form" id="formStandard" onSubmit={ValidateForm}
             style={editMode.isEditing && editMode.type === 'advanced' ? { display: 'none' } : null}
         >
             <Row>
@@ -190,71 +138,9 @@ function StandardTransferForm({ options, formData, handleInputChange, editMode, 
     )
 };
 
-function AdvancedTransferForm({ options, formData, handleInputChange, editMode, resetForm, navFunc }) {
+function AdvancedTransferForm({ options, formData, handleInputChange, editMode, resetForm, ValidateForm }) {
     return (
-        <Form noValidate className="form" id="formAdvanced" onSubmit={(e) => {
-            e.preventDefault();
-            const form = e.target;
-            const formDataObj = new FormData(form);
-            const formObject = Object.fromEntries(formDataObj.entries());
-
-            // Validate form
-            if (formObject.ADVDate === "" || formObject.ADVSender === "" || formObject.ADVSSum === "" || formObject.ADVSCurrency === "" || formObject.ADVReceiver === "" || formObject.ADVRSum === "" || formObject.ADVRCurrency === "") {
-                alert("Please fill in all fields.");
-                return false;
-            }
-
-            if (isNaN(parseFloat(formObject.SSum)) || parseFloat(formObject.SSum) <= 0 || isNaN(parseFloat(formObject.RSum)) || parseFloat(formObject.RSum) <= 0) {
-                alert("Please enter valid sums.");
-                return false;
-            }
-
-            if (formObject.SCurrency === formObject.RCurrency) {
-                alert("Sender and Receiver currencies cannot be the same. Use standard transfer instead.");
-                return false;
-            }
-
-            if (parseFloat(formObject.ADVCurrencyRate) <= 0) {
-                alert("Please enter a valid currency rate.");
-                return false;
-            }
-
-            if (formObject.ADVSender === formObject.ADVReceiver) {
-                alert("Sender and Receiver cannot be the same.");
-                return false;
-            }
-
-            // Append transfer type to the formObject
-            formObject.transferType = 'advanced';
-
-            let endpoint;
-            if (editMode && editMode.isEditing && editMode.type === 'advanced') {
-                endpoint = `/api/edit/transfer/${editMode.id}`;
-            } else {
-                endpoint = `/api/add/transfer`;
-            }
-
-            // Send POST request
-            fetch(endpoint, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formObject)
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        navFunc(0);
-                    } else {
-                        alert('Error: ' + (data.message || 'Failed to add transfer'));
-                    }
-                })
-                .catch(error => {
-                    console.error('Unexpected error:', error);
-                    alert('Unexpected error occurred');
-                });
-        }}
+        <Form noValidate className="form" id="formAdvanced" onSubmit={ValidateForm}
             style={editMode.isEditing && editMode.type === 'standard' ? { display: 'none' } : null}
         >
             <Row className="adv1">
@@ -407,7 +293,7 @@ function AdvancedTransferForm({ options, formData, handleInputChange, editMode, 
     )
 };
 
-function Forms({ options, formDataSTD, formDataADV, handleInputChangeSTD, handleInputChangeADV, editMode, resetForm, selectedTable, navFunc }) {
+function Forms({ options, formDataSTD, formDataADV, handleInputChangeSTD, handleInputChangeADV, editMode, resetForm, selectedTable, ValidateFormADV, ValidateFormSTD }) {
     return (
         <div className="forms">
             <div className="form-standard row">
@@ -419,7 +305,7 @@ function Forms({ options, formDataSTD, formDataADV, handleInputChangeSTD, handle
                         handleInputChange={handleInputChangeSTD}
                         editMode={editMode}
                         resetForm={resetForm}
-                        navFunc={navFunc}
+                        ValidateForm={ValidateFormSTD}
                     />
                 </div>
             </div>
@@ -433,7 +319,7 @@ function Forms({ options, formDataSTD, formDataADV, handleInputChangeSTD, handle
                         handleInputChange={handleInputChangeADV}
                         editMode={editMode}
                         resetForm={resetForm}
-                        navFunc={navFunc}
+                        ValidateForm={ValidateFormADV}
                     />
                 </div>
             </div>
@@ -657,6 +543,131 @@ export default function TransferPage() {
             });
     }
 
+    const ValidateFormSTD = (e) => {
+        e.preventDefault();
+        const form = e.target;
+        const formDataObj = new FormData(form);
+        const formObject = Object.fromEntries(formDataObj.entries());
+
+        // Validate form
+        if (formObject.Date === "" || formObject.Sender === "" || formObject.Receiver === "" || formObject.Sum === "" || formObject.Currency === "") {
+            alert("Please fill in all fields.");
+            return false;
+        }
+
+        if (isNaN(parseFloat(formObject.Sum)) || parseFloat(formObject.Sum) <= 0) {
+            alert("Please enter a valid sum.");
+            return false;
+        }
+
+        if (formObject.Sender === formObject.Receiver) {
+            alert("Sender and Receiver cannot be the same.");
+            return false;
+        }
+
+        // Append transfer type to the formObject
+        formObject.transferType = 'standard';
+
+        let endpoint;
+        if (editMode && editMode.isEditing && editMode.type === 'standard') {
+            endpoint = `/api/edit/transfer/${editMode.id}`;
+        } else {
+            endpoint = `/api/add/transfer`;
+        }
+
+        // Send POST request
+        fetch(endpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formObject)
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    GetHistory()
+                        .then(historyData => {
+                            setHistory(historyData);
+                        })
+                } else {
+                    alert('Error: ' + (data.message || 'Failed to add transfer'));
+                }
+            })
+            .catch(error => {
+                console.error('Unexpected error:', error);
+                alert('Unexpected error occurred');
+            });
+    }
+
+    const ValidateFormADV = (e) => {
+        e.preventDefault();
+        const form = e.target;
+        const formDataObj = new FormData(form);
+        const formObject = Object.fromEntries(formDataObj.entries());
+
+        // Validate form
+        if (formObject.ADVDate === "" || formObject.ADVSender === "" || formObject.ADVSSum === "" || formObject.ADVSCurrency === "" || formObject.ADVReceiver === "" || formObject.ADVRSum === "" || formObject.ADVRCurrency === "") {
+            alert("Please fill in all fields.");
+            return false;
+        }
+
+        if (isNaN(parseFloat(formObject.SSum)) || parseFloat(formObject.SSum) <= 0 || isNaN(parseFloat(formObject.RSum)) || parseFloat(formObject.RSum) <= 0) {
+            alert("Please enter valid sums.");
+            return false;
+        }
+
+        if (formObject.SCurrency === formObject.RCurrency) {
+            alert("Sender and Receiver currencies cannot be the same. Use standard transfer instead.");
+            return false;
+        }
+
+        if (parseFloat(formObject.ADVCurrencyRate) <= 0) {
+            alert("Please enter a valid currency rate.");
+            return false;
+        }
+
+        if (formObject.ADVSender === formObject.ADVReceiver) {
+            alert("Sender and Receiver cannot be the same.");
+            return false;
+        }
+
+        // Append transfer type to the formObject
+        formObject.transferType = 'advanced';
+
+        let endpoint;
+        if (editMode && editMode.isEditing && editMode.type === 'advanced') {
+            endpoint = `/api/edit/transfer/${editMode.id}`;
+        } else {
+            endpoint = `/api/add/transfer`;
+        }
+
+        // Send POST request
+        fetch(endpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formObject)
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    GetHistory()
+                        .then(historyData => {
+                            setHistory(historyData);
+                        })
+                } else {
+                    alert('Error: ' + (data.message || 'Failed to add transfer'));
+                }
+            })
+            .catch(error => {
+                console.error('Unexpected error:', error);
+                alert('Unexpected error occurred');
+            });
+    }
+
+
     if (loading) {
         return (
             <>
@@ -697,7 +708,8 @@ export default function TransferPage() {
                         editMode={editMode}
                         resetForm={resetForm}
                         selectedTable={selectedTable}
-                        navFunc={navigate}
+                        ValidateFormSTD={ValidateFormSTD}
+                        ValidateFormADV={ValidateFormADV}
                     />)}
                     <br />
                 </div>

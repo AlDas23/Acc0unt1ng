@@ -220,7 +220,10 @@ export default function ExpensePage() {
             .then(data => {
                 if (data.success) {
                     resetForm();
-                    navigate(0);
+                    GetHistory()
+                        .then(data => {
+                            setHistory(data);
+                        })
                 } else {
                     alert('Error: ' + (data.message || 'Failed to process transaction'));
                 }

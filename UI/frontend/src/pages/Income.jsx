@@ -258,7 +258,10 @@ export default function IncomePage() {
             })
             .then(data => {
                 if (data.success) {
-                    navigate(0);
+                    GetHistory()
+                        .then(historyData => {
+                            setHistory(historyData);
+                        })
                 } else {
                     alert('Error: ' + (data.message || 'Failed to add transaction'));
                 }
