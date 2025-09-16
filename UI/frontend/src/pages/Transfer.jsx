@@ -586,6 +586,7 @@ export default function TransferPage() {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
+                    resetForm()
                     GetHistory("advanced")
                         .then(historyData => {
                             setHistory(historyData);
@@ -653,9 +654,10 @@ export default function TransferPage() {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
+                    resetForm()
                     GetHistory("standard")
                         .then(historyData => {
-                            setHistory(historyData);
+                            setHistoryADV(historyData);
                         })
                 } else {
                     alert('Error: ' + (data.message || 'Failed to add transfer'));
