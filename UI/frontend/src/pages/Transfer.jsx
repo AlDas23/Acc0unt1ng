@@ -586,7 +586,7 @@ export default function TransferPage() {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    GetHistory()
+                    GetHistory("advanced")
                         .then(historyData => {
                             setHistory(historyData);
                         })
@@ -653,7 +653,7 @@ export default function TransferPage() {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    GetHistory()
+                    GetHistory("standard")
                         .then(historyData => {
                             setHistory(historyData);
                         })
