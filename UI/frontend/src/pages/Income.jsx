@@ -248,7 +248,7 @@ export default function IncomePage() {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify(FormData)
+            body: JSON.stringify(RequestData)
         })
             .then(response => {
                 if (!response.ok) {
