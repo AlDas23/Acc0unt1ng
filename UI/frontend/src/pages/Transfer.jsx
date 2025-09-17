@@ -587,7 +587,7 @@ export default function TransferPage() {
             .then(data => {
                 if (data.success) {
                     resetForm()
-                    GetHistory("advanced")
+                    GetHistory("standard")
                         .then(historyData => {
                             setHistory(historyData);
                         })
@@ -655,7 +655,7 @@ export default function TransferPage() {
             .then(data => {
                 if (data.success) {
                     resetForm()
-                    GetHistory("standard")
+                    GetHistory("advanced")
                         .then(historyData => {
                             setHistoryADV(historyData);
                         })
