@@ -8,48 +8,29 @@ import Form from 'react-bootstrap/Form';
 import Row from 'react-bootstrap/Row';
 import '../assets/styles/CurrRatePageStyles.css'
 
-function Forms({ options, navFunc }) {
+const initialFormData = {
+    date: new Date().toISOString().split('T')[0],
+    currency: '',
+    rate: ''
+};
+
+function Forms({ options, ValidateForm, handleInputChange, formData }) {
     return (
-        <Form noValidate className="form" id="form" onSubmit={(e) => {
-            e.preventDefault();
-
-            const form = e.target;
-            const formDataObj = new FormData(form);
-            const formObject = Object.fromEntries(formDataObj.entries());
-
-            // Send POST request
-            fetch("/api/add/currencyrates", {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formObject)
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        navFunc(0);
-                    } else {
-                        alert('Error: ' + (data.message || 'Failed to add currency rate'));
-                    }
-                })
-                .catch(error => {
-                    console.error('Unexpected error:', error);
-                    alert('Unexpected error occurred');
-                });
-        }}>
+        <Form noValidate className="form" id="form" onSubmit={ValidateForm}>
             <Row>
                 <Col xl="2">
                     <Form.Label htmlFor="inputDate">
                         Date
                     </Form.Label>
-                    <input type="date" id="inputDate" name="Date" defaultValue={new Date().toISOString().split('T')[0]} />
+                    <input type="date" id="inputDate" name="Date" value={formData.date}
+                        onChange={handleInputChange} />
                 </Col>
                 <Col xl="2">
                     <Form.Label htmlFor="inputCurrency">
                         Currency
                     </Form.Label>
-                    <Form.Select id="inputCurrency" name="Currency" >
+                    <Form.Select id="inputCurrency" name="Currency" value={formData.currency}
+                        onChange={handleInputChange} >
                         {options.currency.map((currency, index) => (
                             <option key={currency} value={index}>{currency}</option>
                         ))}
@@ -59,7 +40,8 @@ function Forms({ options, navFunc }) {
                     <Form.Label htmlFor="inputRate">
                         Rate
                     </Form.Label>
-                    <Form.Control type="text" id="inputRate" name="Rate" autoComplete="off" />
+                    <Form.Control type="text" id="inputRate" name="Rate" autoComplete="off" value={formData.rate}
+                        onChange={handleInputChange} />
                 </Col>
             </Row>
             <Row>
@@ -75,6 +57,7 @@ export default function CurrencyRatesPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [imageUrl, setImageUrl] = useState(null);
+    const [formData, setFormData] = useState(initialFormData);
 
     const navigate = useNavigate();
 
@@ -201,6 +184,61 @@ export default function CurrencyRatesPage() {
             });
     }
 
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        const key = name.replace('input', '');
+        setFormData(prevData => ({
+            ...prevData,
+            [key.charAt(0).toLowerCase() + key.slice(1)]: value
+        }));
+    };
+
+    const ValidateForm = (e) => {
+        e.preventDefault();
+
+        const { date, currency, rate } = formData;
+
+        if (isNaN(rate) || rate <= 0) {
+            alert("Please enter a valid rate.");
+            return false;
+        }
+
+        const RequestData = {
+            date: date,
+            currency: currency,
+            rate: rate
+        }
+
+        // Send POST request
+        fetch("/api/add/currencyrates", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(RequestData)
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    setFormData(initialFormData)
+                    GetHistory()
+                        .then(historyData => {
+                            setHistory(historyData);
+                        })
+                    GetPlot()
+                        .then(url => {
+                            setImageUrl(url);
+                        })
+                } else {
+                    alert('Error: ' + (data.message || 'Failed to add currency rate'));
+                }
+            })
+            .catch(error => {
+                console.error('Unexpected error:', error);
+                alert('Unexpected error occurred');
+            });
+    }
+
     if (loading) {
         return (
             <>
@@ -233,7 +271,9 @@ export default function CurrencyRatesPage() {
                 <div className="row" id="cr-forms">
                     {options && (<Forms
                         options={options}
-                        navFunc={navigate}
+                        ValidateForm={ValidateForm}
+                        handleInputChange={handleInputChange}
+                        formData={formData}
                     />)}
                 </div>
                 <br />

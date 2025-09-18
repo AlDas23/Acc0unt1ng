@@ -258,6 +258,7 @@ export default function IncomePage() {
             })
             .then(data => {
                 if (data.success) {
+                    resetForm()
                     GetHistory()
                         .then(historyData => {
                             setHistory(historyData);
