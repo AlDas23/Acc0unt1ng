@@ -16,6 +16,16 @@ function Forms({ options }) {
             const formDataObj = new FormData(form);
             const formObject = Object.fromEntries(formDataObj.entries());
 
+            if (formObject.currency === "") {
+                alert("Currency cannot be empty!")
+                return false;
+            }
+
+            if (isNaN(formObject.Rate) || formObject.Rate <= 0) {
+                alert("Rate is not a number!")
+                return false;
+            }
+
             // Send POST request
             fetch("/api/add/currencyrates", {
                 method: 'POST',
@@ -48,9 +58,10 @@ function Forms({ options }) {
                     <Form.Label htmlFor="inputCurrency">
                         Currency
                     </Form.Label>
-                    <Form.Select id="inputCurrency" name="Currency" >
+                    <Form.Select id="inputCurrency" name="Currency" defaultValue={""}>
+                        <option value="" disabled></option>
                         {options.currency.map((currency, index) => (
-                            <option key={index} value={currency}>{currency}</option>
+                            <option value={currency} key={index}>{currency}</option>
                         ))}
                     </Form.Select>
                 </Col>
