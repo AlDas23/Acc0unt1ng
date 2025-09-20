@@ -29,10 +29,10 @@ function Forms({ options, ValidateForm, handleInputChange, formData }) {
                     <Form.Label htmlFor="inputCurrency">
                         Currency
                     </Form.Label>
-                    <Form.Select id="inputCurrency" name="Currency" value={formData.currency}
-                        onChange={handleInputChange} >
+                    <Form.Select id="inputCurrency" name="Currency" defaultValue={""}>
+                        <option value="" disabled></option>
                         {options.currency.map((currency, index) => (
-                            <option key={index} value={currency}>{currency}</option>
+                            <option value={currency} key={index}>{currency}</option>
                         ))}
                     </Form.Select>
                 </Col>
@@ -197,6 +197,11 @@ export default function CurrencyRatesPage() {
         e.preventDefault();
 
         const { date, currency, rate } = formData;
+
+        if (currency === "") {
+            alert("Currency cannot be empty!");
+            return false;
+        }
 
         if (isNaN(rate) || rate <= 0) {
             alert("Please enter a valid rate.");
