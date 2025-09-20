@@ -49,3 +49,4 @@ dp_keys = [
     "comment",
     "isOpen",
 ]
+curr_keys = ["date", "currency", "rate"]

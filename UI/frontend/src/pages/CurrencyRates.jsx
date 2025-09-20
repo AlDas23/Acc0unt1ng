@@ -32,7 +32,7 @@ function Forms({ options, ValidateForm, handleInputChange, formData }) {
                     <Form.Select id="inputCurrency" name="Currency" value={formData.currency}
                         onChange={handleInputChange} >
                         {options.currency.map((currency, index) => (
-                            <option key={currency} value={index}>{currency}</option>
+                            <option key={index} value={currency}>{currency}</option>
                         ))}
                     </Form.Select>
                 </Col>
