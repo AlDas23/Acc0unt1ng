@@ -50,7 +50,7 @@ function Forms({ options }) {
                     </Form.Label>
                     <Form.Select id="inputCurrency" name="Currency" >
                         {options.currency.map((currency, index) => (
-                            <option key={currency} value={index}>{currency}</option>
+                            <option key={index} value={currency}>{currency}</option>
                         ))}
                     </Form.Select>
                 </Col>

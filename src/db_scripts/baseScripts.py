@@ -375,7 +375,7 @@ def Add(input_field, mode):
         elif mode == "currrate":
             values = input_field.split(",")
 
-            values[2] = round(values[1], 4)
+            values[2] = round(float(values[2]), 4)
             records = {
                 curr_keys[i]: values[i] for i in range(len(curr_keys))
             }  # Make dictionary with all values to add
