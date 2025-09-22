@@ -1,222 +1,6 @@
 from datetime import datetime
-import os.path
 import sqlite3
 from db_scripts.consts import *
-
-
-def NewDBase():
-    # Create or replace DB file using template
-    directory = os.path.dirname(dbPath)
-    if not os.path.exists(directory):
-        os.makedirs(directory)
-
-    if os.path.exists(dbPath):
-        os.remove(dbPath)
-
-    with sqlite3.connect(dbPath) as conn:
-        c = conn.cursor()
-
-        c.execute(
-            """CREATE TABLE main (
-                    id integer PRIMARY KEY,
-                    date text,
-                    category text,
-                    sub_category text,
-                    person_bank text,
-                    sum real,
-                    currency text,
-                    comment text
-                )"""
-        )
-        c.execute(
-            """CREATE TABLE exc_rate (
-                    date text,
-                    currency text,
-                    rate real
-                )"""
-        )
-        c.execute(
-            """CREATE TABLE deposit (
-                    date_in text,
-                    name text,
-                    owner text,
-                    sum real,
-                    currency text,
-                    months integer,
-                    date_out text,
-                    percent real,
-                    currency_rate real,
-                    expect real,
-                    comment text,
-                    isOpen integer
-                )"""
-        )
-        c.execute(
-            """CREATE TABLE transfer (
-                    id integer,
-                    date text,
-                    person_bank_from text,
-                    person_bank_to text,
-                    sum real,
-                    currency text,
-                    comment text
-                )"""
-        )
-        c.execute(
-            """CREATE TABLE advtransfer (
-                    id integer,
-                    date text,
-                    person_bank_from text,
-                    sum_from real,
-                    currency_from text,
-                    person_bank_to text,
-                    sum_to real,
-                    currency_to text,
-                    currency_rate real,
-                    comment text
-                )"""
-        )
-        c.execute(
-            """CREATE TABLE Init_PB (
-                    person_bank text,
-                    sum real,
-                    currency text
-                )"""
-        )
-        c.execute(
-            """CREATE TABLE Marker_owner (
-                    bank_rec text,
-                    owner text
-                )"""
-        )
-        c.execute(
-            """CREATE TABLE Marker_type (
-                    bank_rec text,
-                    type text
-                )"""
-        )
-        # Invest tables
-        c.execute(
-            """CREATE TABLE investTransaction (
-                    id integer PRIMARY KEY,
-                    date text,
-                    PB text,
-                    amount real,
-                    currency text,
-                    investPB text,
-                    investAmount real,
-                    stock text, 
-                    fee real
-                )"""
-        )
-        c.execute(
-            """CREATE TABLE investPB (
-                    name text,
-                    stock text
-                )"""
-        )
-        c.execute(
-            """CREATE TABLE investStockPrice (
-                    id integer PRIMARY KEY,
-                    date text,
-                    stock text,
-                    price real
-                )"""
-        )
-
-        conn.commit()
-
-
-def CheckDB():
-    expected_tables = {
-        "main": [
-            "id",
-            "date",
-            "category",
-            "sub_category",
-            "person_bank",
-            "sum",
-            "currency",
-            "comment",
-        ],
-        "exc_rate": ["date", "currency", "rate"],
-        "deposit": [
-            "date_in",
-            "name",
-            "owner",
-            "sum",
-            "currency",
-            "months",
-            "date_out",
-            "percent",
-            "currency_rate",
-            "expect",
-            "comment",
-            "isOpen",
-        ],
-        "transfer": [
-            "id",
-            "date",
-            "person_bank_from",
-            "person_bank_to",
-            "sum",
-            "currency",
-            "comment",
-        ],
-        "advtransfer": [
-            "id",
-            "date",
-            "person_bank_from",
-            "sum_from",
-            "currency_from",
-            "person_bank_to",
-            "sum_to",
-            "currency_to",
-            "currency_rate",
-            "comment",
-        ],
-        "Init_PB": ["person_bank", "sum", "currency"],
-        "Marker_owner": ["bank_rec", "owner"],
-        "Marker_type": ["bank_rec", "type"],
-        "investTransaction": [
-            "id",
-            "date",
-            "PB",
-            "amount",
-            "currency",
-            "investPB",
-            "investAmount",
-            "stock",
-            "fee",
-        ],
-        "investPB": ["name", "stock"],
-        "investStockPrice": ["id", "date", "stock", "price"],
-    }
-
-    if not os.path.exists(dbPath):
-        return 1
-
-    with sqlite3.connect(dbPath) as conn:
-        c = conn.cursor()
-        c.execute("SELECT name FROM sqlite_master WHERE type='table';")
-        existing_tables = [row[0] for row in c.fetchall()]
-        missing_tables = []
-        for table in expected_tables.keys():
-            if table not in existing_tables:
-                missing_tables.append(table)
-        if missing_tables:
-            print(f"Missing tables: {missing_tables}")
-            return 2
-        # Verify table structures
-        for table, expected_columns in expected_tables.items():
-            c.execute(f"PRAGMA table_info({table})")
-            actual_columns = [row[1] for row in c.fetchall()]
-            # Check if all expected columns exist
-            for column in expected_columns:
-                if column not in actual_columns:
-                    print(f"Table {table} missing column: {column}")
-                    return 3
-        return 0
 
 
 def Add(input_field, mode):
@@ -373,17 +157,31 @@ def Add(input_field, mode):
             c.execute("INSERT INTO Marker_type VALUES(?, ?)", (values[1], "deposit"))
 
         elif mode == "currrate":
-            values = input_field.split(",")
+            if isLegacyCurrencyRates:
+                values = input_field.split(",")
 
-            values[2] = round(float(values[2]), 4)
-            records = {
-                curr_keys[i]: values[i] for i in range(len(curr_keys))
-            }  # Make dictionary with all values to add
+                values[2] = round(float(values[2]), 4)
+                records = {
+                    curr_keys[i]: values[i] for i in range(len(curr_keys_legacy))
+                }  # Make dictionary with all values to add
 
-            c.execute(
-                "INSERT INTO exc_rate VALUES (:date, :currency, :rate)",
-                records,
-            )
+                c.execute(
+                    "INSERT INTO exc_rate VALUES (:date, :currency, :rate)",
+                    records,
+                )
+
+            else:
+                values = input_field.split(",")
+
+                values[4] = round(float(values[4]), 4)
+                records = {
+                    curr_keys[i]: values[i] for i in range(len(curr_keys))
+                }  # Make dictionary with all values to add
+
+                c.execute(
+                    "INSERT INTO exc_rate VALUES (NULL, :date, :currency_M, :currency_S, :rate)",
+                    records,
+                )
 
         conn.commit()
 
@@ -477,10 +275,6 @@ def Read(x):
                 """
             )
             return c.fetchall()
-        elif x == "allcurrrate":
-            c.execute("SELECT * FROM exc_rate ORDER BY date DESC")
-            return c.fetchall()
-
         elif x == "allmtype":
             c.execute(
                 """
@@ -766,7 +560,7 @@ def Read(x):
             return result
 
         elif x == "currrate":
-            c.execute("SELECT Date, Currency, Rate FROM exc_rate ORDER BY date")
+            c.execute("SELECT * FROM exc_rate ORDER BY date DESC, id DESC")
             return c.fetchall()
 
         elif x == "retcat":

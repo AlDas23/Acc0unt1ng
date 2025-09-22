@@ -8,9 +8,8 @@ from db_scripts.baseScripts import (
     MarkerRead,
     Re_Calculate_deposit,
     Read,
-    CheckDB,
-    NewDBase,
 )
+from db_scripts.dbScripts import CheckDB, NewDBase
 from db_scripts.csvScripts import read_csv, SPVconf
 from db_scripts.consts import *
 from helpers.decorators import db_required

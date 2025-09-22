@@ -56,8 +56,8 @@ def GetYearlyData(x):
             amount = row[2]  # amount of the transaction
             currency = row[3]  # currency of the transaction
 
-            # Convert the amount to RON
-            amount_in_ron = ConvertToRON(currency, amount, date)
+            # Convert the amount to main currency
+            amount_in_currency = ConvertTo(currency, amount, date)
 
             # Initialize the month entry if not already present
             if month not in monthly_data:
@@ -66,22 +66,22 @@ def GetYearlyData(x):
             # Categorize as expense or income
             if amount < 0:
                 monthly_data[month]["expense"] += abs(
-                    amount_in_ron
-                )  # sum of expenses in RON (absolute value)
+                    amount_in_currency
+                )  # sum of expenses in main currency (absolute value)
             else:
-                monthly_data[month]["income"] += amount_in_ron  # sum of income in RON
+                monthly_data[month]["income"] += amount_in_currency  # sum of income in main currency
 
             # Update the total (income - expense)
-            monthly_data[month]["total"] += amount_in_ron
+            monthly_data[month]["total"] += amount_in_currency
 
         # Convert monthly_data dictionary into a list of tuples
         for month, data in monthly_data.items():
-            # Prepare the tuple for each month: (month, expense_in_RON, income_in_RON, total_in_RON)
+            # Prepare the tuple for each month: (month, expense_in_currency, income_in_currency, total_in_currency)
             month_tuple = (
                 month,
-                int(data["income"]),  # income in RON
-                int(data["expense"]),  # expense in RON
-                int(data["total"]),  # total in RON
+                int(data["income"]),  # income in main currency
+                int(data["expense"]),  # expense in main currency
+                int(data["total"]),  # total in main currency
             )
             result.append(month_tuple)
 
@@ -102,22 +102,22 @@ def GetYearlyData(x):
             # Initialize monthly data structure
             if month not in monthly_data:
                 monthly_data[month] = {curr: 0 for curr in currencies}
-                monthly_data[month]["total_in_RON"] = 0
+                monthly_data[month]["total_in_currency"] = 0
 
             if currency in currencies:
                 # Sum original amount per currency
                 monthly_data[month][currency] += amount
 
-                # Convert to RON using exact date
-                total_in_RON = ConvertToRON(currency, amount, date)
-                monthly_data[month]["total_in_RON"] += total_in_RON
+                # Convert to main currency using exact date
+                total_in_currency = ConvertTo(currency, amount, date)
+                monthly_data[month]["total_in_currency"] += total_in_currency
 
         # Prepare final output
         for month in sorted(monthly_data.keys()):
             month_tuple = (
                 (month,)
                 + tuple(int(monthly_data[month][currency]) for currency in currencies)
-                + (int(monthly_data[month]["total_in_RON"]),)
+                + (int(monthly_data[month]["total_in_currency"]),)
             )
             result.append(month_tuple)
 
@@ -138,22 +138,22 @@ def GetYearlyData(x):
             # Initialize monthly data structure
             if month not in monthly_data:
                 monthly_data[month] = {curr: 0 for curr in currencies}
-                monthly_data[month]["total_in_RON"] = 0
+                monthly_data[month]["total_in_currency"] = 0
 
             if currency in currencies:
                 # Sum original amount per currency
                 monthly_data[month][currency] += amount
 
                 # Convert to RON using exact date
-                total_in_RON = ConvertToRON(currency, amount, date)
-                monthly_data[month]["total_in_RON"] += total_in_RON
+                total_in_currency = ConvertTo(currency, amount, date)
+                monthly_data[month]["total_in_currency"] += total_in_currency
 
         # Prepare final output
         for month in sorted(monthly_data.keys()):
             month_tuple = (
                 (month,)
                 + tuple(int(monthly_data[month][currency]) for currency in currencies)
-                + (int(monthly_data[month]["total_in_RON"]),)
+                + (int(monthly_data[month]["total_in_currency"]),)
             )
             result.append(month_tuple)
 
@@ -176,7 +176,7 @@ def GetTransactionHistory(type):
     elif type == "depositC":
         data = Read("closeddep")
     elif type == "currencyrates":
-        data = Read("allcurrrate")
+        data = Read("currrate")
 
     if type == "expense":
         for row in data:
@@ -264,15 +264,28 @@ def GetTransactionHistory(type):
             )
 
     elif type == "currencyrates":
-        for row in data:
-            row_list = list(row)
-            Finalhistory.append(
-                [
-                    row_list[0],  # date
-                    row_list[1],  # currency
-                    round(row_list[2], 4),  # rate
-                ]
-            )
+        if isLegacyCurrencyRates:
+            for row in data:
+                row_list = list(row)
+                Finalhistory.append(
+                    [
+                        row_list[0],  # date
+                        row_list[1],  # currency
+                        round(row_list[2], 4),  # rate
+                    ]
+                )
+        else:
+            for row in data:
+                row_list = list(row)
+                Finalhistory.append(
+                    [
+                        row_list[0],  # id
+                        row_list[1],  # date
+                        row_list[2],  # currency_M
+                        row_list[3],  # currency_S
+                        round(row_list[4], 4),  # rate
+                    ]
+                )
 
     return Finalhistory
 
@@ -359,7 +372,7 @@ def read_and_convert_data(x, mode, cursor):
             currency = row_list[0]
             amount = row_list[1]
 
-            converted_amount = ConvertToRON(currency, amount, current_date, cursor)
+            converted_amount = ConvertTo(currency, amount, current_date, cursor)
 
             modified_dict[currency] = converted_amount
 
@@ -370,7 +383,7 @@ def read_and_convert_data(x, mode, cursor):
             amount = row_list[1]
             currency_column = row_list[2]
 
-            converted_amount = ConvertToRON(
+            converted_amount = ConvertTo(
                 currency_column, amount, current_date, cursor
             )
 
@@ -429,7 +442,7 @@ def ConvReadPlus(x, mode):
             amount = round(row_list[1], 2)
             currency_column = row_list[2]
 
-            converted_amount = ConvertToRON(currency_column, amount, current_date, c)
+            converted_amount = ConvertTo(currency_column, amount, current_date, c)
 
             # Append the tuple with the converted amount
             modified_list.append((owner, currency_column, amount, converted_amount))
@@ -486,7 +499,7 @@ def GenerateReport(rType, rFormat, categoryFilter):
                     for row in data:
                         category, amount, currency, date = row
                         amount = abs(round(amount, 2))
-                        convertedAmount = ConvertToRON(currency, amount, date, c)
+                        convertedAmount = ConvertTo(currency, amount, date, c)
                         converted.append((category, convertedAmount))
                 else:
                     converted.append((cat, 0))
@@ -585,7 +598,7 @@ def ReadAdv(type, month):
                 amount = row_list[2]
                 date = row_list[3]
 
-                converted_amount = ConvertToRON(currency, amount, date, c)
+                converted_amount = ConvertTo(currency, amount, date, c)
 
                 if category in modified_dict:
                     modified_dict[category] += converted_amount
@@ -639,7 +652,7 @@ def ReadAdv(type, month):
                 amount = row_list[2]
                 date = row_list[3]
 
-                converted_amount = ConvertToRON(currency, amount, date, c)
+                converted_amount = ConvertTo(currency, amount, date, c)
 
                 if category in modified_dict:
                     modified_dict[category] += converted_amount
@@ -709,7 +722,7 @@ def ReadAdv(type, month):
                 amount = row_list[2]
                 date = row_list[3]
 
-                converted_amount = ConvertToRON(currency, amount, date, c)
+                converted_amount = ConvertTo(currency, amount, date, c)
 
                 if subCategory in modified_dict:
                     modified_dict[subCategory] += converted_amount
@@ -730,6 +743,35 @@ def ReadAdv(type, month):
             ]
 
         return modified_list
+
+
+def ConvertTo(currency, amount, date, c=None):
+    if c is None:
+        conn = sqlite3.connect(dbPath)
+        c = conn.cursor()
+
+    if isLegacyCurrencyRates:
+        return ConvertToRON(currency, amount, date, c)
+    else:
+        if currency != mainCurrency:
+            query = """
+                SELECT rate 
+                FROM exc_rate 
+                WHERE currency_M = ? AND currency_S = ?
+                ORDER BY ABS(JULIANDAY(date) - JULIANDAY(?))
+                LIMIT 1
+            """
+            c.execute(query, (mainCurrency, currency, date))
+            excRate_row = c.fetchone()
+            if excRate_row != None:
+                excRate = excRate_row[0]  # Extract the exchange rate
+            else:
+                excRate = 1
+        else:
+            excRate = 1
+        converted_amount = int(amount * excRate)
+
+        return converted_amount
 
 
 def ConvertToRON(currency, amount, date, c=None):
