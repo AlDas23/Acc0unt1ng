@@ -13,7 +13,7 @@ from db_scripts.dbScripts import CheckDB, NewDBase
 from db_scripts.csvScripts import read_csv, SPVconf
 from db_scripts.consts import *
 from helpers.decorators import db_required
-from helpers.genPlot import plot_to_img_tag
+from helpers.genPlot import CurrencyRatePlot, plot_to_img_tag_legacy
 from api.api_invest import investPage
 
 app = Flask(__name__)
@@ -206,28 +206,32 @@ def GetHistory(source):
         return payload
 
 
-@app.route("/get/plot/<string:source>", methods=["GET"])
+@app.route("/get/plot/<string:source>/<string:source>", methods=["GET"])
 @db_required
-def GetPlot(source):
-    if source == "currencyrates":
-        try:
+def GetPlot(source, filters = None):
+    try:
+        if source == "currencyrates":
             data = Read("currrate")
-            plot1 = plot_to_img_tag(data, "Currency Rates Over Time", "Date", "Rate")
-            payload = jsonify({"success": True, "plot": plot1})
-        except Exception as e:
-            print(f"Error occurred: {str(e)}")
-            error_message = str(e)
-            payload = (
-                jsonify(
-                    {
-                        "success": False,
-                        "message": error_message,
-                    }
-                ),
-                400,
-            )
-        finally:
-            return payload
+            if isLegacyCurrencyRates:
+                plot = plot_to_img_tag_legacy(data, "Currency Rates Over Time", "Date", "Rate")
+            else:
+                filterArr = filters.split("-")
+                plot = CurrencyRatePlot(data, filterArr)
+            payload = jsonify({"success": True, "plot": plot})
+    except Exception as e:
+        print(f"Error occurred: {str(e)}")
+        error_message = str(e)
+        payload = (
+            jsonify(
+                {
+                    "success": False,
+                    "message": error_message,
+                }
+            ),
+            400,
+        )
+    finally:
+        return payload
 
 
 @app.route("/add/expense", methods=["POST"])
@@ -640,8 +644,10 @@ def DBStatus():
         return jsonify({"success": True})
     elif status == 1:
         return jsonify({"success": False, "corrupt": False})
-    else:
+    elif status == 2 or status == 3:
         return jsonify({"success": False, "corrupt": True})
+    elif status < 0:
+        return jsonify({"success": True, "legacy": True})
 
 
 @app.route("/database/create", methods=["POST"])

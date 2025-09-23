@@ -6,7 +6,7 @@ import pandas as pd
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-def plot_to_img_tag(data, title, xlabel, ylabel):
+def plot_to_img_tag_legacy(data, title, xlabel, ylabel):
     # Use subplots for better control over the figure and axes
     fig, ax = plt.subplots(figsize=(12, 6))
 
@@ -50,3 +50,7 @@ def plot_to_img_tag(data, title, xlabel, ylabel):
     plt.close(fig)
     
     return f"data:image/png;base64,{img_tag}"
+
+def CurrencyRatePlot(data, filters):
+    # TODO: Implement plot generation with filters
+    pass
