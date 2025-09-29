@@ -307,11 +307,11 @@ export default function BalancePage() {
                     <div className="col-md-6">
                         <h3>Balance Filter</h3>
                         <br />
-                        <FilterBalance
+                        {options && (<FilterBalance
                             options={options}
                             filters={filters}
                             handleFilterChange={handleFilterChange}
-                        />
+                        />)}
                         <br />
                         {balanceData && (<HistoryTable
                             columns={["Person bank", "Currency", "Sum"]}
