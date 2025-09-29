@@ -247,17 +247,13 @@ export default function IncomePage() {
             },
             body: JSON.stringify(RequestData)
         })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-                return response.json();
-            })
+            .then(response => response.json())
             .then(data => {
                 if (data.success) {
+                    resetForm();
                     window.location.reload();
                 } else {
-                    alert('Error: ' + (data.message || 'Failed to add transaction'));
+                    alert('Error: ' + (data.message || 'Failed to process transaction'));
                 }
             })
             .catch(error => {
