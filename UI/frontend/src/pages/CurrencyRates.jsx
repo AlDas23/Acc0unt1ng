@@ -7,6 +7,15 @@ import Form from 'react-bootstrap/Form';
 import Row from 'react-bootstrap/Row';
 import '../assets/styles/CurrRatePageStyles.css'
 
+function LegacyPlotComponent({ imageUrl }) {
+    return (
+        <>
+            <h3>Currency dynamics plot</h3>
+            <img id="CurrRatePlot" src={imageUrl} alt="Currency dynamics plot" />
+        </>
+    );
+}
+
 function FormsLegacy({ options }) {
     return (
         <Form noValidate className="form" id="form" onSubmit={(e) => {
@@ -88,12 +97,12 @@ function Forms({ options }) {
             const formDataObj = new FormData(form);
             const formObject = Object.fromEntries(formDataObj.entries());
 
-            if (formObject.currency_S === "" && formDataObj.currency_M) {
+            if (formObject.Currency_S === "" && formDataObj.Currency_M) {
                 alert("Currency cannot be empty!")
                 return false;
             }
 
-            if (formObject.currency_S === formDataObj.currency_M) {
+            if (formObject.Currency_S === formDataObj.Currency_M) {
                 alert("Selected currencies cannot be same!")
                 return false;
             }
@@ -103,13 +112,24 @@ function Forms({ options }) {
                 return false;
             }
 
+            if (formObject.IsReverse) {
+                formObject.Rate = 1 / formObject.Rate;
+            }
+
+            const payload = {
+                date: formObject.date,
+                currency_S: formDataObj.Currency_S,
+                currency_M: formDataObj.Currency_M,
+                rate: formDataObj.Rate
+            }
+
             // Send POST request
             fetch("/api/add/currencyrates", {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(formObject)
+                body: JSON.stringify(payload)
             })
                 .then(response => response.json())
                 .then(data => {
@@ -159,6 +179,16 @@ function Forms({ options }) {
                     </Form.Label>
                     <Form.Control type="text" id="inputRate" name="Rate" autoComplete="off" />
                 </Col>
+                <Col xl="1">
+                    <Form.Label htmlFor="checkReverse">
+                        Calculate reverse rate
+                    </Form.Label>
+                    <Form.Check
+                        type="switch"
+                        id="checkReverse"
+                        name="IsReverse"
+                    />
+                </Col>
             </Row>
             <Row>
                 <Button type="submit" value="Submit" id="SubmitButton">Submit</Button>
@@ -167,86 +197,98 @@ function Forms({ options }) {
     );
 };
 
+function PlotComponent({ currencyList, onFilterChange, FetchFilteredPlot, imageUrl }) {
+    const rows = [];
+    for (let i = 0; i < currencyList.length; i += 4) {
+        rows.push(currencyList.slice(i, i + 4));
+    }
+
+    return (
+        <>
+            <h3>Currency dynamics plot</h3>
+            <br />
+            <p>Select currencies to display on the plot:</p>
+            <Form noValidate className="form" id="plotFilters" onSubmit={FetchFilteredPlot}>
+                {rows.map((row) => (
+                    <Row>
+                        <ToggleButtonGroup type="checkbox">
+                            {row.map((name, nameIndex) => (
+                                <Form.Label key={name} className="checkbox-item">
+                                    <ToggleButton
+                                        name={name}
+                                        id={`checkbox-${nameIndex}`}
+                                        onChange={(e) => onFilterChange && onFilterChange(name, e.target.checked)}
+                                    >
+                                        {name}
+                                    </ToggleButton>
+                                </Form.Label>
+                            ))}
+                        </ToggleButtonGroup>
+                    </Row>
+                ))}
+                <br />
+                <Button type="submit" value="Submit" id="ApplyFiltersButton">Apply Filters</Button>
+            </Form>
+            <br />
+            <img id="CurrRatePlot" src={imageUrl} alt="Currency dynamics plot" />
+        </>
+    )
+};
+
 export default function CurrencyRatesPage() {
     const [options, setOptions] = useState(null);
     const [history, setHistory] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [imageUrl, setImageUrl] = useState(null);
-    const [isLegacy, setIsLegacy] = useState(null)
+    const [isLegacy, setIsLegacy] = useState(null);
+    const [selectedCurrencies, setSelectedCurrencies] = useState([]);
 
     useEffect(() => {
         document.title = "Currency Rates";
-    }, []);
 
-    useEffect(() => {
-        // Check if db is legacy version
-        CheckLegacy()
-            .then(result => {
-                if (result) {
-                    console.info("Legacy DB used! Switching to legacy mode")
-                    setIsLegacy(true)
+        const initializeApp = async () => {
+            try {
+                // Check if DB is legacy
+                const isLegacyResult = await CheckLegacy();
+                if (isLegacyResult) {
+                    console.info("Legacy DB schema used! Switching to legacy mode");
+                    setIsLegacy(true);
+                } else {
+                    setIsLegacy(false);
                 }
-            })
 
-        // Fetch options
-        GetOptions()
-            .then(optionsData => {
+                const [optionsData, historyData, plotUrl] = await Promise.all([
+                    GetOptions(),
+                    GetHistory(),
+                    GetPlot()
+                ]);
+
                 setOptions(optionsData);
-            })
-            .catch(error => {
-                setError('Failed to load options: ' + error.message);
-                setLoading(false);
-                console.error('Error loading options:', error);
-            });
-
-        // Fetch history
-        GetHistory()
-            .then(historyData => {
                 setHistory(historyData);
-            })
-            .catch(error => {
-                setError('Failed to load history: ' + error.message);
+                setImageUrl(plotUrl);
                 setLoading(false);
-                console.error('Error loading history:', error);
-            });
 
-        // Fetch plot image
-        GetPlot()
-            .then(url => {
-                setImageUrl(url);
+            } catch (error) {
+                setError('Failed to initialize page: ' + error.message);
                 setLoading(false);
-            })
-            .catch(error => {
-                setError('Failed to load plot: ' + error.message);
-                setLoading(false);
-                console.error('Error loading plot:', error);
-            });
+                console.error('Error initializing page:', error);
+            }
+        };
 
+        initializeApp();
     }, []);
 
     const CheckLegacy = () => {
         return fetch(`/api/database/status`)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.legacy) {
-                    return true
-                }
-                else {
-                    return false
-                }
-            })
+            .then(response => response.json())
+            .then(data => data.legacy || false)
             .catch(error => {
                 console.error('Error fetching db status:', error);
                 alert('Unexpected error occurred while fetching db status: ' + error.message);
                 throw error;
             });
-    }
+    };
 
     const GetOptions = () => {
         return fetch(`/api/get/options/currencyrates`)
@@ -305,31 +347,75 @@ export default function CurrencyRatesPage() {
     }
 
     const GetPlot = () => {
-        return fetch(`/api/get/plot/currencyrates`)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.redirect) {
-                    alert('Database is missing or corrupted. You will be redirected to the setup page.');
-                    window.location.href = data.redirect;
-                    return Promise.reject('Redirect initiated');
-                }
+        if (isLegacy) {
+            return fetch(`/api/get/plot/currencyrates`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.redirect) {
+                        alert('Database is missing or corrupted. You will be redirected to the setup page.');
+                        window.location.href = data.redirect;
+                        return Promise.reject('Redirect initiated');
+                    }
 
-                if (data.success) {
-                    return data.plot;
-                } else {
-                    throw new Error(data.message || 'Failed to load plot');
-                }
-            })
-            .catch(error => {
-                console.error('Error fetching plot:', error);
-                alert('Unexpected error occurred while fetching plot: ' + error.message);
-                throw error;
-            });
+                    if (data.success) {
+                        return data.plot;
+                    } else {
+                        throw new Error(data.message || 'Failed to load plot');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching plot:', error);
+                    alert('Unexpected error occurred while fetching plot: ' + error.message);
+                    throw error;
+                });
+        } else {
+            const filters = selectedCurrencies.length > 0 ? selectedCurrencies.join("-") : "None";
+
+            return fetch(`/api/get/plot/currencyrates/${filters}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.redirect) {
+                        alert('Database is missing or corrupted. You will be redirected to the setup page.');
+                        window.location.href = data.redirect;
+                        return Promise.reject('Redirect initiated');
+                    }
+
+                    if (data.success) {
+                        return data.plot;
+                    } else {
+                        throw new Error(data.message || 'Failed to load plot');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching plot:', error);
+                    alert('Unexpected error occurred while fetching plot: ' + error.message);
+                    throw error;
+                });
+        }
+    }
+
+    const onFilterChange = (currency, isChecked) => {
+        if (isChecked) {
+            setSelectedCurrencies(prev => [...prev, currency]);
+        } else {
+            setSelectedCurrencies(prev => prev.filter(c => c !== currency));
+        }
+    }
+
+    const FetchFilteredPlot = (e) => {
+        e.preventDefault();
+
+        GetPlot
     }
 
     if (loading) {
@@ -380,8 +466,13 @@ export default function CurrencyRatesPage() {
                         />)}
                     </div>
                     <div className="col-md-8" id="plot-col">
-                        <h3>Currency dynamics plot</h3>
-                        {imageUrl && (<img id="CurrRatePlot" src={imageUrl} alt="Currency dynamics plot" />)}
+                        {isLegacy ? (imageUrl && <LegacyPlotComponent imageUrl={imageUrl} />)
+                            : (imageUrl && options && <PlotComponent
+                                currencyList={options.currency}
+                                onFilterChange={onFilterChange}
+                                FetchFilteredPlot={FetchFilteredPlot}
+                                imageUrl={imageUrl}
+                            />)}
                     </div>
                 </div>
             </div>
