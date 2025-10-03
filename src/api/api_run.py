@@ -8,6 +8,7 @@ from db_scripts.baseScripts import (
     MarkerRead,
     Re_Calculate_deposit,
     Read,
+    ReadLegacy,
 )
 from db_scripts.dbScripts import CheckDB, NewDBase
 from db_scripts.csvScripts import read_csv, SPVconf
@@ -208,14 +209,19 @@ def GetHistory(source):
 
 @app.route("/get/plot/<string:source>/<string:source>", methods=["GET"])
 @db_required
-def GetPlot(source, filters = None):
+def GetPlot(source, filters=None):
     try:
         if source == "currencyrates":
-            data = Read("currrate")
             if isLegacyCurrencyRates:
-                plot = plot_to_img_tag_legacy(data, "Currency Rates Over Time", "Date", "Rate")
+                data = ReadLegacy("currrate")
+                plot = plot_to_img_tag_legacy(
+                    data, "Currency Rates Over Time", "Date", "Rate"
+                )
             else:
+                data = Read("currrateplot")
                 filterArr = filters.split("-")
+                if filterArr == ["None"]:
+                    filterArr = None
                 plot = CurrencyRatePlot(data, filterArr)
             payload = jsonify({"success": True, "plot": plot})
     except Exception as e:

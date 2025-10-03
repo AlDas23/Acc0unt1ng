@@ -415,7 +415,14 @@ export default function CurrencyRatesPage() {
     const FetchFilteredPlot = (e) => {
         e.preventDefault();
 
-        GetPlot
+        GetPlot()
+            .then(plotUrl => {
+                setImageUrl(plotUrl);
+            })
+            .catch(error => {
+                console.error('Error fetching filtered plot:', error);
+                alert('Unexpected error occurred while fetching filtered plot: ' + error.message);
+            });
     }
 
     if (loading) {
