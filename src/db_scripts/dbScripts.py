@@ -146,7 +146,7 @@ def CheckDB():
 
         if CheckDBLegacy() == -1:
             return -1
-        if CheckDBStructure() == -3:
+        if CheckDBStructure() == 3:
             return 3
         return 0
 
@@ -179,3 +179,62 @@ def CheckDBLegacy():
                 isLegacyCurrencyRates = True
                 return -1
         return 0
+
+
+def UpdateDB():
+    if mainCurrency == None:
+        raise Exception("Main currency not set! Can't update DB")
+
+    if isLegacyCurrencyRates == False:
+        raise Exception("DB is already up to date! Can't update DB")
+    else:
+        print("Initiate DB update...\n")
+        with sqlite3.connect(dbPath) as conn:
+            c = conn.cursor()
+
+            # Collect all data from old exc_rate table
+            c.execute("SELECT * FROM exc_rate")
+            old_rates = c.fetchall()
+            print("Saved old exhange rates")
+
+            # Drop old exc_rate table
+            c.execute("DROP TABLE IF EXISTS exc_rate")
+            conn.commit()
+            print("Removed old table")
+
+            # Create new exc_rate table
+            c.execute(
+                """CREATE TABLE exc_rate (
+                        id integer PRIMARY KEY,
+                        date text,
+                        currency_M text,
+                        currency_S text,
+                        rate real
+                    )"""
+            )
+            conn.commit()
+            print("Created new table")
+
+            # Migrate old data to new exc_rate table
+            new_rates = []
+            for rate in old_rates:
+                date, currency_S, curr_rate = rate
+                if currency_S == mainCurrency:
+                    continue  # Skip rates that are already in main currency
+                new_rates.append((date, mainCurrency, currency_S, curr_rate))
+
+            c.executemany(
+                "INSERT INTO exc_rate (id, date, currency_M, currency_S, rate) VALUES (NULL, ?, ?, ?, ?)",
+                new_rates,
+            )
+            conn.commit()
+            print("Migrated old data to new table")
+
+            # Read new exc_rate table
+            c.execute("SELECT * FROM exc_rate")
+            all_rates = c.fetchall()
+            print(f"Total {len(all_rates)} exchange rates in new table")
+            print("DB update completed successfully")
+            isLegacyCurrencyRates = False
+
+            return 0
