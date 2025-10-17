@@ -11,7 +11,7 @@ from db_scripts.baseScripts import (
     ReadLegacy,
 )
 from db_scripts.dbScripts import CheckDB, NewDBase
-from db_scripts.csvScripts import read_csv, SPVconf
+from db_scripts.SPVScripts import SPVconf, read_spv
 from db_scripts.consts import *
 from helpers.decorators import db_required
 from helpers.genPlot import CurrencyRatePlot, plot_to_img_tag_legacy
@@ -32,7 +32,7 @@ def health_check():
 def GetList(source):
     try:
         if source == "categories_exp":
-            expCategories = read_csv(SPVcatExpPath)
+            expCategories = read_spv(SPVcatExpPath)
             payload = jsonify(
                 {
                     "success": True,
@@ -40,7 +40,7 @@ def GetList(source):
                 }
             )
         elif source == "categories_inc":
-            incCategories = read_csv(SPVcatIncPath)
+            incCategories = read_spv(SPVcatIncPath)
             payload = jsonify(
                 {
                     "success": True,
@@ -48,7 +48,7 @@ def GetList(source):
                 }
             )
         elif source == "subcategories":
-            subCategories = read_csv(SPVsubcatPath)
+            subCategories = read_spv(SPVsubcatPath)
             payload = jsonify(
                 {
                     "success": True,
@@ -56,7 +56,7 @@ def GetList(source):
                 }
             )
         elif source == "currency":
-            currencies = read_csv(SPVcurrPath)
+            currencies = read_spv(SPVcurrPath)
             payload = jsonify(
                 {
                     "success": True,
@@ -98,9 +98,9 @@ def GetList(source):
 def GetOptions(source):
     try:
         if source == "expense":
-            categories = read_csv(SPVcatExpPath)
-            sub_categories = read_csv(SPVsubcatPath)
-            currencies = read_csv(SPVcurrPath)
+            categories = read_spv(SPVcatExpPath)
+            sub_categories = read_spv(SPVsubcatPath)
+            currencies = read_spv(SPVcurrPath)
             person_banks = Read("retacc")
             options = {
                 "categories": categories,
@@ -110,8 +110,8 @@ def GetOptions(source):
             }
 
         elif source == "income":
-            categories = read_csv(SPVcatIncPath)
-            currencies = read_csv(SPVcurrPath)
+            categories = read_spv(SPVcatIncPath)
+            currencies = read_spv(SPVcurrPath)
             person_banks = Read("retacc")
             options = {
                 "categories": categories,
@@ -120,7 +120,7 @@ def GetOptions(source):
             }
 
         elif source == "transfer":
-            currencies = read_csv(SPVcurrPath)
+            currencies = read_spv(SPVcurrPath)
             person_banks = Read("retacc")
             options = {
                 "currency": currencies,
@@ -128,7 +128,7 @@ def GetOptions(source):
             }
 
         elif source == "deposit":
-            currencies = read_csv(SPVcurrPath)
+            currencies = read_spv(SPVcurrPath)
             person_banks = Read("retacc")
             options = {
                 "currencies": currencies,
@@ -136,7 +136,7 @@ def GetOptions(source):
             }
 
         elif source == "currencyrates":
-            currencies = read_csv(SPVcurrPath)
+            currencies = read_spv(SPVcurrPath)
             options = {
                 "currency": currencies,
             }
@@ -671,10 +671,10 @@ def DBCreate():
 def SPVControl():
     if request.method == "GET":
         try:
-            expCat = read_csv(SPVcatExpPath)
-            incCat = read_csv(SPVcatIncPath)
-            subCat = read_csv(SPVsubcatPath)
-            curr = read_csv(SPVcurrPath)
+            expCat = read_spv(SPVcatExpPath)
+            incCat = read_spv(SPVcatIncPath)
+            subCat = read_spv(SPVsubcatPath)
+            curr = read_spv(SPVcurrPath)
             data = {
                 "currency": curr,
                 "incomeCategories": incCat,
@@ -706,10 +706,10 @@ def SPVControl():
             return "Error: No JSON data received", 400
 
         try:
-            SPVconf("curr", content.get("curr", []))
-            SPVconf("inccat", content.get("incCat", []))
-            SPVconf("expcat", content.get("expCat", []))
-            SPVconf("subcat", content.get("subCat", []))
+            SPVconf("currencies", content.get("curr", []))
+            SPVconf("inc-categories", content.get("incCat", []))
+            SPVconf("exp-categories", content.get("expCat", []))
+            SPVconf("sub-categories", content.get("subCat", []))
             return jsonify({"success": True})
         except Exception as e:
             print(f"Error occurred: {str(e)}")

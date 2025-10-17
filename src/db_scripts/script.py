@@ -3,7 +3,7 @@ import pandas as pd
 from datetime import datetime
 from db_scripts.baseScripts import Read, MarkerRead
 from db_scripts.consts import *
-from db_scripts.csvScripts import read_csv
+from db_scripts.SPVScripts import read_csv
 
 
 def UpdateRecord(inp, mode):

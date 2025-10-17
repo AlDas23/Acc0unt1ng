@@ -22,7 +22,7 @@ defaultConfig = {
 }
 
 
-def CreateConfig():
+def CreateDefaultConfig():
     if not os.path.exists(configPath):
         with open(configPath, "w") as cf:
             toml.dump(defaultConfig, cf)
@@ -43,7 +43,7 @@ def ModifyConfigSettings(param, value):
         with open(configPath, "w") as cf:
             toml.dump(configData, cf)
         print(f"Config setting '{param}' updated successfully.")
-        return
+        LoadConfig()
 
 
 def ModifyConfigLists(NewList, listType):
@@ -58,15 +58,15 @@ def ModifyConfigLists(NewList, listType):
         with open(configPath, "w") as cf:
             toml.dump(configData, cf)
         print(f"Config list '{listType}' updated successfully.")
-        return
+        LoadConfig()
 
 
 def LoadConfig():
     if not os.path.exists(configPath):
-        raise FileNotFoundError("Config file does not exist.")
-    else:
-        with open(configPath, "r") as cf:
-            configData = toml.load(cf)
+        CreateDefaultConfig()
+
+    with open(configPath, "r") as cf:
+        configData = toml.load(cf)
 
         print("Config version:", configData.get("version", "N/A"))
         AssignGlobalConstants(configData)
