@@ -124,3 +124,8 @@ old_tables = {
 isLegacyCurrencyRates = False
 
 mainCurrency = None
+
+incCategories = []
+expCategories = []
+subCategories = []
+currencies = []
