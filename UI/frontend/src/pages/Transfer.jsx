@@ -218,8 +218,8 @@ function AdvancedTransferForm({ options, formData, handleInputChange, editMode, 
                 return false;
             }
 
-            if (formObject.ADVSender === formObject.ADVReceiver) {
-                alert("Sender and Receiver cannot be the same.");
+            if ((formObject.ADVSender === formObject.ADVReceiver) && (formObject.SCurrency === formObject.RCurrency)) {
+                alert("Sender and Receiver with same currency is prohibited.");
                 return false;
             }
 
