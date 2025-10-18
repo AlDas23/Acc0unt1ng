@@ -7,28 +7,28 @@ from helpers.configScripts import ModifyConfigLists
 def read_spv(file_name):
     # Check if new format const exists
     if file_name == SPVcatExpPath:
-        if expCategories is not None:
+        if expCategories is not None and expCategories:
             return expCategories
     elif file_name == SPVcatIncPath:
-        if incCategories is not None:
+        if incCategories is not None and incCategories:
             return incCategories
     elif file_name == SPVsubcatPath:
-        if subCategories is not None:
+        if subCategories is not None and subCategories:
             return subCategories
     elif file_name == SPVcurrPath:
-        if currencies is not None:
+        if currencies is not None and currencies:
             return currencies
-    else:
-        values = []
-        try:
-            with open(file_name, newline="") as csvfile:
-                reader = csv.reader(csvfile)
-                for row in reader:
-                    if row:
-                        values.append(row[0])
-        except FileNotFoundError:
-            print(f"File {file_name} not found.")
-        return values
+
+    values = []
+    try:
+        with open(file_name, newline="") as csvfile:
+            reader = csv.reader(csvfile)
+            for row in reader:
+                if row:
+                    values.append(row[0])
+    except FileNotFoundError:
+        print(f"File {file_name} not found.")
+    return values
 
 
 def SPVconf(param, new_SPV):

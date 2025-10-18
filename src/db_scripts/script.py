@@ -1,9 +1,8 @@
 import sqlite3
-import pandas as pd
 from datetime import datetime
 from db_scripts.baseScripts import Read, MarkerRead
 from db_scripts.consts import *
-from db_scripts.SPVScripts import read_csv
+from db_scripts.SPVScripts import read_spv
 
 
 def UpdateRecord(inp, mode):
@@ -90,7 +89,7 @@ def GetYearlyData(x):
     elif x == "yearexprep":
         result = []
         rows = Read("yearexp")
-        currencies = read_csv(SPVcurrPath)
+        currencies = read_spv(SPVcurrPath)
         monthly_data = {}
 
         for row in rows:
@@ -126,7 +125,7 @@ def GetYearlyData(x):
     elif x == "yearincrep":
         result = []
         rows = Read("yearinc")
-        currencies = read_csv(SPVcurrPath)
+        currencies = read_spv(SPVcurrPath)
         monthly_data = {}
 
         for row in rows:
@@ -674,25 +673,25 @@ def ReadAdv(type, month):
 
             return modified_list
 
-        elif type == "catincbankrep":
-            categories_df = pd.read_csv(SPVcatIncPath, header=None)
-            categories_list = categories_df[0].tolist()
+        # elif type == "catincbankrep":
+        #     categories_df = pd.read_csv(SPVcatIncPath, header=None)
+        #     categories_list = categories_df[0].tolist()
 
-            query = """
-            SELECT category, person_bank, currency, ROUND(SUM(sum), 2)
-            FROM main
-            WHERE category IN ({})
-            AND strftime("%m", date) = ?
-            GROUP BY category, person_bank
-            ORDER BY category, person_bank DESC
-            """.format(
-                ",".join("?" for _ in categories_list)
-            )
+        #     query = """
+        #     SELECT category, person_bank, currency, ROUND(SUM(sum), 2)
+        #     FROM main
+        #     WHERE category IN ({})
+        #     AND strftime("%m", date) = ?
+        #     GROUP BY category, person_bank
+        #     ORDER BY category, person_bank DESC
+        #     """.format(
+        #         ",".join("?" for _ in categories_list)
+        #     )
 
-            params = categories_list + [month]
-            c.execute(query, params)
+        #     params = categories_list + [month]
+        #     c.execute(query, params)
 
-            return c.fetchall()
+        #     return c.fetchall()
 
         elif type == "subcatrep":
             subcatQuery = "SELECT DISTINCT sub_category FROM main WHERE sum < 0"

@@ -298,6 +298,7 @@ export function OptionsPBPage() {
 
 export function OptionsDBPage() {
     const [currentLists, setCurrentLists] = useState({ curr: [], incCat: [], expCat: [], subCat: [] });
+    const [mainCurrency, setMainCurrency] = useState('');
     const [isDBExists, setIsDBExists] = useState(false);
     const [show, setShow] = useState(false);
     const [confirmationText, setConfirmationText] = useState('');
@@ -305,6 +306,7 @@ export function OptionsDBPage() {
     const [incCatValues, setIncCatValues] = useState('');
     const [expCatValues, setExpCatValues] = useState('');
     const [subCatValues, setSubCatValues] = useState('');
+    const [canUpdateDB, setCanUpdateDB] = useState(false);
 
     useEffect(() => {
         document.title = "Database options";
@@ -317,7 +319,9 @@ export function OptionsDBPage() {
                     const incCat = data.data.incomeCategories || [];
                     const expCat = data.data.expenseCategories || [];
                     const subCat = data.data.subCategories || [];
+                    const mainCurrency = data.data.mainCurrency || '';
 
+                    setMainCurrency(mainCurrency);
                     setCurrentLists({ curr, incCat, expCat, subCat });
                     setCurrencyValues(curr.join("\n"));
                     setIncCatValues(incCat.join("\n"));
@@ -337,6 +341,9 @@ export function OptionsDBPage() {
             .then(data => {
                 if (data.success) {
                     setIsDBExists(true);
+                    if (data.legacy) {
+                        setCanUpdateDB(true);
+                    }
                 } else if (data.corrupt) {
                     setIsDBExists(true); // DB exists but is corrupted
                 } else if (!data.success && !data.corrupt) {
@@ -383,6 +390,26 @@ export function OptionsDBPage() {
                 alert(`An error occurred while ${action === 'create' ? 'creating' : 'recreating'} the database.`);
             });
     };
+
+    const requestDBUpdate = () => {
+        fetch('/api/database/update', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Database updated successfully! The application will now reload.');
+                    window.location.reload();
+                } else {
+                    alert('Error: ' + (data.message || 'Failed to update database'));
+                }
+            }
+            )
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+    }
 
 
     const saveChanges = (e) => {
@@ -451,6 +478,68 @@ export function OptionsDBPage() {
                         </Row>
                     </Form>
                 </div>
+                <div>
+                    <br />
+                    <br />
+                    <h2>Main Currency</h2>
+                    <p>
+                        Current main currency is set to: <b>{mainCurrency || "Not Set"}</b>
+                        <br />
+                        Main currency is used by system to calculate overall balances and totals.
+                        It is reccomended to set main currency to the one you use the most often.
+                    </p>
+                    <Form noValidate id="main-curr-form" onSubmit={(e) => {
+                        e.preventDefault();
+                        const formData = new FormData(e.target);
+                        const newMainCurrency = formData.get("main-currency").trim();
+                        fetch('/api/spv/maincurrency', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ mainCurrency: newMainCurrency }),
+                        })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    window.location.reload();
+                                } else {
+                                    alert('Error: ' + (data.message || 'Failed to update main currency'));
+                                }
+                            })
+                            .catch((error) => {
+                                console.error('Error:', error);
+                            });
+                    }}>
+                        <Row>
+                            <Form.Label htmlFor="main-currency">Set Main Currency</Form.Label>
+                            <Form.Select id="main-currency" name="main-currency" defaultValue={mainCurrency || ""}>
+                                <option value="" disabled>Select currency</option>
+                                {currentLists.curr.map((currency, index) => (
+                                    <option key={index} value={currency}>{currency}</option>
+                                ))}
+                            </Form.Select>
+                            <Button variant="primary" type="submit" id="save-main-curr-btn" className="mt-2">
+                                Save Main Currency
+                            </Button>
+                        </Row>
+                    </Form>
+                </div>
+                {canUpdateDB && (<div className="update-db-section">
+                    <br />
+                    <h2>Database Update Available</h2>
+                    <p>
+                        Database scheme update is available. By pressing button below you can accept the new version.
+                        Existing data will be converted, <b>BUT</b> it is possible for it to convert incorrectly in case of specific useage.
+                        It is reccomended to back-up database file before updating.
+                    </p>
+                    <Button
+                        variant="warning"
+                        id="db-update-btn"
+                        onClick={requestDBUpdate}
+                    >
+                        Update Database
+                    </Button>
+                    <br />
+                </div>)}
                 <div className="row" id="db-control-section">
                     <h2>Database Control</h2>
                     <Button

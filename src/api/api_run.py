@@ -10,15 +10,17 @@ from db_scripts.baseScripts import (
     Read,
     ReadLegacy,
 )
-from db_scripts.dbScripts import CheckDB, NewDBase
+from db_scripts.dbScripts import CheckDB, NewDBase, UpdateDB as UDB
 from db_scripts.SPVScripts import SPVconf, read_spv
 from db_scripts.consts import *
+from helpers.configScripts import ModifyConfigSettings
 from helpers.decorators import db_required
 from helpers.genPlot import CurrencyRatePlot, plot_to_img_tag_legacy
-from api.api_invest import investPage
+
+# from api.api_invest import investPage
 
 app = Flask(__name__)
-app.register_blueprint(investPage, url_prefix="/")
+# app.register_blueprint(investPage, url_prefix="/")
 CORS(app, resources=r"/*")
 
 
@@ -207,7 +209,7 @@ def GetHistory(source):
         return payload
 
 
-@app.route("/get/plot/<string:source>/<string:source>", methods=["GET"])
+@app.route("/get/plot/<string:source>/<string:filters>", methods=["GET"])
 @db_required
 def GetPlot(source, filters=None):
     try:
@@ -680,6 +682,7 @@ def SPVControl():
                 "incomeCategories": incCat,
                 "expenseCategories": expCat,
                 "subCategories": subCat,
+                "mainCurrency": mainCurrency,
             }
             return jsonify(
                 {
@@ -723,6 +726,29 @@ def SPVControl():
                 ),
                 400,
             )
+
+
+@app.route("/spv/maincurrency", methods=["POST"])
+def SPVMainCurrency():
+    content = request.get_json()
+    if content is None:
+        return "Error: No JSON data received", 400
+
+    try:
+        ModifyConfigSettings("main_currency", content["mainCurrency"])
+        return jsonify({"success": True})
+    except Exception as e:
+        print(f"Error occurred: {str(e)}")
+        error_message = str(e)
+        return (
+            jsonify(
+                {
+                    "success": False,
+                    "message": error_message,
+                }
+            ),
+            400,
+        )
 
 
 @app.route("/spv/pb/add", methods=["POST"])
@@ -769,3 +795,14 @@ def MarkPB():
             ),
             400,
         )
+
+
+@app.route("/database/update", methods=["POST"])
+def UpdateDB():
+    try:
+        UDB()
+        print("Database updated.")
+        return (jsonify({"success": True}), 200)
+    except Exception as e:
+        print("Error: " + str(e))
+        return jsonify({"success": False, "message": f"{str(e)}"})

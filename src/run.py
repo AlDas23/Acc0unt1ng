@@ -1,5 +1,5 @@
 from api.api_run import app
-from src.helpers.configScripts import LoadConfig
+from helpers.configScripts import LoadConfig
 
 if __name__ == "__main__":
     LoadConfig()

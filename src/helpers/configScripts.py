@@ -1,12 +1,6 @@
 import toml
 import os
-from src.db_scripts.consts import (
-    mainCurrency,
-    incCategories,
-    expCategories,
-    subCategories,
-    currencies,
-)
+import db_scripts.consts as consts
 
 configPath = "./config/config.toml"
 
@@ -23,6 +17,10 @@ defaultConfig = {
 
 
 def CreateDefaultConfig():
+    directory = os.path.dirname(configPath)
+    if directory:
+        os.makedirs(directory, exist_ok=True)
+
     if not os.path.exists(configPath):
         with open(configPath, "w") as cf:
             toml.dump(defaultConfig, cf)
@@ -46,7 +44,7 @@ def ModifyConfigSettings(param, value):
         LoadConfig()
 
 
-def ModifyConfigLists(NewList, listType):
+def ModifyConfigLists(listType, NewList):
     if not os.path.exists(configPath):
         raise FileNotFoundError("Config file does not exist.")
     else:
@@ -61,6 +59,7 @@ def ModifyConfigLists(NewList, listType):
         LoadConfig()
 
 
+# TODO: Find out why this function is not called and not updating globals
 def LoadConfig():
     if not os.path.exists(configPath):
         CreateDefaultConfig()
@@ -75,10 +74,8 @@ def LoadConfig():
 
 
 def AssignGlobalConstants(configData):
-    global mainCurrency, incCategories, expCategories, subCategories, currencies
-
-    mainCurrency = configData["settings"].get("main_currency", "None")
-    incCategories = configData["lists"].get("inc-categories", [])
-    expCategories = configData["lists"].get("exp-categories", [])
-    subCategories = configData["lists"].get("sub-categories", [])
-    currencies = configData["lists"].get("currencies", [])
+    consts.mainCurrency = configData["settings"].get("main_currency", "None")
+    consts.incCategories = configData["lists"].get("inc-categories", [])
+    consts.expCategories = configData["lists"].get("exp-categories", [])
+    consts.subCategories = configData["lists"].get("sub-categories", [])
+    consts.currencies = configData["lists"].get("currencies", [])
