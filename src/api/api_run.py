@@ -13,6 +13,7 @@ from db_scripts.baseScripts import (
 from db_scripts.dbScripts import CheckDB, NewDBase, UpdateDB as UDB
 from db_scripts.SPVScripts import SPVconf, read_spv
 from db_scripts.consts import *
+import db_scripts.consts as consts
 from helpers.configScripts import ModifyConfigSettings
 from helpers.decorators import db_required
 from helpers.genPlot import CurrencyRatePlot, plot_to_img_tag_legacy
@@ -91,8 +92,8 @@ def GetList(source):
             ),
             400,
         )
-    finally:
-        return payload
+
+    return payload
 
 
 @app.route("/get/options/<string:source>", methods=["GET"])
@@ -162,8 +163,8 @@ def GetOptions(source):
             ),
             400,
         )
-    finally:
-        return payload
+
+    return payload
 
 
 @app.route("/get/history/<string:source>", methods=["GET"])
@@ -205,8 +206,8 @@ def GetHistory(source):
             ),
             400,
         )
-    finally:
-        return payload
+
+    return payload
 
 
 @app.route("/get/plot/<string:source>/<string:filters>", methods=["GET"])
@@ -214,7 +215,7 @@ def GetHistory(source):
 def GetPlot(source, filters=None):
     try:
         if source == "currencyrates":
-            if isLegacyCurrencyRates:
+            if consts.isLegacyCurrencyRates:
                 data = ReadLegacy("currrate")
                 plot = plot_to_img_tag_legacy(
                     data, "Currency Rates Over Time", "Date", "Rate"
@@ -238,8 +239,8 @@ def GetPlot(source, filters=None):
             ),
             400,
         )
-    finally:
-        return payload
+
+    return payload
 
 
 @app.route("/add/expense", methods=["POST"])
@@ -601,8 +602,7 @@ def Balance(source):
             400,
         )
 
-    finally:
-        return payload
+    return payload
 
 
 @app.route("/get/report", methods=["POST"])
@@ -682,7 +682,7 @@ def SPVControl():
                 "incomeCategories": incCat,
                 "expenseCategories": expCat,
                 "subCategories": subCat,
-                "mainCurrency": mainCurrency,
+                "mainCurrency": consts.mainCurrency,
             }
             return jsonify(
                 {

@@ -61,3 +61,26 @@ h3 {
     padding-left: 10px;
     height: auto;
 }
+
+#checkReverse {
+    margin-top: 4px;
+    margin-left: 10px;
+    height: 28px;
+    width: 48px;
+}
+
+#plotFilters {
+    margin-left: 50px;
+}
+
+.currPlotText {
+    margin-left: 36px;
+}
+
+.checkbox-item {
+    margin-right: 10px;
+}
+
+.checkbox-item .btn {
+    width: 150px;
+}

@@ -1,13 +1,13 @@
 import sqlite3
 from datetime import datetime
-from db_scripts.baseScripts import Read, MarkerRead
-from db_scripts.consts import *
+from db_scripts.baseScripts import Read, MarkerRead, ReadLegacy
+import db_scripts.consts as consts
 from db_scripts.SPVScripts import read_spv
 
 
 def UpdateRecord(inp, mode):
     # Update record with received input
-    with sqlite3.connect(dbPath) as conn:
+    with sqlite3.connect(consts.dbPath) as conn:
         c = conn.cursor()
 
         inp = inp.split(",")
@@ -68,7 +68,9 @@ def GetYearlyData(x):
                     amount_in_currency
                 )  # sum of expenses in main currency (absolute value)
             else:
-                monthly_data[month]["income"] += amount_in_currency  # sum of income in main currency
+                monthly_data[month][
+                    "income"
+                ] += amount_in_currency  # sum of income in main currency
 
             # Update the total (income - expense)
             monthly_data[month]["total"] += amount_in_currency
@@ -89,7 +91,7 @@ def GetYearlyData(x):
     elif x == "yearexprep":
         result = []
         rows = Read("yearexp")
-        currencies = read_spv(SPVcurrPath)
+        currencies = read_spv(consts.SPVcurrPath)
         monthly_data = {}
 
         for row in rows:
@@ -125,7 +127,7 @@ def GetYearlyData(x):
     elif x == "yearincrep":
         result = []
         rows = Read("yearinc")
-        currencies = read_spv(SPVcurrPath)
+        currencies = read_spv(consts.SPVcurrPath)
         monthly_data = {}
 
         for row in rows:
@@ -175,7 +177,10 @@ def GetTransactionHistory(type):
     elif type == "depositC":
         data = Read("closeddep")
     elif type == "currencyrates":
-        data = Read("currrate")
+        if consts.isLegacyCurrencyRates:
+            data = ReadLegacy("currrate")
+        else:
+            data = Read("currrate")
 
     if type == "expense":
         for row in data:
@@ -263,7 +268,7 @@ def GetTransactionHistory(type):
             )
 
     elif type == "currencyrates":
-        if isLegacyCurrencyRates:
+        if consts.isLegacyCurrencyRates:
             for row in data:
                 row_list = list(row)
                 Finalhistory.append(
@@ -290,7 +295,7 @@ def GetTransactionHistory(type):
 
 
 def GenerateTable(flag):
-    with sqlite3.connect(dbPath) as conn:
+    with sqlite3.connect(consts.dbPath) as conn:
         c = conn.cursor()
         if flag == "currType":
             query = """
@@ -382,9 +387,7 @@ def read_and_convert_data(x, mode, cursor):
             amount = row_list[1]
             currency_column = row_list[2]
 
-            converted_amount = ConvertTo(
-                currency_column, amount, current_date, cursor
-            )
+            converted_amount = ConvertTo(currency_column, amount, current_date, cursor)
 
             if owner in modified_dict:
                 modified_dict[owner] += converted_amount
@@ -395,7 +398,7 @@ def read_and_convert_data(x, mode, cursor):
 
 
 def ConvRead(x, mode, include_percentage=False):
-    with sqlite3.connect(dbPath) as conn:
+    with sqlite3.connect(consts.dbPath) as conn:
         c = conn.cursor()
 
         modified_dict = read_and_convert_data(x, mode, c)
@@ -424,7 +427,7 @@ def ConvRead(x, mode, include_percentage=False):
 
 def ConvReadPlus(x, mode):
     # Function for reading DB and returning converted to RON amounts
-    with sqlite3.connect(dbPath) as conn:
+    with sqlite3.connect(consts.dbPath) as conn:
         c = conn.cursor()
 
         current_date = datetime.now().strftime("%Y-%m-%d")
@@ -463,7 +466,7 @@ def GenerateReport(rType, rFormat, categoryFilter):
                     WHERE strftime('%m', date) = ? AND sub_category = ? AND category = ?
                     """
 
-    with sqlite3.connect(dbPath) as conn:
+    with sqlite3.connect(consts.dbPath) as conn:
         c = conn.cursor()
 
         table_data["report_type"] = rType
@@ -539,7 +542,7 @@ def GenerateReport(rType, rFormat, categoryFilter):
 
 def ReadAdv(type, month):
     # Special read function for reports with month selector
-    with sqlite3.connect(dbPath) as conn:
+    with sqlite3.connect(consts.dbPath) as conn:
         c = conn.cursor()
 
         if type == "catpbrep":
@@ -746,13 +749,13 @@ def ReadAdv(type, month):
 
 def ConvertTo(currency, amount, date, c=None):
     if c is None:
-        conn = sqlite3.connect(dbPath)
+        conn = sqlite3.connect(consts.dbPath)
         c = conn.cursor()
 
-    if isLegacyCurrencyRates:
+    if consts.isLegacyCurrencyRates:
         return ConvertToRON(currency, amount, date, c)
     else:
-        if currency != mainCurrency:
+        if currency != consts.mainCurrency:
             query = """
                 SELECT rate 
                 FROM exc_rate 
@@ -760,7 +763,7 @@ def ConvertTo(currency, amount, date, c=None):
                 ORDER BY ABS(JULIANDAY(date) - JULIANDAY(?))
                 LIMIT 1
             """
-            c.execute(query, (mainCurrency, currency, date))
+            c.execute(query, (consts.mainCurrency, currency, date))
             excRate_row = c.fetchone()
             if excRate_row != None:
                 excRate = excRate_row[0]  # Extract the exchange rate
@@ -777,7 +780,7 @@ def ConvertToRON(currency, amount, date, c=None):
     # Converting to RON
 
     if c is None:
-        conn = sqlite3.connect(dbPath)
+        conn = sqlite3.connect(consts.dbPath)
         c = conn.cursor()
 
     if currency != "RON":

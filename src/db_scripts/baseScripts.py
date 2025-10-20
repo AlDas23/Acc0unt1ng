@@ -186,7 +186,8 @@ def Add(input_field, mode):
         conn.commit()
 
     Re_Calculate_deposit()
-    
+
+
 def ReadLegacy(x):
     with sqlite3.connect(dbPath) as conn:
         c = conn.cursor()
@@ -566,8 +567,15 @@ def Read(x):
             result = [row[0] for row in c.fetchall()]
             return result
 
+        elif x == "currrate":
+            c.execute("SELECT * FROM exc_rate ORDER BY date DESC")
+            return c.fetchall()
+
         elif x == "currrateplot":
-            c.execute("SELECT date, currency_S AS currency, rate FROM exc_rate WHERE currency_M = ? ORDER BY date DESC", (mainCurrency,))
+            c.execute(
+                "SELECT date, currency_S AS currency, rate FROM exc_rate WHERE currency_M = ? ORDER BY date DESC",
+                (mainCurrency,),
+            )
             return c.fetchall()
 
         elif x == "retcat":

@@ -59,7 +59,6 @@ def ModifyConfigLists(listType, NewList):
         LoadConfig()
 
 
-# TODO: Find out why this function is not called and not updating globals
 def LoadConfig():
     if not os.path.exists(configPath):
         CreateDefaultConfig()

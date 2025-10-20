@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { HistoryTable } from "../commonComponents/Common";
 import Header from "../commonComponents/Header";
 import Button from 'react-bootstrap/Button';
+import ToggleButton from 'react-bootstrap/ToggleButton';
+import ToggleButtonGroup from 'react-bootstrap/ToggleButtonGroup';
 import Col from 'react-bootstrap/Col';
 import Form from 'react-bootstrap/Form';
 import Row from 'react-bootstrap/Row';
@@ -179,7 +181,7 @@ function Forms({ options }) {
                     </Form.Label>
                     <Form.Control type="text" id="inputRate" name="Rate" autoComplete="off" />
                 </Col>
-                <Col xl="1">
+                <Col xl="2">
                     <Form.Label htmlFor="checkReverse">
                         Calculate reverse rate
                     </Form.Label>
@@ -205,9 +207,9 @@ function PlotComponent({ currencyList, onFilterChange, FetchFilteredPlot, imageU
 
     return (
         <>
-            <h3>Currency dynamics plot</h3>
+            <h3 className="currPlotText">Currency dynamics plot</h3>
             <br />
-            <p>Select currencies to display on the plot:</p>
+            <p className="currPlotText">Select currencies to display on the plot:</p>
             <Form noValidate className="form" id="plotFilters" onSubmit={FetchFilteredPlot}>
                 {rows.map((row) => (
                     <Row>
@@ -472,7 +474,7 @@ export default function CurrencyRatesPage() {
                             numberColumns={isLegacy ? ["2-4"] : ["4-4"]}
                         />)}
                     </div>
-                    <div className="col-md-8" id="plot-col">
+                    <div className="col-md-8" id="  ">
                         {isLegacy ? (imageUrl && <LegacyPlotComponent imageUrl={imageUrl} />)
                             : (imageUrl && options && <PlotComponent
                                 currencyList={options.currency}

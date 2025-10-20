@@ -1,18 +1,18 @@
 import os.path
 import sqlite3
-from db_scripts.consts import *
+import db_scripts.consts as consts
 
 
 def NewDBase():
     # Create or replace DB file using template
-    directory = os.path.dirname(dbPath)
+    directory = os.path.dirname(consts.dbPath)
     if not os.path.exists(directory):
         os.makedirs(directory)
 
-    if os.path.exists(dbPath):
-        os.remove(dbPath)
+    if os.path.exists(consts.dbPath):
+        os.remove(consts.dbPath)
 
-    with sqlite3.connect(dbPath) as conn:
+    with sqlite3.connect(consts.dbPath) as conn:
         c = conn.cursor()
 
         c.execute(
@@ -129,15 +129,15 @@ def NewDBase():
 
 
 def CheckDB():
-    if not os.path.exists(dbPath):
+    if not os.path.exists(consts.dbPath):
         return 1
 
-    with sqlite3.connect(dbPath) as conn:
+    with sqlite3.connect(consts.dbPath) as conn:
         c = conn.cursor()
         c.execute("SELECT name FROM sqlite_master WHERE type='table';")
         existing_tables = [row[0] for row in c.fetchall()]
         missing_tables = []
-        for table in expected_tables.keys():
+        for table in consts.expected_tables.keys():
             if table not in existing_tables:
                 missing_tables.append(table)
         if missing_tables:
@@ -152,10 +152,10 @@ def CheckDB():
 
 
 def CheckDBStructure():
-    with sqlite3.connect(dbPath) as conn:
+    with sqlite3.connect(consts.dbPath) as conn:
         c = conn.cursor()
         # Verify table structures
-        for table, expected_columns in expected_tables.items():
+        for table, expected_columns in consts.expected_tables.items():
             c.execute(f"PRAGMA table_info({table})")
             actual_columns = [row[1] for row in c.fetchall()]
             # Check if all expected columns exist
@@ -166,30 +166,29 @@ def CheckDBStructure():
 
 
 def CheckDBLegacy():
-    global isLegacyCurrencyRates
-    with sqlite3.connect(dbPath) as conn:
+    with sqlite3.connect(consts.dbPath) as conn:
         c = conn.cursor()
-        for table, old_columns in old_tables.items():
+        for table, old_columns in consts.old_tables.items():
             c.execute(f"PRAGMA table_info({table})")
             actual_columns = [row[1] for row in c.fetchall()]
 
             # Check if all old columns exist in the actual table
             if set(old_columns).issubset(set(actual_columns)):
                 print(f"Legacy table {table} found! Switching to legacy mode")
-                isLegacyCurrencyRates = True
+                consts.isLegacyCurrencyRates = True
                 return -1
         return 0
 
 
 def UpdateDB():
-    if mainCurrency == None:
+    if consts.mainCurrency == None:
         raise Exception("Main currency not set! Can't update DB")
 
-    if isLegacyCurrencyRates == False:
+    if consts.isLegacyCurrencyRates == False:
         raise Exception("DB is already up to date! Can't update DB")
     else:
         print("Initiate DB update...\n")
-        with sqlite3.connect(dbPath) as conn:
+        with sqlite3.connect(consts.dbPath) as conn:
             c = conn.cursor()
 
             # Collect all data from old exc_rate table
@@ -219,9 +218,9 @@ def UpdateDB():
             new_rates = []
             for rate in old_rates:
                 date, currency_S, curr_rate = rate
-                if currency_S == mainCurrency:
+                if currency_S == consts.mainCurrency:
                     continue  # Skip rates that are already in main currency
-                new_rates.append((date, mainCurrency, currency_S, curr_rate))
+                new_rates.append((date, consts.mainCurrency, currency_S, curr_rate))
 
             c.executemany(
                 "INSERT INTO exc_rate (id, date, currency_M, currency_S, rate) VALUES (NULL, ?, ?, ?, ?)",
@@ -235,6 +234,6 @@ def UpdateDB():
             all_rates = c.fetchall()
             print(f"Total {len(all_rates)} exchange rates in new table")
             print("DB update completed successfully")
-            isLegacyCurrencyRates = False
+            consts.isLegacyCurrencyRates = False
 
             return 0
