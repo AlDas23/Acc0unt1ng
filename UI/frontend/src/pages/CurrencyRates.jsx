@@ -99,7 +99,7 @@ function Forms({ options }) {
             const formDataObj = new FormData(form);
             const formObject = Object.fromEntries(formDataObj.entries());
 
-            if (formObject.Currency_S === "" && formDataObj.Currency_M) {
+            if (formObject.Currency_S === "" && formObject.Currency_M === "") {
                 alert("Currency cannot be empty!")
                 return false;
             }
@@ -119,10 +119,10 @@ function Forms({ options }) {
             }
 
             const payload = {
-                date: formObject.date,
-                currency_S: formDataObj.Currency_S,
-                currency_M: formDataObj.Currency_M,
-                rate: formDataObj.Rate
+                date: formObject.Date,
+                currency_S: formObject.Currency_S,
+                currency_M: formObject.Currency_M,
+                rate: formObject.Rate
             }
 
             // Send POST request
@@ -211,21 +211,24 @@ function PlotComponent({ currencyList, onFilterChange, FetchFilteredPlot, imageU
             <br />
             <p className="currPlotText">Select currencies to display on the plot:</p>
             <Form noValidate className="form" id="plotFilters" onSubmit={FetchFilteredPlot}>
-                {rows.map((row) => (
-                    <Row>
-                        <ToggleButtonGroup type="checkbox">
-                            {row.map((name, nameIndex) => (
-                                <Form.Label key={name} className="checkbox-item">
-                                    <ToggleButton
-                                        name={name}
-                                        id={`checkbox-${nameIndex}`}
-                                        onChange={(e) => onFilterChange && onFilterChange(name, e.target.checked)}
-                                    >
-                                        {name}
-                                    </ToggleButton>
-                                </Form.Label>
-                            ))}
-                        </ToggleButtonGroup>
+                {rows.map((row, rowIndex) => (
+                    <Row key={`row-${rowIndex}`}>
+                        {row.map((name, nameIndex) => {
+                            const idx = rowIndex * 4 + nameIndex;
+                            return (
+                                <Col key={`chk-${idx}`} xs={3}>
+                                    <div className="checkbox-container">
+                                        <input
+                                            type="checkbox"
+                                            name={name}
+                                            id={`checkbox-${idx}`}
+                                            value={name}
+                                            onChange={(e) => onFilterChange && onFilterChange(name, e.target.checked)} />
+                                        <label htmlFor={`checkbox-${idx}`} className="checkboxLabel">{name}</label>
+                                    </div>
+                                </Col>
+                            );
+                        })}
                     </Row>
                 ))}
                 <br />

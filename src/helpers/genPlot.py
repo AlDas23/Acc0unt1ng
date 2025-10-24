@@ -4,6 +4,7 @@ import pandas as pd
 import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+
 matplotlib.use("Agg")
 
 
@@ -65,6 +66,9 @@ def CurrencyRatePlot(data, filters):
         if filters is None or currency in filters:
             if currency not in currency_data:
                 currency_data[currency] = {"dates": [], "rates": []}
+            # Ensure date is datetime object
+            if isinstance(date, str):
+                date = pd.to_datetime(date)
             currency_data[currency]["dates"].append(date)
             currency_data[currency]["rates"].append(rate)
 
@@ -81,11 +85,27 @@ def CurrencyRatePlot(data, filters):
     ax.grid(True, alpha=0.3)
 
     # Rotate x-axis labels for better readability
-    plt.xticks(rotation=45)
+    plt.xticks(rotation=45, ha="right")
 
-    # Format x-axis dates
-    ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m-%d"))
-    ax.xaxis.set_major_locator(mdates.DayLocator(interval=1))
+    # Calculate appropriate date interval based on data range
+    if currency_data:
+        # Get the date range from the first currency
+        first_currency = list(currency_data.values())[0]
+        date_range = (max(first_currency["dates"]) - min(first_currency["dates"])).days
+
+        if date_range > 180:
+            interval = 45
+        elif date_range > 90:
+            interval = 15
+        elif date_range > 14:
+            interval = 3
+        else:
+            interval = 1
+
+        # Format x-axis dates with appropriate interval
+        ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m-%d"))
+        ax.xaxis.set_major_locator(mdates.DayLocator(interval=interval))
+
     plt.tight_layout()
 
     # Add legend if there are currencies to show

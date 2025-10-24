@@ -77,10 +77,18 @@ h3 {
     margin-left: 36px;
 }
 
-.checkbox-item {
-    margin-right: 10px;
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
 }
 
-.checkbox-item .btn {
-    width: 150px;
+.checkbox-container input[type="checkbox"] {
+    margin: 0;
+}
+
+.checkbox-container .checkboxLabel {
+    margin: 0;
+    white-space: nowrap;
 }

@@ -1,6 +1,7 @@
 from datetime import datetime
 import sqlite3
 from db_scripts.consts import *
+import db_scripts.consts as consts
 
 
 def Add(input_field, mode):
@@ -157,7 +158,7 @@ def Add(input_field, mode):
             c.execute("INSERT INTO Marker_type VALUES(?, ?)", (values[1], "deposit"))
 
         elif mode == "currrate":
-            if isLegacyCurrencyRates:
+            if consts.isLegacyCurrencyRates:
                 values = input_field.split(",")
 
                 values[2] = round(float(values[2]), 4)
@@ -173,7 +174,7 @@ def Add(input_field, mode):
             else:
                 values = input_field.split(",")
 
-                values[4] = round(float(values[4]), 4)
+                values[3] = round(float(values[3]), 4)
                 records = {
                     curr_keys[i]: values[i] for i in range(len(curr_keys))
                 }  # Make dictionary with all values to add
@@ -574,7 +575,7 @@ def Read(x):
         elif x == "currrateplot":
             c.execute(
                 "SELECT date, currency_S AS currency, rate FROM exc_rate WHERE currency_M = ? ORDER BY date DESC",
-                (mainCurrency,),
+                (consts.mainCurrency,),
             )
             return c.fetchall()
 
