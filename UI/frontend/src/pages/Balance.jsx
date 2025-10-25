@@ -269,7 +269,7 @@ export default function BalancePage() {
                         <h3 onClick={() => toggleTable("curr-table")} className="toggleableTitle">Group by currency</h3>
                         <br />
                         {groupedData && (<HistoryTable
-                            columns={["Currency", "Sum", "Sum RON", "%"]}
+                            columns={["Currency", "Sum", "in Main currency", "%"]}
                             data={groupedData.currTable || []}
                             tableId="curr-table"
                             numberColumns={["1-2", "3-1"]}
@@ -278,7 +278,7 @@ export default function BalancePage() {
                         <h3 onClick={() => toggleTable("owner-table")} className="toggleableTitle">Group by Owner</h3>
                         <br />
                         {groupedData && (<HistoryTable
-                            columns={["Owner", "Currency", "Sum", "Sum RON"]}
+                            columns={["Owner", "Currency", "Sum", "in Main currency"]}
                             data={groupedData.ownerTable || []}
                             tableId="owner-table"
                             numberColumns={["2-2"]}
@@ -287,7 +287,7 @@ export default function BalancePage() {
                         <h3 onClick={() => toggleTable("type-table")} className="toggleableTitle">Group by Type</h3>
                         <br />
                         {groupedData && (<HistoryTable
-                            columns={["Type", "Sum RON", "%"]}
+                            columns={["Type", "Sum in Main currency", "%"]}
                             data={groupedData.typeTable || []}
                             tableId="type-table"
                             numberColumns={["2-1"]}

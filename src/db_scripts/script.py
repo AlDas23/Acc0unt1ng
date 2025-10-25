@@ -465,6 +465,10 @@ def GenerateReport(rType, rFormat, categoryFilter):
                     SELECT sub_category, sum, currency, date FROM main 
                     WHERE strftime('%m', date) = ? AND sub_category = ? AND category = ?
                     """
+    querySubcat_noCat = """
+                    SELECT sub_category, sum, currency, date FROM main 
+                    WHERE strftime('%m', date) = ? AND sub_category = ?
+                    """
 
     with sqlite3.connect(consts.dbPath) as conn:
         c = conn.cursor()
@@ -476,6 +480,15 @@ def GenerateReport(rType, rFormat, categoryFilter):
             catList = Read("retcat+")
         elif rType == "expcat":
             catList = Read("retcat-")
+        elif rType == "subcat" and categoryFilter == "all":
+            c.execute(
+                """
+                      SELECT DISTINCT sub_category FROM main
+                      WHERE sum < 0
+                      ORDER BY sub_category DESC
+                      """
+            )
+            catList = [row[0] for row in c.fetchall()]
         else:
             c.execute(
                 """
@@ -490,7 +503,10 @@ def GenerateReport(rType, rFormat, categoryFilter):
         for cat in catList:
             for month in months:
                 if rType == "subcat":
-                    c.execute(querySubcat, (month, cat, categoryFilter))
+                    if categoryFilter == "all":
+                        c.execute(querySubcat_noCat, (month, cat))
+                    else:
+                        c.execute(querySubcat, (month, cat, categoryFilter))
                 else:
                     c.execute(queryCat, (month, cat))
 
