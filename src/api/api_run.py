@@ -8,17 +8,20 @@ from db_scripts.baseScripts import (
     MarkerRead,
     Re_Calculate_deposit,
     Read,
-    CheckDB,
-    NewDBase,
+    ReadLegacy,
 )
-from db_scripts.csvScripts import read_csv, SPVconf
+from db_scripts.dbScripts import CheckDB, NewDBase, UpdateDB as UDB
+from db_scripts.SPVScripts import SPVconf, read_spv
 from db_scripts.consts import *
+import db_scripts.consts as consts
+from helpers.configScripts import ModifyConfigSettings
 from helpers.decorators import db_required
-from helpers.genPlot import plot_to_img_tag
-from api.api_invest import investPage
+from helpers.genPlot import CurrencyRatePlot, plot_to_img_tag_legacy
+
+# from api.api_invest import investPage
 
 app = Flask(__name__)
-app.register_blueprint(investPage, url_prefix="/")
+# app.register_blueprint(investPage, url_prefix="/")
 CORS(app, resources=r"/*")
 
 
@@ -32,7 +35,7 @@ def health_check():
 def GetList(source):
     try:
         if source == "categories_exp":
-            expCategories = read_csv(SPVcatExpPath)
+            expCategories = read_spv(SPVcatExpPath)
             payload = jsonify(
                 {
                     "success": True,
@@ -40,7 +43,7 @@ def GetList(source):
                 }
             )
         elif source == "categories_inc":
-            incCategories = read_csv(SPVcatIncPath)
+            incCategories = read_spv(SPVcatIncPath)
             payload = jsonify(
                 {
                     "success": True,
@@ -48,7 +51,7 @@ def GetList(source):
                 }
             )
         elif source == "subcategories":
-            subCategories = read_csv(SPVsubcatPath)
+            subCategories = read_spv(SPVsubcatPath)
             payload = jsonify(
                 {
                     "success": True,
@@ -56,7 +59,7 @@ def GetList(source):
                 }
             )
         elif source == "currency":
-            currencies = read_csv(SPVcurrPath)
+            currencies = read_spv(SPVcurrPath)
             payload = jsonify(
                 {
                     "success": True,
@@ -89,8 +92,8 @@ def GetList(source):
             ),
             400,
         )
-    finally:
-        return payload
+
+    return payload
 
 
 @app.route("/get/options/<string:source>", methods=["GET"])
@@ -98,9 +101,9 @@ def GetList(source):
 def GetOptions(source):
     try:
         if source == "expense":
-            categories = read_csv(SPVcatExpPath)
-            sub_categories = read_csv(SPVsubcatPath)
-            currencies = read_csv(SPVcurrPath)
+            categories = read_spv(SPVcatExpPath)
+            sub_categories = read_spv(SPVsubcatPath)
+            currencies = read_spv(SPVcurrPath)
             person_banks = Read("retacc")
             options = {
                 "categories": categories,
@@ -110,8 +113,8 @@ def GetOptions(source):
             }
 
         elif source == "income":
-            categories = read_csv(SPVcatIncPath)
-            currencies = read_csv(SPVcurrPath)
+            categories = read_spv(SPVcatIncPath)
+            currencies = read_spv(SPVcurrPath)
             person_banks = Read("retacc")
             options = {
                 "categories": categories,
@@ -120,7 +123,7 @@ def GetOptions(source):
             }
 
         elif source == "transfer":
-            currencies = read_csv(SPVcurrPath)
+            currencies = read_spv(SPVcurrPath)
             person_banks = Read("retacc")
             options = {
                 "currency": currencies,
@@ -128,7 +131,7 @@ def GetOptions(source):
             }
 
         elif source == "deposit":
-            currencies = read_csv(SPVcurrPath)
+            currencies = read_spv(SPVcurrPath)
             person_banks = Read("retacc")
             options = {
                 "currencies": currencies,
@@ -136,7 +139,7 @@ def GetOptions(source):
             }
 
         elif source == "currencyrates":
-            currencies = read_csv(SPVcurrPath)
+            currencies = read_spv(SPVcurrPath)
             options = {
                 "currency": currencies,
             }
@@ -160,8 +163,8 @@ def GetOptions(source):
             ),
             400,
         )
-    finally:
-        return payload
+
+    return payload
 
 
 @app.route("/get/history/<string:source>", methods=["GET"])
@@ -203,32 +206,41 @@ def GetHistory(source):
             ),
             400,
         )
-    finally:
-        return payload
+
+    return payload
 
 
-@app.route("/get/plot/<string:source>", methods=["GET"])
+@app.route("/get/plot/<string:source>/<string:filters>", methods=["GET"])
 @db_required
-def GetPlot(source):
-    if source == "currencyrates":
-        try:
-            data = Read("currrate")
-            plot1 = plot_to_img_tag(data, "Currency Rates Over Time", "Date", "Rate")
-            payload = jsonify({"success": True, "plot": plot1})
-        except Exception as e:
-            print(f"Error occurred: {str(e)}")
-            error_message = str(e)
-            payload = (
-                jsonify(
-                    {
-                        "success": False,
-                        "message": error_message,
-                    }
-                ),
-                400,
-            )
-        finally:
-            return payload
+def GetPlot(source, filters=None):
+    try:
+        if source == "currencyrates":
+            if consts.isLegacyCurrencyRates:
+                data = ReadLegacy("currrate")
+                plot = plot_to_img_tag_legacy(
+                    data, "Currency Rates Over Time", "Date", "Rate"
+                )
+            else:
+                data = Read("currrateplot")
+                filterArr = filters.split("-")
+                if filterArr == ["None"]:
+                    filterArr = None
+                plot = CurrencyRatePlot(data, filterArr)
+            payload = jsonify({"success": True, "plot": plot})
+    except Exception as e:
+        print(f"Error occurred: {str(e)}")
+        error_message = str(e)
+        payload = (
+            jsonify(
+                {
+                    "success": False,
+                    "message": error_message,
+                }
+            ),
+            400,
+        )
+
+    return payload
 
 
 @app.route("/add/expense", methods=["POST"])
@@ -590,8 +602,7 @@ def Balance(source):
             400,
         )
 
-    finally:
-        return payload
+    return payload
 
 
 @app.route("/get/report", methods=["POST"])
@@ -641,8 +652,10 @@ def DBStatus():
         return jsonify({"success": True})
     elif status == 1:
         return jsonify({"success": False, "corrupt": False})
-    else:
+    elif status == 2 or status == 3:
         return jsonify({"success": False, "corrupt": True})
+    elif status < 0:
+        return jsonify({"success": True, "legacy": True})
 
 
 @app.route("/database/create", methods=["POST"])
@@ -660,15 +673,16 @@ def DBCreate():
 def SPVControl():
     if request.method == "GET":
         try:
-            expCat = read_csv(SPVcatExpPath)
-            incCat = read_csv(SPVcatIncPath)
-            subCat = read_csv(SPVsubcatPath)
-            curr = read_csv(SPVcurrPath)
+            expCat = read_spv(SPVcatExpPath)
+            incCat = read_spv(SPVcatIncPath)
+            subCat = read_spv(SPVsubcatPath)
+            curr = read_spv(SPVcurrPath)
             data = {
                 "currency": curr,
                 "incomeCategories": incCat,
                 "expenseCategories": expCat,
                 "subCategories": subCat,
+                "mainCurrency": consts.mainCurrency,
             }
             return jsonify(
                 {
@@ -695,10 +709,10 @@ def SPVControl():
             return "Error: No JSON data received", 400
 
         try:
-            SPVconf("curr", content.get("curr", []))
-            SPVconf("inccat", content.get("incCat", []))
-            SPVconf("expcat", content.get("expCat", []))
-            SPVconf("subcat", content.get("subCat", []))
+            SPVconf("currencies", content.get("curr", []))
+            SPVconf("inc-categories", content.get("incCat", []))
+            SPVconf("exp-categories", content.get("expCat", []))
+            SPVconf("sub-categories", content.get("subCat", []))
             return jsonify({"success": True})
         except Exception as e:
             print(f"Error occurred: {str(e)}")
@@ -712,6 +726,29 @@ def SPVControl():
                 ),
                 400,
             )
+
+
+@app.route("/spv/maincurrency", methods=["POST"])
+def SPVMainCurrency():
+    content = request.get_json()
+    if content is None:
+        return "Error: No JSON data received", 400
+
+    try:
+        ModifyConfigSettings("main_currency", content["mainCurrency"])
+        return jsonify({"success": True})
+    except Exception as e:
+        print(f"Error occurred: {str(e)}")
+        error_message = str(e)
+        return (
+            jsonify(
+                {
+                    "success": False,
+                    "message": error_message,
+                }
+            ),
+            400,
+        )
 
 
 @app.route("/spv/pb/add", methods=["POST"])
@@ -758,3 +795,14 @@ def MarkPB():
             ),
             400,
         )
+
+
+@app.route("/database/update", methods=["POST"])
+def UpdateDB():
+    try:
+        UDB()
+        print("Database updated.")
+        return (jsonify({"success": True}), 200)
+    except Exception as e:
+        print("Error: " + str(e))
+        return jsonify({"success": False, "message": f"{str(e)}"})

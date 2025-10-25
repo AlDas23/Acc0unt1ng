@@ -3,3 +3,4 @@ Jinja2
 pandas
 matplotlib
 flask-cors
+toml

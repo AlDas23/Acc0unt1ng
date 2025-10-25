@@ -142,14 +142,14 @@ export default function YearReportPage() {
                     <div className="col-md-4">
                         <h3>Income</h3>
                         {data.income && (<HistoryTable
-                            columns={["Month", ...currencyList, "Total in RON"]}
+                            columns={["Month", ...currencyList, "Total in Main currency"]}
                             data={data.income}
                             tableId="income-table" />)}
                     </div>
                     <div className="col-md-4">
                         <h3>Expenses</h3>
                         {data.expense && (<HistoryTable
-                            columns={["Month", ...currencyList, "Total in RON"]}
+                            columns={["Month", ...currencyList, "Total in Main currency"]}
                             data={data.expense}
                             tableId="expense-table" />)}
                     </div>

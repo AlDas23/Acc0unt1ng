@@ -43,7 +43,7 @@ function CreateReportTable({ tableData }) {
 export default function ReportsPage() {
     const [reportType, setReportType] = useState("");
     const [reportFormat, setReportFormat] = useState("percent");
-    const [category, setCategory] = useState("");
+    const [category, setCategory] = useState("all");
     const [isCategoryFilterVisible, setIsCategoryFilterVisible] = useState(false);
     const [tableData, setTableData] = useState(null);
     const [categories, setCategories] = useState([]);
@@ -106,12 +106,6 @@ export default function ReportsPage() {
             return;
         }
 
-        if (reportType === "subcat" && (category === "" || category === "None")) {
-            alert("Please select a category for sub-categories report.");
-            return;
-        }
-
-
         // Fetch report data based on selected type and format
         fetch(`/api/get/report`, {
             method: 'POST',
@@ -172,7 +166,7 @@ export default function ReportsPage() {
                         onChange={(e) => setReportFormat(e.target.value)}
                     >
                         <option value="percent">Converted to %</option>
-                        <option value="ron">Converted to RON</option>
+                        <option value="ron">Converted to Main currency</option>
                     </select>
                 </div>
                 <div className="row">
@@ -191,7 +185,7 @@ export default function ReportsPage() {
                         style={{ display: isCategoryFilterVisible ? 'inline' : 'none' }}
                         disabled={!isCategoryFilterVisible}
                     >
-                        <option value="" disabled>Select a category</option>
+                        <option value="all">All</option>
                         {categories.map((cat, index) => (
                             <option key={index} value={cat}>{cat}</option>
                         ))}
@@ -202,7 +196,7 @@ export default function ReportsPage() {
                         id="showTableButton"
                         onClick={validateReport}
                     >
-                        Show report
+                        {tableData === null ? "Show report" : "Refresh report"}
                     </Button>
                 </div>
                 <div id="rep-table" className="row">
