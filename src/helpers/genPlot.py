@@ -94,7 +94,7 @@ def CurrencyRatePlot(data, filters):
         date_range = (max(first_currency["dates"]) - min(first_currency["dates"])).days
 
         if date_range > 180:
-            interval = 45
+            interval = 30
         elif date_range > 90:
             interval = 15
         elif date_range > 14:

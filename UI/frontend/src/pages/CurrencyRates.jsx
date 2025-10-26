@@ -2,8 +2,6 @@ import { useEffect, useState } from "react";
 import { HistoryTable } from "../commonComponents/Common";
 import Header from "../commonComponents/Header";
 import Button from 'react-bootstrap/Button';
-import ToggleButton from 'react-bootstrap/ToggleButton';
-import ToggleButtonGroup from 'react-bootstrap/ToggleButtonGroup';
 import Col from 'react-bootstrap/Col';
 import Form from 'react-bootstrap/Form';
 import Row from 'react-bootstrap/Row';
@@ -116,12 +114,15 @@ function Forms({ options }) {
 
             if (formObject.IsReverse) {
                 formObject.Rate = 1 / formObject.Rate;
+                const temp = formObject.Currency_S;
+                formObject.Currency_S = formObject.Currency_M;
+                formObject.Currency_M = temp;
             }
 
             const payload = {
                 date: formObject.Date,
-                currency_S: formObject.Currency_S,
                 currency_M: formObject.Currency_M,
+                currency_S: formObject.Currency_S,
                 rate: formObject.Rate
             }
 
