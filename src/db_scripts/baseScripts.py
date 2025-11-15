@@ -198,7 +198,7 @@ def ReadLegacy(x):
 
 
 def Read(x):
-    # Big collection of functions for returning different data from DB
+    # Big collection of queries for returning different data from DB
     with sqlite3.connect(dbPath) as conn:
         c = conn.cursor()
 
@@ -578,6 +578,20 @@ def Read(x):
                 (consts.mainCurrency,),
             )
             return c.fetchall()
+        
+        elif x == "currrateplotinv":
+            c.execute(
+                "SELECT date, currency_M AS currency, rate FROM exc_rate WHERE currency_S = ? ORDER BY date DESC",
+                (consts.mainCurrency,),
+            )
+            return c.fetchall()
+        
+        elif x == "currratenamesinv":
+            c.execute(
+                "SELECT DISTINCT currency_M AS currency FROM exc_rate WHERE currency_S = ? ORDER BY date DESC",
+                (consts.mainCurrency,),
+            )
+            return [row[0] for row in c.fetchall()]
 
         elif x == "retcat":
             c.execute("SELECT DISTINCT category FROM main ORDER BY category DESC")
