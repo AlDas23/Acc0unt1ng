@@ -68,7 +68,7 @@ def GetList(source):
                 }
             )
         elif source == "currrateplotnames":
-            originalCurrencies = read_spv(SPVcurrPath)
+            originalCurrencies = read_spv(SPVcurrPath).remove(consts.mainCurrency)
             cuurRatePlotNames = Read("currratenamesinv")
             originalCurrencies.extend(f"{item}->{consts.mainCurrency}" for item in cuurRatePlotNames)
             payload = jsonify(
