@@ -243,6 +243,7 @@ function PlotComponent({ currencyList, onFilterChange, FetchFilteredPlot, imageU
 
 export default function CurrencyRatesPage() {
     const [options, setOptions] = useState(null);
+    const [plotOptions, setPlotOptions] = useState(null);
     const [history, setHistory] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -264,15 +265,28 @@ export default function CurrencyRatesPage() {
                     setIsLegacy(false);
                 }
 
-                const [optionsData, historyData, plotUrl] = await Promise.all([
+                const promises = [
                     GetOptions(),
                     GetHistory(),
                     GetPlot()
-                ]);
+                ];
+
+                // Only add GetPlotOptions if not legacy
+                if (!isLegacyResult) {
+                    promises.push(GetPlotOptions());
+                }
+
+                const results = await Promise.all(promises);
+
+                const [optionsData, historyData, plotUrl] = results;
+                const plotOptions = !isLegacyResult ? results[3] : null;
 
                 setOptions(optionsData);
                 setHistory(historyData);
                 setImageUrl(plotUrl);
+                if (!isLegacyResult) {
+                    setPlotOptions(plotOptions);
+                }
                 setLoading(false);
 
             } catch (error) {
@@ -320,6 +334,34 @@ export default function CurrencyRatesPage() {
             .catch(error => {
                 console.error('Error fetching options:', error);
                 alert('Unexpected error occurred while fetching options: ' + error.message);
+                throw error;
+            });
+    }
+
+    const GetPlotOptions = () => {
+        return fetch(`/api/get/list/currrateplotnames`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.redirect) {
+                    alert('Database is missing or corrupted. You will be redirected to the setup page.');
+                    window.location.href = data.redirect;
+                    return Promise.reject('Redirect initiated');
+                }
+
+                if (data.success) {
+                    return data.cuurrateplotnames;
+                } else {
+                    throw new Error(data.message || 'Failed to load plot options');
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching plot options:', error);
+                alert('Unexpected error occurred while fetching plot options: ' + error.message);
                 throw error;
             });
     }
@@ -481,7 +523,7 @@ export default function CurrencyRatesPage() {
                     <div className="col-md-8" id="  ">
                         {isLegacy ? (imageUrl && <LegacyPlotComponent imageUrl={imageUrl} />)
                             : (imageUrl && options && <PlotComponent
-                                currencyList={options.currency}
+                                currencyList={plotOptions}
                                 onFilterChange={onFilterChange}
                                 FetchFilteredPlot={FetchFilteredPlot}
                                 imageUrl={imageUrl}

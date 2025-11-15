@@ -16,6 +16,7 @@ from db_scripts.consts import *
 import db_scripts.consts as consts
 from helpers.configScripts import ModifyConfigSettings
 from helpers.decorators import db_required
+from helpers.extras import ParseCurrRatesNames
 from helpers.genPlot import CurrencyRatePlot, plot_to_img_tag_legacy
 
 # from api.api_invest import investPage
@@ -64,6 +65,16 @@ def GetList(source):
                 {
                     "success": True,
                     "currencies": currencies,
+                }
+            )
+        elif source == "currrateplotnames":
+            originalCurrencies = read_spv(SPVcurrPath)
+            cuurRatePlotNames = Read("currratenamesinv")
+            originalCurrencies.extend(f"{item}->{consts.mainCurrency}" for item in cuurRatePlotNames)
+            payload = jsonify(
+                {
+                    "success": True,
+                    "cuurrateplotnames": originalCurrencies,
                 }
             )
         elif source == "pb":
@@ -222,6 +233,9 @@ def GetPlot(source, filters=None):
                 )
             else:
                 data = Read("currrateplot")
+                data.extend(
+                    ParseCurrRatesNames(Read("currrateplotinv"), consts.mainCurrency)
+                )
                 filterArr = filters.split("-")
                 if filterArr == ["None"]:
                     filterArr = None
