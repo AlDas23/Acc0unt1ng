@@ -8,16 +8,16 @@ def read_spv(file_name):
     # Check if new format const exists
     if file_name == consts.SPVcatExpPath:
         if consts.expCategories is not None and consts.expCategories:
-            return consts.expCategories
+            return consts.expCategories.copy()
     elif file_name == consts.SPVcatIncPath:
         if consts.incCategories is not None and consts.incCategories:
-            return consts.incCategories
+            return consts.incCategories.copy()
     elif file_name == consts.SPVsubcatPath:
         if consts.subCategories is not None and consts.subCategories:
-            return consts.subCategories
+            return consts.subCategories.copy()
     elif file_name == consts.SPVcurrPath:
         if consts.currencies is not None and consts.currencies:
-            return consts.currencies
+            return consts.currencies.copy()
 
     values = []
     try:
