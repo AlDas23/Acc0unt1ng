@@ -110,6 +110,6 @@ def CurrencyRatePlot(data, filters):
 
     # Add legend if there are currencies to show
     if currency_data:
-        ax.legend()
+        ax.legend(loc="lower left")
 
     return EncodeImage(fig)

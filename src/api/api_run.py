@@ -68,9 +68,9 @@ def GetList(source):
                 }
             )
         elif source == "currrateplotnames":
-            originalCurrencies = read_spv(SPVcurrPath).remove(consts.mainCurrency)
-            cuurRatePlotNames = Read("currratenamesinv")
-            originalCurrencies.extend(f"{item}->{consts.mainCurrency}" for item in cuurRatePlotNames)
+            originalCurrencies = [currency for currency in read_spv(SPVcurrPath) if currency != consts.mainCurrency]
+            currRatePlotNames = Read("currratenamesinv")
+            originalCurrencies.extend(f"{item}->{consts.mainCurrency}" for item in currRatePlotNames)
             payload = jsonify(
                 {
                     "success": True,
@@ -236,7 +236,7 @@ def GetPlot(source, filters=None):
                 data.extend(
                     ParseCurrRatesNames(Read("currrateplotinv"), consts.mainCurrency)
                 )
-                filterArr = filters.split("-")
+                filterArr = filters.split("|")
                 if filterArr == ["None"]:
                     filterArr = None
                 plot = CurrencyRatePlot(data, filterArr)

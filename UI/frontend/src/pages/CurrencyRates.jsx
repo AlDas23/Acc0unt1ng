@@ -422,7 +422,7 @@ export default function CurrencyRatesPage() {
                     throw error;
                 });
         } else {
-            const filters = selectedCurrencies.length > 0 ? selectedCurrencies.join("-") : "None";
+            const filters = selectedCurrencies.length > 0 ? selectedCurrencies.join("|") : "None";
 
             return fetch(`/api/get/plot/currencyrates/${filters}`)
                 .then(response => {
