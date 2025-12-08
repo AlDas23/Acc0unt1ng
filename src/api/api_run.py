@@ -16,7 +16,7 @@ from db_scripts.consts import *
 import db_scripts.consts as consts
 from helpers.configScripts import ModifyConfigSettings
 from helpers.decorators import db_required
-from helpers.extras import ParseCurrRatesNames
+from helpers.extras import GetCurrentYear, ParseCurrRatesNames
 from helpers.genPlot import CurrencyRatePlot, plot_to_img_tag_legacy
 
 # from api.api_invest import investPage
@@ -28,6 +28,7 @@ CORS(app, resources=r"/*")
 
 @app.route("/health", methods=["GET"])
 def health_check():
+    consts.currentYear = GetCurrentYear()
     return jsonify({"status": "ok"}), 200
 
 

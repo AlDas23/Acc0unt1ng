@@ -121,6 +121,8 @@ old_tables = {
     "exc_rate": ["date", "currency", "rate"],
 }
 
+currentYear = None
+
 isLegacyCurrencyRates = False
 
 mainCurrency = None

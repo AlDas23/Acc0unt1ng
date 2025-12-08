@@ -12,3 +12,7 @@ def ParseCurrRatesNames(data, appendCurr):
 
 def AppendToListElements(originalList, appendValue):
     return [f"{item}->{appendValue}" for item in originalList]
+
+def GetCurrentYear():
+    from datetime import datetime
+    return datetime.now().year
