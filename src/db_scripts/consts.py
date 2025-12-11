@@ -1,4 +1,5 @@
 dbPath = "./db/Main.db"
+dbArchivePath = "./db/archive/"
 SPVcatIncPath = "./db/catInc.csv"
 SPVcatExpPath = "./db/catExp.csv"
 SPVsubcatPath = "./db/subcat.csv"

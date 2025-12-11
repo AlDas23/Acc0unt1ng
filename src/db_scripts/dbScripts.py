@@ -1,4 +1,5 @@
 import os.path
+import shutil
 import sqlite3
 import db_scripts.consts as consts
 
@@ -237,3 +238,75 @@ def UpdateDB():
             consts.isLegacyCurrencyRates = False
 
             return 0
+
+
+def BackupDB():
+    directory = os.path.dirname(consts.dbArchivePath)
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    shutil.copy2(consts.dbPath, consts.dbArchivePath)
+    print("Database backup created")
+    os.rename(
+        consts.dbArchivePath + "Main.db",
+        consts.dbArchivePath + f"Main_{consts.currentYear - 1}.db",
+    )
+    print(f"Database backup renamed to Main_{consts.currentYear - 1}.db")
+
+
+def UpdateDBYear():
+    if consts.mainCurrency == None:
+        raise Exception("Main currency not set! Can't update DB")
+
+    BackupDB()
+
+    with sqlite3.connect(consts.dbPath) as conn:
+        c = conn.cursor()
+
+        # Colloct new initial balances
+        c.execute("SELECT DISTINCT person_bank FROM Init_PB")
+        person_banks = c.fetchall()
+        person_banks = [pb[0] for pb in person_banks]
+        seq = ",".join(["?"] * len(person_banks))
+        previousYear = consts.currentYear - 1
+        c.execute(
+            f"""
+                SELECT person_bank, ROUND(SUM(sum), 2) AS sum, currency
+                FROM (
+                    -- Main accounts and transfers
+                    SELECT person_bank, currency, sum FROM main WHERE strftime('%Y', "date") = ?
+                    UNION ALL
+                    SELECT person_bank, currency, sum FROM Init_PB
+                    UNION ALL
+                    SELECT person_bank_from AS person_bank, currency, -sum FROM transfer WHERE strftime('%Y', "date") = ?
+                    UNION ALL
+                    SELECT person_bank_from AS person_bank, currency_from AS currency, -sum_from AS sum FROM advtransfer WHERE strftime('%Y', "date") = ?
+                    UNION ALL
+                    SELECT person_bank_to AS person_bank, currency_to AS currency, sum_to AS sum FROM advtransfer WHERE strftime('%Y', "date") = ?
+                    UNION ALL
+                    SELECT person_bank_to AS person_bank, currency, sum FROM transfer WHERE strftime('%Y', "date") = ?
+                    
+                    -- PBD logic is ignored since new balance should be full, only later deposits are deducted
+                )
+                WHERE person_bank IN ({seq})
+                GROUP BY person_bank, currency
+                """,
+            previousYear,
+            previousYear,
+            previousYear,
+            previousYear,
+            previousYear,
+            person_banks,
+        )
+        newInitPBData = c.fetchall()
+
+        # Clear old Init_PB table
+        c.execute("DELETE FROM Init_PB")
+
+        # Insert new initial balances
+        c.executemany(
+            "INSERT INTO Init_PB (person_bank, sum, currency) VALUES (?, ?, ?)",
+            newInitPBData,
+        )
+
+        conn.commit()
+    print("Updated initial balances for the new year")
