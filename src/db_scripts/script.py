@@ -41,7 +41,7 @@ def UpdateRecord(inp, mode):
         conn.commit()
 
 
-def GetYearlyData(x):
+def GetYearlyData(x, year):
     if x == "yeartotalrep":
 
         result = []
@@ -162,25 +162,26 @@ def GetYearlyData(x):
 
 
 def GetTransactionHistory(type):
+    year = consts.currentYear
     Finalhistory = []
 
     if type == "expense":
-        data = Read("m-")
+        data = Read("m-", year)
     elif type == "income":
-        data = Read("m+")
+        data = Read("m+", year)
     elif type == "transfer":
-        data = Read("alltran")
+        data = Read("alltran", year)
     elif type == "advtransfer":
-        data = Read("alladvtran")
+        data = Read("alladvtran", year)
     elif type == "depositO":
-        data = Read("opendep")
+        data = Read("opendep", year)
     elif type == "depositC":
-        data = Read("closeddep")
+        data = Read("closeddep", year)
     elif type == "currencyrates":
         if consts.isLegacyCurrencyRates:
             data = ReadLegacy("currrate")
         else:
-            data = Read("currrate")
+            data = Read("currrate", year)
 
     if type == "expense":
         for row in data:
@@ -295,6 +296,7 @@ def GetTransactionHistory(type):
 
 
 def GenerateTable(flag):
+    currentYear = consts.currentYear
     with sqlite3.connect(consts.dbPath) as conn:
         c = conn.cursor()
         if flag == "currType":
@@ -306,17 +308,17 @@ def GenerateTable(flag):
                 ROUND(SUM(p.sum) * 100.0 / SUM(SUM(p.sum)) OVER (PARTITION BY p.currency), 2) as percentage
             FROM (
                 -- Main accounts and transfers
-                SELECT person_bank, currency, sum FROM main
+                SELECT person_bank, currency, sum FROM main WHERE strftime('%Y', "date") = ?
                 UNION ALL
                 SELECT person_bank, currency, sum FROM Init_PB
                 UNION ALL
-                SELECT person_bank_from AS person_bank, currency, -sum FROM transfer
+                SELECT person_bank_from AS person_bank, currency, -sum FROM transfer WHERE strftime('%Y', "date") = ?
                 UNION ALL
-                SELECT person_bank_from AS person_bank, currency_from AS currency, -sum_from AS sum FROM advtransfer
+                SELECT person_bank_from AS person_bank, currency_from AS currency, -sum_from AS sum FROM advtransfer WHERE strftime('%Y', "date") = ?
                 UNION ALL
-                SELECT person_bank_to AS person_bank, currency_to AS currency, sum_to AS sum FROM advtransfer
+                SELECT person_bank_to AS person_bank, currency_to AS currency, sum_to AS sum FROM advtransfer WHERE strftime('%Y', "date") = ?
                 UNION ALL
-                SELECT person_bank_to AS person_bank, currency, sum FROM transfer
+                SELECT person_bank_to AS person_bank, currency, sum FROM transfer WHERE strftime('%Y', "date") = ?
                 -- PBD logic
                 UNION ALL
                 SELECT owner AS person_bank, currency, -sum FROM deposit WHERE isOpen = 1
@@ -335,17 +337,17 @@ def GenerateTable(flag):
                 ROUND(SUM(p.sum) * 100.0 / SUM(SUM(p.sum)) OVER (PARTITION BY p.currency), 2) as percentage
             FROM (
                 -- Main accounts and transfers
-                SELECT person_bank, currency, sum FROM main
+                SELECT person_bank, currency, sum FROM main WHERE strftime('%Y', "date") = ?
                 UNION ALL
                 SELECT person_bank, currency, sum FROM Init_PB
                 UNION ALL
-                SELECT person_bank_from AS person_bank, currency, -sum FROM transfer
+                SELECT person_bank_from AS person_bank, currency, -sum FROM transfer WHERE strftime('%Y', "date") = ?
                 UNION ALL
-                SELECT person_bank_from AS person_bank, currency_from AS currency, -sum_from AS sum FROM advtransfer
+                SELECT person_bank_from AS person_bank, currency_from AS currency, -sum_from AS sum FROM advtransfer WHERE strftime('%Y', "date") = ?
                 UNION ALL
-                SELECT person_bank_to AS person_bank, currency_to AS currency, sum_to AS sum FROM advtransfer
+                SELECT person_bank_to AS person_bank, currency_to AS currency, sum_to AS sum FROM advtransfer WHERE strftime('%Y', "date") = ?
                 UNION ALL
-                SELECT person_bank_to AS person_bank, currency, sum FROM transfer
+                SELECT person_bank_to AS person_bank, currency, sum FROM transfer WHERE strftime('%Y', "date") = ?
                 -- PBD logic
                 UNION ALL
                 SELECT owner AS person_bank, currency, -sum FROM deposit WHERE isOpen = 1
@@ -358,14 +360,16 @@ def GenerateTable(flag):
         else:
             return []
 
-        return c.execute(query).fetchall()
+        return c.execute(
+            query, (currentYear, currentYear, currentYear, currentYear, currentYear)
+        ).fetchall()
 
 
 def read_and_convert_data(x, mode, cursor):
     current_date = datetime.now().strftime("%Y-%m-%d")
 
     if x == "norm":
-        data = Read(mode)
+        data = Read(mode, consts.currentYear)
     else:
         data = MarkerRead(mode, x)
     modified_dict = {}
@@ -452,22 +456,22 @@ def ConvReadPlus(x, mode):
     return modified_list
 
 
-def GenerateReport(rType, rFormat, categoryFilter):
+def GenerateReport(rType, rFormat, categoryFilter, year):
     # Function for generating table_data for reports page
     table_data = {"table_dict": {}, "total": []}
     # Months lsit
     months = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"]
     queryCat = """
                     SELECT category, sum, currency, date FROM main 
-                    WHERE strftime('%m', date) = ? AND category = ?
+                    WHERE strftime('%m', date) = ? AND category = ? AND strftime('%Y', date) = ?
                     """
     querySubcat = """
                     SELECT sub_category, sum, currency, date FROM main 
-                    WHERE strftime('%m', date) = ? AND sub_category = ? AND category = ?
+                    WHERE strftime('%m', date) = ? AND sub_category = ? AND category = ? AND strftime('%Y', date) = ?
                     """
     querySubcat_noCat = """
                     SELECT sub_category, sum, currency, date FROM main 
-                    WHERE strftime('%m', date) = ? AND sub_category = ?
+                    WHERE strftime('%m', date) = ? AND sub_category = ? AND strftime('%Y', date) = ?
                     """
 
     with sqlite3.connect(consts.dbPath) as conn:
@@ -504,11 +508,11 @@ def GenerateReport(rType, rFormat, categoryFilter):
             for month in months:
                 if rType == "subcat":
                     if categoryFilter == "all":
-                        c.execute(querySubcat_noCat, (month, cat))
+                        c.execute(querySubcat_noCat, (month, cat, year))
                     else:
-                        c.execute(querySubcat, (month, cat, categoryFilter))
+                        c.execute(querySubcat, (month, cat, categoryFilter, year))
                 else:
-                    c.execute(queryCat, (month, cat))
+                    c.execute(queryCat, (month, cat, year))
 
                 data = c.fetchall()
                 converted = []

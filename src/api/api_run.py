@@ -1,6 +1,14 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-from db_scripts.script import *
+from db_scripts.script import (
+    GetTransactionHistory,
+    UpdateRecord,
+    GenerateReport,
+    GetYearlyData,
+    GenerateTable,
+    ConvRead,
+    ConvReadPlus,
+)
 from db_scripts.baseScripts import (
     Add,
     InitPB,
@@ -10,9 +18,9 @@ from db_scripts.baseScripts import (
     Read,
     ReadLegacy,
 )
-from db_scripts.dbScripts import CheckDB, NewDBase, UpdateDB as UDB
+from db_scripts.dbScripts import CheckDB, NewDBase, UpdateDB as UDB, UpdateDBYear
 from db_scripts.SPVScripts import SPVconf, read_spv
-from db_scripts.consts import *
+from db_scripts.consts import SPVcatExpPath, SPVcatIncPath, SPVcurrPath, SPVsubcatPath
 import db_scripts.consts as consts
 from helpers.configScripts import ModifyConfigSettings
 from helpers.decorators import db_required
@@ -28,7 +36,11 @@ CORS(app, resources=r"/*")
 
 @app.route("/health", methods=["GET"])
 def health_check():
-    consts.currentYear = GetCurrentYear()
+    currentYear = GetCurrentYear()
+    if currentYear != consts.currentYear:
+        UpdateDBYear()
+        consts.currentYear = currentYear
+
     return jsonify({"status": "ok"}), 200
 
 
@@ -69,9 +81,15 @@ def GetList(source):
                 }
             )
         elif source == "currrateplotnames":
-            originalCurrencies = [currency for currency in read_spv(SPVcurrPath) if currency != consts.mainCurrency]
+            originalCurrencies = [
+                currency
+                for currency in read_spv(SPVcurrPath)
+                if currency != consts.mainCurrency
+            ]
             currRatePlotNames = Read("currratenamesinv")
-            originalCurrencies.extend(f"{item}->{consts.mainCurrency}" for item in currRatePlotNames)
+            originalCurrencies.extend(
+                f"{item}->{consts.mainCurrency}" for item in currRatePlotNames
+            )
             payload = jsonify(
                 {
                     "success": True,
@@ -630,9 +648,10 @@ def Report():
     rType = content.get("report_type", "")
     rFormat = content.get("report_format", "")
     categoryFilter = content.get("category", None)
+    yearFilter = content.get("year", consts.currentYear)
 
     try:
-        table_data = GenerateReport(rType, rFormat, categoryFilter)
+        table_data = GenerateReport(rType, rFormat, categoryFilter, yearFilter)
         return jsonify({"success": True, "table_data": table_data})
     except Exception as e:
         print(f"Error occurred: {str(e)}")
@@ -648,15 +667,15 @@ def Report():
         )
 
 
-@app.route("/get/report/year/<string:type>", methods=["GET"])
+@app.route("/get/report/year/<string:type>/<string:year>", methods=["GET"])
 @db_required
-def YearReport(type):
+def YearReport(type, year):
     if type == "total":
-        data = GetYearlyData("yeartotalrep")
+        data = GetYearlyData("yeartotalrep", year)
     elif type == "expense":
-        data = GetYearlyData("yearexprep")
+        data = GetYearlyData("yearexprep", year)
     elif type == "income":
-        data = GetYearlyData("yearincrep")
+        data = GetYearlyData("yearincrep", year)
     return jsonify({"success": True, "data": data})
 
 

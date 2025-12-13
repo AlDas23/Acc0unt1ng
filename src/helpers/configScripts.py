@@ -3,10 +3,11 @@ import os
 import db_scripts.consts as consts
 
 configPath = "./config/config.toml"
-version = "0.2"
+currentVersion = "0.2"
 
 defaultConfig = {
-    "version": version,
+    "version": currentVersion,
+    "current_year": "",
     "settings": {"main_currency": "None"},
     "lists": {
         "exp-categories": [],
@@ -30,9 +31,10 @@ def UpdateConfigToNewVersion():
     updatedConfig["settings"].update(currentConfig.get("settings", {}))
     updatedConfig["lists"].update(currentConfig.get("lists", {}))
     updatedConfig["backup_years"] = currentConfig.get("backup_years", [])
+    updatedConfig["current_year"] = currentConfig.get("current_year", consts.currentYear)
 
     # Update the version
-    updatedConfig["version"] = version
+    updatedConfig["version"] = currentVersion
 
     # Save the updated configuration
     with open(configPath, "w") as cf:
@@ -46,8 +48,8 @@ def CheckVersion():
         configData = toml.load(cf)
     versionToCheck = configData.get("version", None)
 
-    if versionToCheck != version:
-        print(f"Config version mismatch: {versionToCheck} != {version}")
+    if versionToCheck != currentVersion:
+        print(f"Config version mismatch: {versionToCheck} != {currentVersion}")
         UpdateConfigToNewVersion()
 
 
@@ -124,7 +126,21 @@ def ReadBackupYears():
             configData = toml.load(cf)
 
         return configData.get("backup_years", [])
+    
+def ReadCurrentYear(year = None):
+    if not os.path.exists(configPath):
+        raise FileNotFoundError("Config file does not exist.")
+    else:
+        CheckVersion()
+        with open(configPath, "r") as cf:
+            configData = toml.load(cf)
+            
+        configYear = configData.get("current_year", "")
 
+        if year is not None:
+            return configYear == year
+        else:
+            return configYear
 
 def LoadConfig():
     if not os.path.exists(configPath):
