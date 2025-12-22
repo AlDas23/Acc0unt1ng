@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { HistoryTable } from "../commonComponents/Common"
+import { HistoryTable, YearSelectorOnChange } from "../commonComponents/Common"
 import Header from "../commonComponents/Header";
 import '../assets/styles/ReportsPageStyles.css';
 
@@ -7,6 +7,7 @@ export default function YearReportPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [currencyList, setCurrencyList] = useState([]);
+    const [yearsList, setYearsList] = useState([]);
     const [data, setData] = useState({
         income: [],
         expense: [],
@@ -24,8 +25,16 @@ export default function YearReportPage() {
                 setError('Failed to load currency list: ' + error.message);
                 console.error('Error loading currency list:', error);
             });
+        GetYearsList()
+            .then(yearsData => {
+                setYearsList(yearsData);
+            })
+            .catch(error => {
+                setError('Failed to load years list: ' + error.message);
+                console.error('Error loading years list:', error);
+            });
 
-        GetData('income')
+        GetData('income', yearsList[0])
             .then(incomeData => {
                 setData(prevData => ({ ...prevData, income: incomeData }));
             })
@@ -33,7 +42,7 @@ export default function YearReportPage() {
                 setError('Failed to load income data: ' + error.message);
                 console.error('Error loading income data:', error);
             });
-        GetData('expense')
+        GetData('expense', yearsList[0])
             .then(expenseData => {
                 setData(prevData => ({ ...prevData, expense: expenseData }));
             })
@@ -41,7 +50,7 @@ export default function YearReportPage() {
                 setError('Failed to load expense data: ' + error.message);
                 console.error('Error loading expense data:', error);
             });
-        GetData('total')
+        GetData('total', yearsList[0])
             .then(totalData => {
                 setData(prevData => ({ ...prevData, total: totalData }));
                 setLoading(false);
@@ -79,8 +88,35 @@ export default function YearReportPage() {
             });
     }
 
-    const GetData = (type) => {
-        const url = `/api/get/report/year/${type}`;
+    const GetYearsList = () => {
+        return fetch(`/api/get/list/exYears`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.redirect) {
+                    alert('Database is missing or corrupted. You will be redirected to the setup page.');
+                    window.location.href = data.redirect;
+                    return Promise.reject('Redirect initiated');
+                }
+
+                if (data.success) {
+                    return data.years;
+                } else {
+                    throw new Error(data.message || 'Failed to load currency list');
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching currency list:', error);
+                alert('Unexpected error occurred while fetching currency list: ' + error.message);
+            });
+    }
+
+    const GetData = (type, year) => {
+        const url = `/api/get/report/year/${type}/${year}`;
 
         return fetch(url)
             .then(response => {
@@ -107,6 +143,27 @@ export default function YearReportPage() {
                 console.error('Error fetching data:', error);
                 return [];
             })
+    }
+
+    const OnYearChange = (event) => {
+        const selectedYear = event.target.value;
+
+        Promise.all([
+            GetData('income', selectedYear),
+            GetData('expense', selectedYear),
+            GetData('total', selectedYear)
+        ])
+            .then(([incomeData, expenseData, totalData]) => {
+                setData({
+                    income: incomeData,
+                    expense: expenseData,
+                    total: totalData
+                });
+            })
+            .catch(error => {
+                setError('Failed to load data for selected year: ' + error.message);
+                console.error('Error loading data for selected year:', error);
+            });
     }
 
     if (loading) {
@@ -137,7 +194,12 @@ export default function YearReportPage() {
         <>
             <Header />
             <div className="year-report-page">
-                <h1>Yearly Report</h1>
+                <h1>Yearly Report for <YearSelectorOnChange
+                    yearsList={yearsList}
+                    selectedYear={yearsList[0]}
+                    onYearChange={OnYearChange}
+                    id="yearReport-year-selector"
+                /></h1>
                 <div className="row">
                     <div className="col-md-4">
                         <h3>Income</h3>

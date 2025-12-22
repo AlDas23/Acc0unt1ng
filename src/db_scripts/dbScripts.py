@@ -2,6 +2,7 @@ import os.path
 import shutil
 import sqlite3
 import db_scripts.consts as consts
+from helpers.configScripts import AddToBackupYears
 
 
 def NewDBase():
@@ -310,3 +311,5 @@ def UpdateDBYear():
 
         conn.commit()
     print("Updated initial balances for the new year")
+    AddToBackupYears(previousYear)
+    print("Updated config backup years")

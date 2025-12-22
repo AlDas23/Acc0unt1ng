@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 import sqlite3
 from db_scripts.consts import *
 import db_scripts.consts as consts
@@ -216,7 +216,7 @@ def Read(x, year=None):
             return c.fetchall()
         elif x == "m-":
             c.execute(
-                "SELECT * FROM main WHERE sum < 0 AND strftime('%Y', \"date\") = ? ORDER BY date DESC, id DESC",
+                "SELECT * FROM main WHERE sum < 0 AND strftime('%Y', date) = ? ORDER BY date DESC, id DESC",
                 (year,),
             )
             return c.fetchall()
@@ -295,7 +295,8 @@ def Read(x, year=None):
                         SELECT currency_to AS currency, sum_to AS total_sum FROM advtransfer WHERE strftime('%Y', 'date') = ?
                     ) AS combined
                     GROUP BY currency    
-                """, (year, year, year)
+                """,
+                (year, year, year),
             )
             return c.fetchall()
         elif x == "allmtype":
@@ -421,7 +422,8 @@ def Read(x, year=None):
                     GROUP BY 
                         m.type, 
                         COALESCE(normal_account_balances.currency, deposit_account_balances.currency)
-                    """, (year, year, year, year, year)
+                    """,
+                (year, year, year, year, year),
             )
             return c.fetchall()
         elif x == "allmowner":
@@ -525,7 +527,8 @@ def Read(x, year=None):
                     GROUP BY 
                         m.owner, 
                         all_normal_balances.currency
-                """, (year, year, year, year, year)
+                """,
+                (year, year, year, year, year),
             )
             return c.fetchall()
 
@@ -552,7 +555,8 @@ def Read(x, year=None):
                 FROM main
                 WHERE strftime('%Y', "date") = ?
                 ORDER BY month
-                """, (year,)
+                """,
+                (year,),
             )
             return c.fetchall()
 
@@ -567,7 +571,8 @@ def Read(x, year=None):
                 FROM main
                 WHERE sum < 0 AND strftime('%Y', "date") = ?
                 ORDER BY month
-                """, (year,)
+                """,
+                (year,),
             )
             return c.fetchall()
 
@@ -582,7 +587,8 @@ def Read(x, year=None):
                 FROM main
                 WHERE sum > 0 AND strftime('%Y', "date") = ?
                 ORDER BY month
-                    """, (year,)
+                    """,
+                (year,),
             )
             return c.fetchall()
 
@@ -611,7 +617,7 @@ def Read(x, year=None):
             return c.fetchall()
 
         elif x == "currrateplot":
-            yearAgo = datetime.date.today() - datetime.timedelta(days=365)
+            yearAgo = datetime.today() - timedelta(days=365)
 
             c.execute(
                 "SELECT date, currency_S AS currency, rate FROM exc_rate WHERE currency_M = ? AND date >= ? ORDER BY date DESC",
@@ -620,8 +626,8 @@ def Read(x, year=None):
             return c.fetchall()
 
         elif x == "currrateplotinv":
-            yearAgo = datetime.date.today() - datetime.timedelta(days=365)
-            
+            yearAgo = datetime.today() - timedelta(days=365)
+
             c.execute(
                 "SELECT date, currency_M AS currency, rate FROM exc_rate WHERE currency_S = ? AND date >= ? ORDER BY date DESC",
                 (consts.mainCurrency, yearAgo),
@@ -661,6 +667,7 @@ def MarkerRead(mode, markers=None):
         c = conn.cursor()
 
         person_banks = []
+        currentYear = str(consts.currentYear)
 
         if mode == "byowner":
             c.execute(
@@ -722,29 +729,36 @@ def MarkerRead(mode, markers=None):
             # This query combines the balances from multiple sources and also integrates PBD logic
             c.execute(
                 f"""
-                    SELECT person_bank, currency, ROUND(SUM(sum), 2) AS sum
-                    FROM (
-                        -- Main accounts and transfers
-                        SELECT person_bank, currency, sum FROM main WHERE strftime('%Y', 'date') = ?
-                        UNION ALL
-                        SELECT person_bank, currency, sum FROM Init_PB
-                        UNION ALL
-                        SELECT person_bank_from AS person_bank, currency, -sum FROM transfer WHERE strftime('%Y', 'date') = ?
-                        UNION ALL
-                        SELECT person_bank_from AS person_bank, currency_from AS currency, -sum_from AS sum FROM advtransfer WHERE strftime('%Y', 'date') = ?
-                        UNION ALL
-                        SELECT person_bank_to AS person_bank, currency_to AS currency, sum_to AS sum FROM advtransfer WHERE strftime('%Y', 'date') = ?
-                        UNION ALL
-                        SELECT person_bank_to AS person_bank, currency, sum FROM transfer WHERE strftime('%Y', 'date') = ?
-                        
-                        -- PBD logic
-                        UNION ALL
-                        SELECT owner AS person_bank, currency, -sum FROM deposit WHERE isOpen = 1
-                    )
-                    WHERE person_bank IN ({seq})
-                    GROUP BY person_bank, currency
-                    """,
-                person_banks,
+        SELECT person_bank, currency, ROUND(SUM(sum), 2) AS sum
+        FROM (
+            -- Main accounts and transfers
+            SELECT person_bank, currency, sum FROM main WHERE strftime('%Y', date) = ?
+            UNION ALL
+            SELECT person_bank, currency, sum FROM Init_PB
+            UNION ALL
+            SELECT person_bank_from AS person_bank, currency, -sum FROM transfer WHERE strftime('%Y', date) = ?
+            UNION ALL
+            SELECT person_bank_from AS person_bank, currency_from AS currency, -sum_from AS sum FROM advtransfer WHERE strftime('%Y', date) = ?
+            UNION ALL
+            SELECT person_bank_to AS person_bank, currency_to AS currency, sum_to AS sum FROM advtransfer WHERE strftime('%Y', date) = ?
+            UNION ALL
+            SELECT person_bank_to AS person_bank, currency, sum FROM transfer WHERE strftime('%Y', date) = ?
+            
+            -- PBD logic
+            UNION ALL
+            SELECT owner AS person_bank, currency, -sum FROM deposit WHERE isOpen = 1
+        )
+        WHERE person_bank IN ({seq})
+        GROUP BY person_bank, currency
+    """,
+                (
+                    currentYear,
+                    currentYear,
+                    currentYear,
+                    currentYear,
+                    currentYear,
+                    *person_banks,
+                ),
             )
 
             results = c.fetchall()

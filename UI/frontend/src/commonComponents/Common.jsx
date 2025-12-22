@@ -58,3 +58,32 @@ export const HistoryTableWithEdit = memo(function HistoryTableWithEdit({ columns
         </table>
     );
 });
+
+export function YearSelector({ yearsList, selectedYear, onYearSubmit, id }) {
+    return (
+        <Form noValidate className="year-select" id={id} onSubmit={onYearSubmit}>
+            <Row>
+                <Form.Select id="yearSelect" name="YearSelect" defaultValue={selectedYear}>
+                    {yearsList.map((year, index) => (
+                        <option value={year} key={index}>{year}</option>
+                    ))}
+                </Form.Select>
+            </Row>
+            <Row>
+                <Button type="submit" variant="primary">Load Year</Button>
+            </Row>
+        </Form>
+    )
+}
+
+export function YearSelectorOnChange({ yearsList, selectedYear, onYearChange, id }) {
+    return (
+        <Form noValidate className="year-select" id={id}>
+            <Form.Select id="yearSelect" name="YearSelect" defaultValue={selectedYear} onChange={onYearChange}>
+                {yearsList.map((year, index) => (
+                    <option value={year} key={index}>{year}</option>
+                ))}
+            </Form.Select>
+        </Form>
+    )
+}

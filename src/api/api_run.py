@@ -22,7 +22,7 @@ from db_scripts.dbScripts import CheckDB, NewDBase, UpdateDB as UDB, UpdateDBYea
 from db_scripts.SPVScripts import SPVconf, read_spv
 from db_scripts.consts import SPVcatExpPath, SPVcatIncPath, SPVcurrPath, SPVsubcatPath
 import db_scripts.consts as consts
-from helpers.configScripts import ModifyConfigSettings
+from helpers.configScripts import ModifyConfigSettings, ReadBackupYears
 from helpers.decorators import db_required
 from helpers.extras import GetCurrentYear, ParseCurrRatesNames
 from helpers.genPlot import CurrencyRatePlot, plot_to_img_tag_legacy
@@ -109,6 +109,13 @@ def GetList(source):
             types = Read("extype")
             payload = jsonify(
                 {"success": True, "data": {"owners": owners, "types": types}}
+            )
+        elif source == "exYears":
+            years = ReadBackupYears()
+            years.append(consts.currentYear)
+            years = sorted(set(years), reverse=True)
+            payload = jsonify(
+                {"success": True, "data": {"years": years}}
             )
     except Exception as e:
         print(f"Error occurred: {str(e)}")
@@ -648,7 +655,7 @@ def Report():
     rType = content.get("report_type", "")
     rFormat = content.get("report_format", "")
     categoryFilter = content.get("category", None)
-    yearFilter = content.get("year", consts.currentYear)
+    yearFilter = content.get("report_year", consts.currentYear)
 
     try:
         table_data = GenerateReport(rType, rFormat, categoryFilter, yearFilter)

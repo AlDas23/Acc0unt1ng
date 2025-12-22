@@ -162,7 +162,7 @@ def GetYearlyData(x, year):
 
 
 def GetTransactionHistory(type):
-    year = consts.currentYear
+    year = str(consts.currentYear)
     Finalhistory = []
 
     if type == "expense":
