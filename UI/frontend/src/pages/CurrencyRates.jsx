@@ -102,7 +102,7 @@ function Forms({ options }) {
                 return false;
             }
 
-            if (formObject.Currency_S === formDataObj.Currency_M) {
+            if (formObject.Currency_S === formObject.Currency_M) {
                 alert("Selected currencies cannot be same!")
                 return false;
             }
