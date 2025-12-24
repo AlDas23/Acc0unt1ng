@@ -8,6 +8,7 @@ export default function YearReportPage() {
     const [error, setError] = useState(null);
     const [currencyList, setCurrencyList] = useState([]);
     const [yearsList, setYearsList] = useState([]);
+    const [currentYear, setCurrentYear] = useState(null);
     const [data, setData] = useState({
         income: [],
         expense: [],
@@ -28,13 +29,16 @@ export default function YearReportPage() {
         GetYearsList()
             .then(yearsData => {
                 setYearsList(yearsData);
+                setCurrentYear(yearsData[0]);
             })
             .catch(error => {
                 setError('Failed to load years list: ' + error.message);
                 console.error('Error loading years list:', error);
             });
+    }, []);
 
-        GetData('income', yearsList[0])
+    useEffect(() => {
+        GetData('income', currentYear)
             .then(incomeData => {
                 setData(prevData => ({ ...prevData, income: incomeData }));
             })
@@ -42,7 +46,7 @@ export default function YearReportPage() {
                 setError('Failed to load income data: ' + error.message);
                 console.error('Error loading income data:', error);
             });
-        GetData('expense', yearsList[0])
+        GetData('expense', currentYear)
             .then(expenseData => {
                 setData(prevData => ({ ...prevData, expense: expenseData }));
             })
@@ -50,7 +54,7 @@ export default function YearReportPage() {
                 setError('Failed to load expense data: ' + error.message);
                 console.error('Error loading expense data:', error);
             });
-        GetData('total', yearsList[0])
+        GetData('total', currentYear)
             .then(totalData => {
                 setData(prevData => ({ ...prevData, total: totalData }));
                 setLoading(false);
@@ -59,7 +63,7 @@ export default function YearReportPage() {
                 setError('Failed to load total data: ' + error.message);
                 console.error('Error loading total data:', error);
             });
-    }, []);
+    }, [currentYear]);
 
     const GetCurrencyList = () => {
         return fetch(`/api/get/list/currency`)
@@ -104,7 +108,7 @@ export default function YearReportPage() {
                 }
 
                 if (data.success) {
-                    return data.years;
+                    return data.data.years;
                 } else {
                     throw new Error(data.message || 'Failed to load currency list');
                 }
@@ -147,23 +151,7 @@ export default function YearReportPage() {
 
     const OnYearChange = (event) => {
         const selectedYear = event.target.value;
-
-        Promise.all([
-            GetData('income', selectedYear),
-            GetData('expense', selectedYear),
-            GetData('total', selectedYear)
-        ])
-            .then(([incomeData, expenseData, totalData]) => {
-                setData({
-                    income: incomeData,
-                    expense: expenseData,
-                    total: totalData
-                });
-            })
-            .catch(error => {
-                setError('Failed to load data for selected year: ' + error.message);
-                console.error('Error loading data for selected year:', error);
-            });
+        setCurrentYear(selectedYear);
     }
 
     if (loading) {
@@ -196,7 +184,7 @@ export default function YearReportPage() {
             <div className="year-report-page">
                 <h1>Yearly Report for <YearSelectorOnChange
                     yearsList={yearsList}
-                    selectedYear={yearsList[0]}
+                    selectedYear={currentYear}
                     onYearChange={OnYearChange}
                     id="yearReport-year-selector"
                 /></h1>

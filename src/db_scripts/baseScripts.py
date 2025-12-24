@@ -553,7 +553,7 @@ def Read(x, year=None):
                     sum,
                     currency
                 FROM main
-                WHERE strftime('%Y', "date") = ?
+                WHERE strftime('%Y', date) = ?
                 ORDER BY month
                 """,
                 (year,),
@@ -569,7 +569,7 @@ def Read(x, year=None):
                     ABS(sum) AS expense,
                     "date"
                 FROM main
-                WHERE sum < 0 AND strftime('%Y', "date") = ?
+                WHERE sum < 0 AND strftime('%Y', date) = ?
                 ORDER BY month
                 """,
                 (year,),
@@ -585,7 +585,7 @@ def Read(x, year=None):
                     ABS(sum) AS expense,
                     "date"
                 FROM main
-                WHERE sum > 0 AND strftime('%Y', "date") = ?
+                WHERE sum > 0 AND strftime('%Y', date) = ?
                 ORDER BY month
                     """,
                 (year,),

@@ -45,7 +45,7 @@ def GetYearlyData(x, year):
     if x == "yeartotalrep":
 
         result = []
-        rows = Read("yeartotal")
+        rows = Read("yeartotal", year)
 
         monthly_data = {}
 
@@ -90,7 +90,7 @@ def GetYearlyData(x, year):
 
     elif x == "yearexprep":
         result = []
-        rows = Read("yearexp")
+        rows = Read("yearexp", year)
         currencies = read_spv(consts.SPVcurrPath)
         monthly_data = {}
 
@@ -126,7 +126,7 @@ def GetYearlyData(x, year):
 
     elif x == "yearincrep":
         result = []
-        rows = Read("yearinc")
+        rows = Read("yearinc", year)
         currencies = read_spv(consts.SPVcurrPath)
         monthly_data = {}
 

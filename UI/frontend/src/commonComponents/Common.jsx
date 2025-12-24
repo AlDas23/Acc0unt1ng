@@ -1,4 +1,5 @@
 import { memo } from 'react';
+import Form from 'react-bootstrap/Form';
 
 function TableBody({ data, EditRecord, numberColumns = [] }) {
     // Parse number column settings

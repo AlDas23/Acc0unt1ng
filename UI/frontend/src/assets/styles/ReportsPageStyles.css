@@ -76,3 +76,8 @@
     padding-top: 1px;
     padding-bottom: 1px;
 }
+
+#yearReport-year-selector{
+    margin: 6px 2px 6px 2px;
+    width: 20%;
+}
