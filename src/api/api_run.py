@@ -114,9 +114,7 @@ def GetList(source):
             years = ReadBackupYears()
             years.append(consts.currentYear)
             years = sorted(set(years), reverse=True)
-            payload = jsonify(
-                {"success": True, "data": {"years": years}}
-            )
+            payload = jsonify({"success": True, "data": {"years": years}})
     except Exception as e:
         print(f"Error occurred: {str(e)}")
         error_message = str(e)
@@ -204,25 +202,26 @@ def GetOptions(source):
     return payload
 
 
+@app.route("/get/history/<string:source>/<string:year>", methods=["GET"])
 @app.route("/get/history/<string:source>", methods=["GET"])
 @db_required
-def GetHistory(source):
+def GetHistory(source, year=consts.currentYear):
     try:
         if source == "expense":
-            history = GetTransactionHistory("expense")
+            history = GetTransactionHistory("expense", year)
         elif source == "income":
-            history = GetTransactionHistory("income")
+            history = GetTransactionHistory("income", year)
         elif source == "transfer":
-            history = GetTransactionHistory("transfer")
+            history = GetTransactionHistory("transfer", year)
         elif source == "transferADV":
-            history = GetTransactionHistory("advtransfer")
+            history = GetTransactionHistory("advtransfer", year)
         elif source == "depositO":
             Re_Calculate_deposit()
-            history = GetTransactionHistory("depositO")
+            history = GetTransactionHistory("depositO", year)
         elif source == "depositC":
-            history = GetTransactionHistory("depositC")
+            history = GetTransactionHistory("depositC", year)
         elif source == "currencyrates":
-            history = GetTransactionHistory("currencyrates")
+            history = GetTransactionHistory("currencyrates", year)
 
         payload = jsonify(
             {

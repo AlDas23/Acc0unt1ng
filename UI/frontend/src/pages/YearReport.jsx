@@ -110,12 +110,12 @@ export default function YearReportPage() {
                 if (data.success) {
                     return data.data.years;
                 } else {
-                    throw new Error(data.message || 'Failed to load currency list');
+                    throw new Error(data.message || 'Failed to load years list');
                 }
             })
             .catch(error => {
-                console.error('Error fetching currency list:', error);
-                alert('Unexpected error occurred while fetching currency list: ' + error.message);
+                console.error('Error fetching years list:', error);
+                alert('Unexpected error occurred while fetching years list: ' + error.message);
             });
     }
 

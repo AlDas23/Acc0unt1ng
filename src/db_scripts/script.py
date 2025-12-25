@@ -161,8 +161,8 @@ def GetYearlyData(x, year):
         return result
 
 
-def GetTransactionHistory(type):
-    year = str(consts.currentYear)
+def GetTransactionHistory(type, year):
+    # year = str(consts.currentYear)
     Finalhistory = []
 
     if type == "expense":
@@ -174,14 +174,14 @@ def GetTransactionHistory(type):
     elif type == "advtransfer":
         data = Read("alladvtran", year)
     elif type == "depositO":
-        data = Read("opendep", year)
+        data = Read("opendep")
     elif type == "depositC":
-        data = Read("closeddep", year)
+        data = Read("closeddep")
     elif type == "currencyrates":
         if consts.isLegacyCurrencyRates:
             data = ReadLegacy("currrate")
         else:
-            data = Read("currrate", year)
+            data = Read("currrate")
 
     if type == "expense":
         for row in data:

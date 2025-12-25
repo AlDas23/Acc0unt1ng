@@ -98,3 +98,9 @@ h3 {
     text-decoration: underline;
     background-color: rgb(181, 181, 181);
 }
+
+#transfer-year-selector{
+    width: 15%;
+    margin-left: 85%;
+    margin-bottom: 8px;
+}

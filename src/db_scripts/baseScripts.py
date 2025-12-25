@@ -194,7 +194,7 @@ def ReadLegacy(x):
         c = conn.cursor()
         if x == "currrate":
             c.execute(
-                "SELECT * FROM exc_rate WHERE strftime('%Y', \"date\") = ? ORDER BY date DESC",
+                "SELECT * FROM exc_rate WHERE strftime('%Y', date) = ? ORDER BY date DESC",
                 (consts.currentYear,),
             )
             return c.fetchall()
@@ -210,7 +210,7 @@ def Read(x, year=None):
             return c.fetchall()
         elif x == "m+":
             c.execute(
-                "SELECT id, date, category, person_bank, sum, currency, comment FROM main WHERE sum > 0 AND strftime('%Y', \"date\") = ? ORDER BY date DESC, id DESC",
+                "SELECT id, date, category, person_bank, sum, currency, comment FROM main WHERE sum > 0 AND strftime('%Y', date) = ? ORDER BY date DESC, id DESC",
                 (year,),
             )
             return c.fetchall()
@@ -259,19 +259,18 @@ def Read(x, year=None):
             return c.fetchall()
         elif x == "closeddep":
             c.execute(
-                "SELECT date_in, name, owner, sum, currency, months, date_out, percent, currency_rate, expect, comment FROM deposit WHERE isOpen = 0 AND ((\"date_out\" = ' ' OR strftime('%Y', \"date_out\")= ?) OR strftime('%Y', \"date_in\")= ?) ORDER BY date_out DESC",
-                (year, year),
+                "SELECT date_in, name, owner, sum, currency, months, date_out, percent, currency_rate, expect, comment FROM deposit WHERE isOpen = 0 ORDER BY date_out DESC",
             )
             return c.fetchall()
         elif x == "alltran":
             c.execute(
-                "SELECT * FROM transfer WHERE strftime('%Y', \"date\") = ? ORDER BY date DESC",
+                "SELECT * FROM transfer WHERE strftime('%Y', date) = ? ORDER BY date DESC",
                 (year,),
             )
             return c.fetchall()
         elif x == "alladvtran":
             c.execute(
-                "SELECT * FROM advtransfer WHERE strftime('%Y', \"date\") = ? ORDER BY date DESC",
+                "SELECT * FROM advtransfer WHERE strftime('%Y', date) = ? ORDER BY date DESC",
                 (year,),
             )
             return c.fetchall()
@@ -611,8 +610,7 @@ def Read(x, year=None):
 
         elif x == "currrate":
             c.execute(
-                "SELECT * FROM exc_rate WHERE strftime('%Y', \"date\") = ? ORDER BY date DESC",
-                (year,),
+                "SELECT * FROM exc_rate ORDER BY date DESC LIMIT 60",
             )
             return c.fetchall()
 
