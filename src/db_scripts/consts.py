@@ -1,4 +1,5 @@
 dbPath = "./db/Main.db"
+dbArchivePath = "./db/archive/"
 SPVcatIncPath = "./db/catInc.csv"
 SPVcatExpPath = "./db/catExp.csv"
 SPVsubcatPath = "./db/subcat.csv"
@@ -120,6 +121,8 @@ expected_tables = {
 old_tables = {
     "exc_rate": ["date", "currency", "rate"],
 }
+
+currentYear = None
 
 isLegacyCurrencyRates = False
 

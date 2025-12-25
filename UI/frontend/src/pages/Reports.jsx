@@ -41,12 +41,15 @@ function CreateReportTable({ tableData }) {
 };
 
 export default function ReportsPage() {
+    const [loading, setLoading] = useState(true);
     const [reportType, setReportType] = useState("");
+    const [reportYear, setReportYear] = useState("");
     const [reportFormat, setReportFormat] = useState("percent");
     const [category, setCategory] = useState("all");
     const [isCategoryFilterVisible, setIsCategoryFilterVisible] = useState(false);
     const [tableData, setTableData] = useState(null);
     const [categories, setCategories] = useState([]);
+    const [years, setYears] = useState([]);
 
     useEffect(() => {
         document.title = "Reports";
@@ -55,7 +58,17 @@ export default function ReportsPage() {
             .then(data => {
                 setCategories(data);
             })
+        GetYearsList()
+            .then(yearsData => {
+                setYears(yearsData);
+                setReportYear(yearsData[0]);
+                setLoading(false);
+            })
+            .catch(error => {
+                console.error('Error loading years list:', error);
+            });
     }, []);
+
 
     const fetchCategories = () => {
         return fetch(`/api/get/list/categories_exp`,)
@@ -86,11 +99,43 @@ export default function ReportsPage() {
             });
     };
 
+    const GetYearsList = () => {
+        return fetch(`/api/get/list/exYears`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.redirect) {
+                    alert('Database is missing or corrupted. You will be redirected to the setup page.');
+                    window.location.href = data.redirect;
+                    return Promise.reject('Redirect initiated');
+                }
+
+                if (data.success) {
+                    return data.data.years;
+                } else {
+                    throw new Error(data.message || 'Failed to load years list');
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching years list:', error);
+                alert('Unexpected error occurred while fetching years list: ' + error.message);
+                throw error;
+            });
+    }
+
     const handleReportTypeChange = (e) => {
         const value = e.target.value;
         setReportType(value);
         categoryFilter(value);
     };
+
+    const handleReportYearChange = (e) => {
+        setReportYear(e.target.value);
+    }
 
     const categoryFilter = (selectedReportType) => {
         if (selectedReportType === "inccat" || selectedReportType === "expcat") {
@@ -115,7 +160,8 @@ export default function ReportsPage() {
             body: JSON.stringify({
                 report_type: reportType,
                 report_format: reportFormat,
-                category: category
+                category: category,
+                report_year: reportYear.toString()
             })
         })
             .then(response => {
@@ -136,13 +182,36 @@ export default function ReportsPage() {
             });
     }
 
-
+    if (loading) {
+        return (
+            <>
+                <Header />
+                <div className="reports-page container">
+                    <h1>Reports view</h1>
+                    <p>Loading...</p>
+                </div>
+            </>
+        );
+    }
 
     return (
         <>
             <Header />
             <div className="reports-page container">
                 <h3>Reports view</h3>
+                {years && (<div className="row">
+                    <label htmlFor="rep_year">Report year</label>
+                    <select
+                        name="rep_year"
+                        id="rep_year"
+                        value={reportYear}
+                        onChange={handleReportYearChange}
+                    >
+                        {years.map((year, index) => (
+                            <option key={index} value={year}>{year}</option>
+                        ))}
+                    </select>
+                </div>)}
                 <div className="row">
                     <label htmlFor="rep_type">Report type</label>
                     <select

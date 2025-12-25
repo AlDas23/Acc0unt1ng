@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { HistoryTableWithEdit } from "../commonComponents/Common";
+import { HistoryTableWithEdit, YearSelectorOnChange } from "../commonComponents/Common";
 import Header from "../commonComponents/Header";
 import Button from 'react-bootstrap/Button';
 import Col from 'react-bootstrap/Col';
@@ -130,12 +130,12 @@ export default function IncomePage() {
     const [formData, setFormData] = useState(initialFormData);
     const [editMode, setEditMode] = useState(false);
     const [editingId, setEditingId] = useState(null);
+    const [yearsList, setYearsList] = useState([]);
+    const [selectedYear, setSelectedYear] = useState(null);
 
     useEffect(() => {
         document.title = "Income Records";
-    }, []);
 
-    useEffect(() => {
         // Fetch options
         GetOptions()
             .then(optionsData => {
@@ -146,6 +146,19 @@ export default function IncomePage() {
                 console.error('Error loading options:', error);
             });
 
+        // Fetch years list
+        GetYearsList()
+            .then(yearsData => {
+                setYearsList(yearsData);
+                setSelectedYear(yearsData[0]);
+            })
+            .catch(error => {
+                setError('Failed to load years list: ' + error.message);
+                console.error('Error loading years list:', error);
+            });
+    }, []);
+
+    useEffect(() => {
         // Fetch history
         GetHistory()
             .then(historyData => {
@@ -157,7 +170,7 @@ export default function IncomePage() {
                 setLoading(false);
                 console.error('Error loading history:', error);
             });
-    }, []);
+    }, [selectedYear]);
 
     const GetOptions = () => {
         return fetch(`/api/get/options/income`)
@@ -188,7 +201,7 @@ export default function IncomePage() {
     }
 
     const GetHistory = () => {
-        return fetch(`/api/get/history/income`)
+        return fetch(`/api/get/history/income/${selectedYear}`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
@@ -262,6 +275,33 @@ export default function IncomePage() {
             });
     }
 
+    const GetYearsList = () => {
+        return fetch(`/api/get/list/exYears`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.redirect) {
+                    alert('Database is missing or corrupted. You will be redirected to the setup page.');
+                    window.location.href = data.redirect;
+                    return Promise.reject('Redirect initiated');
+                }
+
+                if (data.success) {
+                    return data.data.years;
+                } else {
+                    throw new Error(data.message || 'Failed to load years list');
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching years list:', error);
+                alert('Unexpected error occurred while fetching years list: ' + error.message);
+            });
+    }
+
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         const key = name.replace('input', '');
@@ -281,6 +321,11 @@ export default function IncomePage() {
         rows.forEach(row => {
             row.style.display = '';
         });
+    }
+
+    const OnYearChange = (event) => {
+        const selectedYear = event.target.value;
+        setSelectedYear(selectedYear);
     }
 
     const EditRecord = (element) => {
@@ -359,6 +404,12 @@ export default function IncomePage() {
                 <div className="row">
                     <h3>History</h3>
                     <br />
+                    <YearSelectorOnChange
+                        yearsList={yearsList}
+                        selectedYear={selectedYear}
+                        onYearChange={OnYearChange}
+                        id="income-year-selector"
+                    />
                     {history && (<HistoryTableWithEdit
                         columns={["ID", "Date", "Category", "Person-Bank", "Sum", "Currency", "Comment"]}
                         data={history}

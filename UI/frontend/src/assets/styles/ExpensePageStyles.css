@@ -64,3 +64,9 @@ h3 {
 .editable-cell:hover {
     color: #0056b3;
 }
+
+#expense-year-selector{
+    width: 15%;
+    margin-left: 86%;
+    margin-bottom: 8px;
+}

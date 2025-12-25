@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { HistoryTableWithEdit } from "../commonComponents/Common";
+import { HistoryTableWithEdit, YearSelectorOnChange } from "../commonComponents/Common";
 import Header from "../commonComponents/Header";
 import Button from 'react-bootstrap/Button';
 import Col from 'react-bootstrap/Col';
@@ -440,10 +440,6 @@ function Forms({ options, formDataSTD, formDataADV, handleInputChangeSTD, handle
 
 
 export default function TransferPage() {
-    useEffect(() => {
-        document.title = "Transfer Records";
-    }, []);
-
     const [options, setOptions] = useState(null);
     const [history, setHistory] = useState(null);
     const [historyADV, setHistoryADV] = useState(null);
@@ -453,8 +449,13 @@ export default function TransferPage() {
     const [formDataADV, setFormDataADV] = useState(initialFormDataADV);
     const [editMode, setEditMode] = useState({ isEditing: false, id: null, type: null });
     const [selectedTable, setSelectedTable] = useState('standard');
+    const [yearsList, setYearsList] = useState([]);
+    const [selectedYear, setSelectedYear] = useState(null);
+
 
     useEffect(() => {
+        document.title = "Transfer Records";
+
         // Fetch options
         GetOptions()
             .then(optionsData => {
@@ -465,6 +466,19 @@ export default function TransferPage() {
                 console.error('Error loading options:', error);
             });
 
+        // Fetch years list
+        GetYearsList()
+            .then(yearsData => {
+                setYearsList(yearsData);
+                setSelectedYear(yearsData[0]);
+            })
+            .catch(error => {
+                setError('Failed to load years list: ' + error.message);
+                console.error('Error loading years list:', error);
+            });
+    }, []);
+
+    useEffect(() => {
         // Fetch history
         GetHistory('standard')
             .then(historyData => {
@@ -486,7 +500,7 @@ export default function TransferPage() {
                 setLoading(false);
                 console.error('Error loading advanced history:', error);
             });
-    }, []);
+    }, [selectedYear]);
 
     const handleInputChangeSTD = (e) => {
         const { name, value } = e.target;
@@ -590,6 +604,33 @@ export default function TransferPage() {
         }
     }
 
+    const GetYearsList = () => {
+        return fetch(`/api/get/list/exYears`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.redirect) {
+                    alert('Database is missing or corrupted. You will be redirected to the setup page.');
+                    window.location.href = data.redirect;
+                    return Promise.reject('Redirect initiated');
+                }
+
+                if (data.success) {
+                    return data.data.years;
+                } else {
+                    throw new Error(data.message || 'Failed to load years list');
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching years list:', error);
+                alert('Unexpected error occurred while fetching years list: ' + error.message);
+            });
+    }
+
     const GetOptions = () => {
         return fetch(`/api/get/options/transfer`)
             .then(response => {
@@ -618,12 +659,17 @@ export default function TransferPage() {
             });
     }
 
+    const OnYearChange = (event) => {
+        const selectedYear = event.target.value;
+        setSelectedYear(selectedYear);
+    }
+
     const GetHistory = (type) => {
         let endpoint;
         if (type === 'standard') {
-            endpoint = `/api/get/history/transfer`
+            endpoint = `/api/get/history/transfer/${selectedYear}`;
         } else if (type === 'advanced') {
-            endpoint = `/api/get/history/transferADV`
+            endpoint = `/api/get/history/transferADV/${selectedYear}`;
         }
         return fetch(endpoint)
             .then(response => {
@@ -730,7 +776,12 @@ export default function TransferPage() {
                         </p>
                     </div>
                 </div>
-                <br />
+                <YearSelectorOnChange
+                    yearsList={yearsList}
+                    selectedYear={selectedYear}
+                    onYearChange={OnYearChange}
+                    id="transfer-year-selector"
+                />
                 <div className="row">
                     <div className="col-md-12">
                         {selectedTable === 'standard' && history && (<HistoryTableWithEdit

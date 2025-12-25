@@ -1,6 +1,14 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-from db_scripts.script import *
+from db_scripts.script import (
+    GetTransactionHistory,
+    UpdateRecord,
+    GenerateReport,
+    GetYearlyData,
+    GenerateTable,
+    ConvRead,
+    ConvReadPlus,
+)
 from db_scripts.baseScripts import (
     Add,
     InitPB,
@@ -10,13 +18,13 @@ from db_scripts.baseScripts import (
     Read,
     ReadLegacy,
 )
-from db_scripts.dbScripts import CheckDB, NewDBase, UpdateDB as UDB
+from db_scripts.dbScripts import CheckDB, NewDBase, UpdateDB as UDB, UpdateDBYear
 from db_scripts.SPVScripts import SPVconf, read_spv
-from db_scripts.consts import *
+from db_scripts.consts import SPVcatExpPath, SPVcatIncPath, SPVcurrPath, SPVsubcatPath
 import db_scripts.consts as consts
-from helpers.configScripts import ModifyConfigSettings
+from helpers.configScripts import ModifyConfigSettings, ReadBackupYears
 from helpers.decorators import db_required
-from helpers.extras import ParseCurrRatesNames
+from helpers.extras import GetCurrentYear, ParseCurrRatesNames
 from helpers.genPlot import CurrencyRatePlot, plot_to_img_tag_legacy
 
 # from api.api_invest import investPage
@@ -28,6 +36,11 @@ CORS(app, resources=r"/*")
 
 @app.route("/health", methods=["GET"])
 def health_check():
+    currentYear = GetCurrentYear()
+    if currentYear != consts.currentYear:
+        UpdateDBYear()
+        consts.currentYear = currentYear
+
     return jsonify({"status": "ok"}), 200
 
 
@@ -68,9 +81,15 @@ def GetList(source):
                 }
             )
         elif source == "currrateplotnames":
-            originalCurrencies = [currency for currency in read_spv(SPVcurrPath) if currency != consts.mainCurrency]
+            originalCurrencies = [
+                currency
+                for currency in read_spv(SPVcurrPath)
+                if currency != consts.mainCurrency
+            ]
             currRatePlotNames = Read("currratenamesinv")
-            originalCurrencies.extend(f"{item}->{consts.mainCurrency}" for item in currRatePlotNames)
+            originalCurrencies.extend(
+                f"{item}->{consts.mainCurrency}" for item in currRatePlotNames
+            )
             payload = jsonify(
                 {
                     "success": True,
@@ -91,6 +110,11 @@ def GetList(source):
             payload = jsonify(
                 {"success": True, "data": {"owners": owners, "types": types}}
             )
+        elif source == "exYears":
+            years = ReadBackupYears()
+            years.append(consts.currentYear)
+            years = sorted(set(years), reverse=True)
+            payload = jsonify({"success": True, "data": {"years": years}})
     except Exception as e:
         print(f"Error occurred: {str(e)}")
         error_message = str(e)
@@ -178,25 +202,26 @@ def GetOptions(source):
     return payload
 
 
+@app.route("/get/history/<string:source>/<string:year>", methods=["GET"])
 @app.route("/get/history/<string:source>", methods=["GET"])
 @db_required
-def GetHistory(source):
+def GetHistory(source, year=consts.currentYear):
     try:
         if source == "expense":
-            history = GetTransactionHistory("expense")
+            history = GetTransactionHistory("expense", year)
         elif source == "income":
-            history = GetTransactionHistory("income")
+            history = GetTransactionHistory("income", year)
         elif source == "transfer":
-            history = GetTransactionHistory("transfer")
+            history = GetTransactionHistory("transfer", year)
         elif source == "transferADV":
-            history = GetTransactionHistory("advtransfer")
+            history = GetTransactionHistory("advtransfer", year)
         elif source == "depositO":
             Re_Calculate_deposit()
-            history = GetTransactionHistory("depositO")
+            history = GetTransactionHistory("depositO", year)
         elif source == "depositC":
-            history = GetTransactionHistory("depositC")
+            history = GetTransactionHistory("depositC", year)
         elif source == "currencyrates":
-            history = GetTransactionHistory("currencyrates")
+            history = GetTransactionHistory("currencyrates", year)
 
         payload = jsonify(
             {
@@ -629,9 +654,10 @@ def Report():
     rType = content.get("report_type", "")
     rFormat = content.get("report_format", "")
     categoryFilter = content.get("category", None)
+    yearFilter = content.get("report_year", consts.currentYear)
 
     try:
-        table_data = GenerateReport(rType, rFormat, categoryFilter)
+        table_data = GenerateReport(rType, rFormat, categoryFilter, yearFilter)
         return jsonify({"success": True, "table_data": table_data})
     except Exception as e:
         print(f"Error occurred: {str(e)}")
@@ -647,15 +673,15 @@ def Report():
         )
 
 
-@app.route("/get/report/year/<string:type>", methods=["GET"])
+@app.route("/get/report/year/<string:type>/<string:year>", methods=["GET"])
 @db_required
-def YearReport(type):
+def YearReport(type, year):
     if type == "total":
-        data = GetYearlyData("yeartotalrep")
+        data = GetYearlyData("yeartotalrep", year)
     elif type == "expense":
-        data = GetYearlyData("yearexprep")
+        data = GetYearlyData("yearexprep", year)
     elif type == "income":
-        data = GetYearlyData("yearincrep")
+        data = GetYearlyData("yearincrep", year)
     return jsonify({"success": True, "data": data})
 
 
