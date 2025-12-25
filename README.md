@@ -23,6 +23,8 @@ To use colab version go to "colab" branch of this repository.
 
 ## Initial setup requirements
 
+### OLD way
+
 First set-up will require you to initialize database and add SPVs (Special Values: currency/categories/sub-categories).  
 
 There are 4 .csv files that need to be initialized/placed into the *db* folder of the project.
@@ -33,6 +35,8 @@ Each of them should have next structure:
 
 Each currency/category/sub-category name is written on the new line
 and the last row should **should not** be empty line, otherwise it would count as additional variable name.
+
+### NEW way
 
 If you would prefer to not create those files but let the app do it for you, it is possible to configure all of those csv's using *Database Options* in Web-interface.
 
@@ -53,3 +57,15 @@ To clarify, all accounts in the Acc0unt1ng are called *person_bank* for easier u
 After creating *person_bank* record, it is recommended to mark it with *type* and *owner* signals.
 
 For example, *person_bank* called "JohnDoe credit1", can be marked as "Credit" *type* to show that this is credit card account, and with "John" *owner* to show that owner of the account is John.
+
+## Setting-up main currency
+
+Application is highly dependent on knowledge of *which* currency is your primary one. This is required to make calculation for reports into your currency and for currency rates plot to know what to show you.
+
+On **DB Options** page, below SPV lists you can find Main Currency selector:
+
+![mainCurrencyPreview](preview/mainCurrency.png)
+
+Any currency inside currency SPV is valid to be main currency. Main currency can be switched anytime.
+
+Note: Calculation to main currency **IS** dependant on the amount of currency rates exisitng in Database. The higher the count, the better is convertation calculation.
