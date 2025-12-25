@@ -111,6 +111,8 @@ def AddToBackupYears(year):
 
         if year not in configData["backup_years"]:
             configData["backup_years"].append(year)
+        
+        configData["current_year"] = consts.currentYear
 
         with open(configPath, "w") as cf:
             toml.dump(configData, cf)

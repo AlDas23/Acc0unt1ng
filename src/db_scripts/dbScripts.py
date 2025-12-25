@@ -269,34 +269,37 @@ def UpdateDBYear():
         person_banks = [pb[0] for pb in person_banks]
         seq = ",".join(["?"] * len(person_banks))
         previousYear = consts.currentYear - 1
+        previousYearStr = str(previousYear)
         c.execute(
             f"""
                 SELECT person_bank, ROUND(SUM(sum), 2) AS sum, currency
                 FROM (
                     -- Main accounts and transfers
-                    SELECT person_bank, currency, sum FROM main WHERE strftime('%Y', "date") = ?
+                    SELECT person_bank, currency, sum FROM main WHERE strftime('%Y', date) = ?
                     UNION ALL
                     SELECT person_bank, currency, sum FROM Init_PB
                     UNION ALL
-                    SELECT person_bank_from AS person_bank, currency, -sum FROM transfer WHERE strftime('%Y', "date") = ?
+                    SELECT person_bank_from AS person_bank, currency, -sum FROM transfer WHERE strftime('%Y', date) = ?
                     UNION ALL
-                    SELECT person_bank_from AS person_bank, currency_from AS currency, -sum_from AS sum FROM advtransfer WHERE strftime('%Y', "date") = ?
+                    SELECT person_bank_from AS person_bank, currency_from AS currency, -sum_from AS sum FROM advtransfer WHERE strftime('%Y', date) = ?
                     UNION ALL
-                    SELECT person_bank_to AS person_bank, currency_to AS currency, sum_to AS sum FROM advtransfer WHERE strftime('%Y', "date") = ?
+                    SELECT person_bank_to AS person_bank, currency_to AS currency, sum_to AS sum FROM advtransfer WHERE strftime('%Y', date) = ?
                     UNION ALL
-                    SELECT person_bank_to AS person_bank, currency, sum FROM transfer WHERE strftime('%Y', "date") = ?
+                    SELECT person_bank_to AS person_bank, currency, sum FROM transfer WHERE strftime('%Y', date) = ?
                     
                     -- PBD logic is ignored since new balance should be full, only later deposits are deducted
                 )
                 WHERE person_bank IN ({seq})
                 GROUP BY person_bank, currency
                 """,
-            previousYear,
-            previousYear,
-            previousYear,
-            previousYear,
-            previousYear,
-            person_banks,
+            (
+                previousYearStr,
+                previousYearStr,
+                previousYearStr,
+                previousYearStr,
+                previousYearStr,
+                *person_banks,
+            ),
         )
         newInitPBData = c.fetchall()
 
