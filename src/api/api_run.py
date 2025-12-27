@@ -546,7 +546,7 @@ def Balance(source):
 
             if table_name == "curr-table":
                 data_curr1 = ConvRead("norm", "allcurr", True)
-                data_curr2 = Read("allcurr")
+                data_curr2 = Read("allcurr", str(consts.currentYear))
 
                 # Combine the two data sets
                 data_curr = []

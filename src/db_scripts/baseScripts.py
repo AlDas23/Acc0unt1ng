@@ -283,15 +283,15 @@ def Read(x, year=None):
                         
                         UNION ALL
                         
-                        SELECT currency, sum AS total_sum FROM main WHERE strftime('%Y', 'date') = ?
+                        SELECT currency, sum AS total_sum FROM main WHERE strftime('%Y', date) = ?
         
                         UNION ALL
         
-                        SELECT currency_from AS currency, -sum_from AS total_sum FROM advtransfer WHERE strftime('%Y', 'date') = ?
+                        SELECT currency_from AS currency, -sum_from AS total_sum FROM advtransfer WHERE strftime('%Y', date) = ?
         
                         UNION ALL
         
-                        SELECT currency_to AS currency, sum_to AS total_sum FROM advtransfer WHERE strftime('%Y', 'date') = ?
+                        SELECT currency_to AS currency, sum_to AS total_sum FROM advtransfer WHERE strftime('%Y', date) = ?
                     ) AS combined
                     GROUP BY currency    
                 """,
@@ -327,7 +327,7 @@ def Read(x, year=None):
                         FROM
                             main AS mt
                         WHERE
-                                strftime('%Y', "date") = ?
+                                strftime('%Y', date) = ?
                         GROUP BY
                             mt.person_bank, currency
 
@@ -340,7 +340,7 @@ def Read(x, year=None):
                         FROM
                             transfer AS tr
                         WHERE
-                            strftime('%Y', "date") = ?
+                            strftime('%Y', date) = ?
                         GROUP BY
                             tr.person_bank_from, currency
 
@@ -353,7 +353,7 @@ def Read(x, year=None):
                         FROM
                             transfer AS tr
                         WHERE
-                            strftime('%Y', "date") = ?
+                            strftime('%Y', date) = ?
                         GROUP BY
                             tr.person_bank_to, currency
 
@@ -366,7 +366,7 @@ def Read(x, year=None):
                         FROM
                             advtransfer AS at
                         WHERE
-                            strftime('%Y', "date") = ?    
+                            strftime('%Y', date) = ?    
                         GROUP BY
                             at.person_bank_from, currency_from
 
@@ -379,7 +379,7 @@ def Read(x, year=None):
                         FROM
                             advtransfer AS at
                         WHERE
-                            strftime('%Y', "date") = ?
+                            strftime('%Y', date) = ?
                         GROUP BY
                             at.person_bank_to, currency_to
 
@@ -461,7 +461,7 @@ def Read(x, year=None):
                             FROM
                                 main AS mt
                             WHERE
-                                strftime('%Y', "date") = ?
+                                strftime('%Y', date) = ?
                             GROUP BY
                                 mt.person_bank, currency
 
@@ -475,7 +475,7 @@ def Read(x, year=None):
                             FROM
                                 transfer AS tr
                             WHERE
-                                strftime('%Y', "date") = ?
+                                strftime('%Y', date) = ?
                             GROUP BY
                                 tr.person_bank_from, currency
 
@@ -489,7 +489,7 @@ def Read(x, year=None):
                             FROM
                                 transfer AS tr
                             WHERE
-                                strftime('%Y', "date") = ?
+                                strftime('%Y', date) = ?
                             GROUP BY
                                 tr.person_bank_to, currency
 
@@ -503,7 +503,7 @@ def Read(x, year=None):
                             FROM
                                 advtransfer AS at
                             WHERE
-                                strftime('%Y', "date") = ?
+                                strftime('%Y', date) = ?
                             GROUP BY
                                 at.person_bank_from, currency_from
 
@@ -517,7 +517,7 @@ def Read(x, year=None):
                             FROM
                                 advtransfer AS at
                             WHERE
-                                strftime('%Y', "date") = ?
+                                strftime('%Y', date) = ?
                             GROUP BY
                                 at.person_bank_to, currency_to
                         ) AS all_normal_balances

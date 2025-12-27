@@ -296,7 +296,7 @@ def GetTransactionHistory(type, year):
 
 
 def GenerateTable(flag):
-    currentYear = consts.currentYear
+    currentYear = str(consts.currentYear)
     with sqlite3.connect(consts.dbPath) as conn:
         c = conn.cursor()
         if flag == "currType":
@@ -308,17 +308,17 @@ def GenerateTable(flag):
                 ROUND(SUM(p.sum) * 100.0 / SUM(SUM(p.sum)) OVER (PARTITION BY p.currency), 2) as percentage
             FROM (
                 -- Main accounts and transfers
-                SELECT person_bank, currency, sum FROM main WHERE strftime('%Y', "date") = ?
+                SELECT person_bank, currency, sum FROM main WHERE strftime('%Y', date) = ?
                 UNION ALL
                 SELECT person_bank, currency, sum FROM Init_PB
                 UNION ALL
-                SELECT person_bank_from AS person_bank, currency, -sum FROM transfer WHERE strftime('%Y', "date") = ?
+                SELECT person_bank_from AS person_bank, currency, -sum FROM transfer WHERE strftime('%Y', date) = ?
                 UNION ALL
-                SELECT person_bank_from AS person_bank, currency_from AS currency, -sum_from AS sum FROM advtransfer WHERE strftime('%Y', "date") = ?
+                SELECT person_bank_from AS person_bank, currency_from AS currency, -sum_from AS sum FROM advtransfer WHERE strftime('%Y', date) = ?
                 UNION ALL
-                SELECT person_bank_to AS person_bank, currency_to AS currency, sum_to AS sum FROM advtransfer WHERE strftime('%Y', "date") = ?
+                SELECT person_bank_to AS person_bank, currency_to AS currency, sum_to AS sum FROM advtransfer WHERE strftime('%Y', date) = ?
                 UNION ALL
-                SELECT person_bank_to AS person_bank, currency, sum FROM transfer WHERE strftime('%Y', "date") = ?
+                SELECT person_bank_to AS person_bank, currency, sum FROM transfer WHERE strftime('%Y', date) = ?
                 -- PBD logic
                 UNION ALL
                 SELECT owner AS person_bank, currency, -sum FROM deposit WHERE isOpen = 1
@@ -337,17 +337,17 @@ def GenerateTable(flag):
                 ROUND(SUM(p.sum) * 100.0 / SUM(SUM(p.sum)) OVER (PARTITION BY p.currency), 2) as percentage
             FROM (
                 -- Main accounts and transfers
-                SELECT person_bank, currency, sum FROM main WHERE strftime('%Y', "date") = ?
+                SELECT person_bank, currency, sum FROM main WHERE strftime('%Y', date) = ?
                 UNION ALL
                 SELECT person_bank, currency, sum FROM Init_PB
                 UNION ALL
-                SELECT person_bank_from AS person_bank, currency, -sum FROM transfer WHERE strftime('%Y', "date") = ?
+                SELECT person_bank_from AS person_bank, currency, -sum FROM transfer WHERE strftime('%Y', date) = ?
                 UNION ALL
-                SELECT person_bank_from AS person_bank, currency_from AS currency, -sum_from AS sum FROM advtransfer WHERE strftime('%Y', "date") = ?
+                SELECT person_bank_from AS person_bank, currency_from AS currency, -sum_from AS sum FROM advtransfer WHERE strftime('%Y', date) = ?
                 UNION ALL
-                SELECT person_bank_to AS person_bank, currency_to AS currency, sum_to AS sum FROM advtransfer WHERE strftime('%Y', "date") = ?
+                SELECT person_bank_to AS person_bank, currency_to AS currency, sum_to AS sum FROM advtransfer WHERE strftime('%Y', date) = ?
                 UNION ALL
-                SELECT person_bank_to AS person_bank, currency, sum FROM transfer WHERE strftime('%Y', "date") = ?
+                SELECT person_bank_to AS person_bank, currency, sum FROM transfer WHERE strftime('%Y', date) = ?
                 -- PBD logic
                 UNION ALL
                 SELECT owner AS person_bank, currency, -sum FROM deposit WHERE isOpen = 1
@@ -369,7 +369,7 @@ def read_and_convert_data(x, mode, cursor):
     current_date = datetime.now().strftime("%Y-%m-%d")
 
     if x == "norm":
-        data = Read(mode, consts.currentYear)
+        data = Read(mode, str(consts.currentYear))
     else:
         data = MarkerRead(mode, x)
     modified_dict = {}
@@ -437,7 +437,7 @@ def ConvReadPlus(x, mode):
         current_date = datetime.now().strftime("%Y-%m-%d")
 
         if x == "norm":
-            data = Read(mode)
+            data = Read(mode, str(consts.currentYear))
         else:
             data = MarkerRead(mode, x)
         modified_list = []
