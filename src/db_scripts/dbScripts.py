@@ -247,15 +247,12 @@ def BackupDB():
         os.makedirs(directory)
     shutil.copy2(consts.dbPath, consts.dbArchivePath)
     print("Database backup created")
-    
-    backupDir = os.path.dirname(consts.dbArchivePath)
-    originalFilename = os.path.basename(consts.dbArchivePath)
-    newFilename = f"Main_{consts.currentYear - 1}.db"
-    oldPath = os.path.join(backupDir, originalFilename)
-    newPath = os.path.join(backupDir, newFilename)
-    
-    os.rename(oldPath, newPath)
-    print(f"Database backup renamed to {newFilename}")
+
+    os.rename(
+        os.path.join(consts.dbArchivePath, "Main.db"),
+        os.path.join(consts.dbArchivePath, f"Main_{consts.currentYear - 1}.db"),
+    )
+    print(f"Database backup renamed to Main_{consts.currentYear - 1}.db")
 
 
 def UpdateDBYear():
