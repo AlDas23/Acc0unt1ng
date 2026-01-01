@@ -254,7 +254,7 @@ def BackupDB():
     oldPath = os.path.join(backupDir, originalFilename)
     newPath = os.path.join(backupDir, newFilename)
     
-    os.rename(oldPath, newPath)
+    shutil.move(oldPath, newPath)
     print(f"Database backup renamed to {newFilename}")
 
 
