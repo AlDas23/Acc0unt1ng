@@ -22,7 +22,7 @@ from db_scripts.dbScripts import CheckDB, NewDBase, UpdateDB as UDB, UpdateDBYea
 from db_scripts.SPVScripts import SPVconf, read_spv
 from db_scripts.consts import SPVcatExpPath, SPVcatIncPath, SPVcurrPath, SPVsubcatPath
 import db_scripts.consts as consts
-from helpers.configScripts import ModifyConfigSettings, ReadBackupYears
+from helpers.configScripts import ModifyConfigSettings, ReadBackupYears, ReadCurrentYear
 from helpers.decorators import db_required
 from helpers.extras import GetCurrentYear, ParseCurrRatesNames
 from helpers.genPlot import CurrencyRatePlot, plot_to_img_tag_legacy
@@ -36,10 +36,9 @@ CORS(app, resources=r"/*")
 
 @app.route("/health", methods=["GET"])
 def health_check():
-    currentYear = GetCurrentYear()
-    if currentYear != consts.currentYear:
+    consts.currentYear = GetCurrentYear()
+    if (not ReadCurrentYear(consts.currentYear)):
         UpdateDBYear()
-        consts.currentYear = currentYear
 
     return jsonify({"status": "ok"}), 200
 

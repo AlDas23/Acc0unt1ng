@@ -796,7 +796,7 @@ def Re_Calculate_deposit():
         # Check active deposits and create income/expense if due
         current_date = datetime.now().strftime("%Y-%m-%d")
 
-        # Fetch active deposits from the deposit table where sum != 0 and the deposit is not expired
+        # Fetch active deposits from the deposit table where isOpen = 1 and the deposit is not expired
         c.execute(
             """
             SELECT name
@@ -810,7 +810,7 @@ def Re_Calculate_deposit():
         for deposit in open_deposits:
             name = deposit[0]
 
-            # Mark the deposit as fully processed (sum = 0)
+            # Mark the deposit as processed
             c.execute(
                 """
                 UPDATE deposit 
