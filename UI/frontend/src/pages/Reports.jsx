@@ -14,6 +14,7 @@ function CreateReportTable({ tableData }) {
                     {[...Array(12)].map((_, i) => (
                         <th key={i} className="genRep_HeaderCell">{i + 1}</th>
                     ))}
+                    <th className="genRep_HeaderCell">Year %</th>
                 </tr>
             </thead>
             <tbody>
@@ -23,6 +24,7 @@ function CreateReportTable({ tableData }) {
                         {tableData.total.map((val, index) => (
                             <td key={index} className="genRep_DataCell">{val}</td>
                         ))}
+                        <td className="genRep_DataCell">{tableData.year_total}</td>
                     </tr>
                 )}
                 {Object.entries(tableData.table_dict)
@@ -33,6 +35,7 @@ function CreateReportTable({ tableData }) {
                             {rowData.map((val, index) => (
                                 <td key={index} className="genRep_DataCell">{val}</td>
                             ))}
+                            <td className="genRep_DataCell">{tableData.yearly_percent[rowName]}%</td>
                         </tr>
                     ))}
             </tbody>
