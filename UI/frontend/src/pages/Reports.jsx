@@ -35,7 +35,7 @@ function CreateReportTable({ tableData }) {
                             {rowData.map((val, index) => (
                                 <td key={index} className="genRep_DataCell">{val}</td>
                             ))}
-                            <td className="genRep_DataCell">{tableData.yearly_percent[rowName]}%</td>
+                            <td className="genRep_DataCell">{tableData.yearly_col[rowName]}{tableData.report_format === "percent" ? "%" : ""}</td>
                         </tr>
                     ))}
             </tbody>
