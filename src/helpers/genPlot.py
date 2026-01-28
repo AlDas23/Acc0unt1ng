@@ -113,3 +113,47 @@ def CurrencyRatePlot(data, filters):
         ax.legend(loc="lower left")
 
     return EncodeImage(fig)
+
+
+def GraphStockPrice(data):
+    stock_data = {}
+
+    # Group data by stock
+    for row in data:
+        stock_name = row[2]
+        if stock_name not in stock_data:
+            stock_data[stock_name] = {"dates": [], "prices": []}
+        stock_data[stock_name]["dates"].append(row[1])
+        stock_data[stock_name]["prices"].append(row[3])
+
+    plt.clf()
+    plt.figure(figsize=(12, 6))
+
+    # Plot each stock separately
+    for stock_name, values in stock_data.items():
+        plt.plot(
+            values["dates"],
+            values["prices"],
+            marker="o",
+            linestyle="-",
+            label=stock_name,
+        )
+
+    plt.title("Stock Price Over Time")
+    plt.xlabel("Date")
+    plt.ylabel("Price")
+    plt.xticks(rotation=45)
+    plt.grid()
+    plt.legend()
+    plt.tight_layout()
+
+    # Save plot to a BytesIO object
+    img = io.BytesIO()
+    plt.savefig(img, format="png", bbox_inches="tight")
+    img.seek(0)
+
+    # Encode image to base64 string
+    img_tag = base64.b64encode(img.getvalue()).decode()
+    plt.close()
+
+    return f"data:image/png;base64,{img_tag}"

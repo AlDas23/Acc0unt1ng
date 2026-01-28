@@ -839,7 +839,7 @@ def MarkPB():
 @app.route("/database/update", methods=["POST"])
 def UpdateDB():
     try:
-        UDB()
+        UDB("exc_rate")
         print("Database updated.")
         return (jsonify({"success": True}), 200)
     except Exception as e:

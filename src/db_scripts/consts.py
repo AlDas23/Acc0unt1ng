@@ -115,11 +115,12 @@ expected_tables = {
         "fee",
     ],
     "investPB": ["name", "stock"],
-    "investStockPrice": ["id", "date", "stock", "price"],
+    "investStockPrice": ["id", "date", "stock", "price", "currency"],
 }
 
 old_tables = {
     "exc_rate": ["date", "currency", "rate"],
+    "investStockPrice": ["id", "date", "stock", "price"],
 }
 
 currentYear = None
@@ -132,3 +133,4 @@ incCategories = []
 expCategories = []
 subCategories = []
 currencies = []
+stocks = []

@@ -3,7 +3,7 @@ import os
 import db_scripts.consts as consts
 
 configPath = "./config/config.toml"
-currentVersion = "0.2"
+currentVersion = "0.3"
 
 defaultConfig = {
     "version": currentVersion,
@@ -14,6 +14,7 @@ defaultConfig = {
         "inc-categories": [],
         "sub-categories": [],
         "currencies": [],
+        "stocks": [],
     },
     "backup_years": [],
 }
