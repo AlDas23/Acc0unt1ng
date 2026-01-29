@@ -115,7 +115,7 @@ def CurrencyRatePlot(data, filters):
     return EncodeImage(fig)
 
 
-def GraphStockPrice(data):
+def GraphStockPrice(data): # TODO: Implement filters
     stock_data = {}
 
     # Group data by stock

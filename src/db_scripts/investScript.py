@@ -1,25 +1,6 @@
 import sqlite3
-import base64
-import io
-import matplotlib
-import matplotlib.pyplot as plt
 from db_scripts.consts import dbPath
 from db_scripts import consts
-
-matplotlib.use("Agg")
-
-
-# def CheckDB():
-#     try:
-#         with sqlite3.connect(dbPath) as conn:
-#             c = conn.cursor()
-#             c.execute("SELECT * FROM investPB")
-#             c.execute("SELECT * FROM investTransaction")
-#             c.execute("SELECT * FROM investStockPrice")
-#             return 0
-#     except sqlite3.OperationalError:
-#         print("Invest tables not found! Update the database structure!")
-#         return -1
 
 
 def InitInvestPB(name, stock):
@@ -46,9 +27,6 @@ def InitInvestPB(name, stock):
 
 
 def AddInvestTransaction(dict):
-    # if CheckDB() == -1:
-    #     return -1
-
     date = dict["date"]
     pb = dict["pb"]
     amount = round(float(dict["sum"]), 2)
@@ -133,13 +111,8 @@ def AddInvestTransaction(dict):
     if stockPrice["price"] != 0:
         AddInvestStockPrice(stockPrice)
 
-    return 0
-
 
 def AddInvestStockPrice(stockData):
-    # if CheckDB() == -1:
-    #     return -1
-
     date = stockData["date"]
     stock = stockData["stock"]
     price = round(float(stockData["price"]), 2)
@@ -159,24 +132,30 @@ def AddInvestStockPrice(stockData):
         return 0
 
 
-def ReadInvest(flag):
-    # if CheckDB() == -1:
-    #     return -1
-
+def ReadInvest(flag, year=consts.currentYear):
     with sqlite3.connect(dbPath) as conn:
         c = conn.cursor()
 
         if flag == "alli":
-            c.execute("SELECT * FROM investTransaction ORDER BY date DESC, id DESC")
+            c.execute(
+                "SELECT * FROM investTransaction WHERE strftime('%Y', date) = ? ORDER BY date DESC, id DESC",
+                (str(year),),
+            )
             return c.fetchall()
         elif flag == "ipb":
             c.execute("SELECT DISTINCT name FROM investPB ORDER BY name ASC")
             return [row[0] for row in c.fetchall()]
         elif flag == "stock":
-            c.execute("SELECT * FROM investStockPrice ORDER BY date DESC, id DESC")
+            c.execute(
+                "SELECT * FROM investStockPrice WHERE strftime('%Y', date) = ? ORDER BY date DESC, id DESC",
+                (str(year),),
+            )
             return c.fetchall()
         elif flag == "graphstock":
-            c.execute("SELECT * FROM investStockPrice ORDER BY date ASC, id ASC")
+            c.execute(
+                "SELECT * FROM investStockPrice WHERE strftime('%Y', date) = ? ORDER BY date ASC, id ASC",
+                (str(year),),
+            )
             return c.fetchall()
         elif flag == "ibal":
             c.execute(
@@ -198,49 +177,63 @@ def ReadInvest(flag):
             raise ValueError("Invalid flag value.")
 
 
-def GetInvestTransactionHistory():
-    # if CheckDB() == -1:
-    #     return -1
-
-    data = ReadInvest("alli")
+def GetInvestTransactionHistory(type, year):
     finalHistory = []
 
-    for row in data:
-        id = row[0]
-        date = row[1]
-        pb = row[2]
-        amount = row[3]
-        currency = row[4]
-        ipb = row[5]
-        iAmount = row[6]
-        stock = row[7]
-        fee = row[8]
+    if type == "main":
+        data = ReadInvest("alli", year)
+    elif type == "stock":
+        data = ReadInvest("stock", year)
 
-        stockPrice = (amount if amount > 0 else -amount) / (
-            iAmount if iAmount > 0 else -iAmount
-        )
-        finalHistory.append(
-            [
-                id,
-                date,
-                pb,
-                amount,
-                currency,
-                ipb,
-                iAmount,
-                stock,
-                fee,
-                round(stockPrice, 2),
-            ]
-        )
+    if type == "main":
+        for row in data:
+            id = row[0]
+            date = row[1]
+            pb = row[2]
+            amount = row[3]
+            currency = row[4]
+            ipb = row[5]
+            iAmount = row[6]
+            stock = row[7]
+            fee = row[8]
+
+            stockPrice = (amount if amount > 0 else -amount) / (
+                iAmount if iAmount > 0 else -iAmount
+            )
+            finalHistory.append(
+                [
+                    id,
+                    date,
+                    pb,
+                    amount,
+                    currency,
+                    ipb,
+                    iAmount,
+                    stock,
+                    fee,
+                    round(stockPrice, 2),
+                ]
+            )
+    elif type == "stock":
+        for row in data:
+            id = row[0]
+            date = row[1]
+            stock = row[2]
+            price = row[3]
+
+            finalHistory.append(
+                [
+                    id,
+                    date,
+                    stock,
+                    price,
+                ]
+            )
 
     return finalHistory
 
 
 def CalculateBalance():
-    # if CheckDB() == -1:
-    #     return -1
-
     with sqlite3.connect(dbPath) as conn:
         c = conn.cursor()
 
