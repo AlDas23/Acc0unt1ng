@@ -88,3 +88,14 @@ export function YearSelectorOnChange({ yearsList, selectedYear, onYearChange, id
         </Form>
     )
 }
+
+export const CheckLegacy = () => {
+        return fetch(`/api/database/status`)
+            .then(response => response.json())
+            .then(data => data.legacy || false)
+            .catch(error => {
+                console.error('Error fetching db status:', error);
+                alert('Unexpected error occurred while fetching db status: ' + error.message);
+                throw error;
+            });
+    };

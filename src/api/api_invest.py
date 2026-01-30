@@ -16,12 +16,12 @@ from helpers.decorators import db_required
 investEndpoints = Blueprint("investEndpoints", __name__)
 
 
-@investEndpoints.route("/invest/history/<string:source>/<string:year>", methods=["GET"])
-@investEndpoints.route("/invest/history/<string:source>", methods=["GET"])
+@investEndpoints.route("/get/invest/history/<string:source>/<string:year>", methods=["GET"])
+@investEndpoints.route("/get/invest/history/<string:source>", methods=["GET"])
 @db_required
 def InvestGetHistory(source, year=consts.currentYear):
     try:
-        if source != "transaction":
+        if source != "transactions":
             history = GetInvestTransactionHistory("main", year)
         elif source == "stockprice":
             history = GetInvestTransactionHistory("stock", year)
@@ -76,7 +76,7 @@ def InvestGetList(source):
     return payload
 
 
-@investEndpoints.route("/invest/add/transaction", methods=["POST"])
+@investEndpoints.route("/add/invest/transaction", methods=["POST"])
 def InvestAddTransaction():
     content = request.get_json()
     if content is None:
@@ -99,7 +99,7 @@ def InvestAddTransaction():
         )
 
 
-@investEndpoints.route("/invest/add/stockprice", methods=["POST"])
+@investEndpoints.route("/add/invest/stockprice", methods=["POST"])
 def InvestAddStockPrice():
     content = request.get_json()
     if content is None:
@@ -122,7 +122,7 @@ def InvestAddStockPrice():
         )
 
 
-@investEndpoints.route("/invest/balance", methods=["GET"])
+@investEndpoints.route("/get/invest/balance", methods=["GET"])
 @db_required
 def InvestBalanceSheet():
     try:

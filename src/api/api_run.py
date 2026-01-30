@@ -190,6 +190,18 @@ def GetOptions(source):
             ownersList = Read("retmowner")
             typesList = Read("retmtype")
             options = {"owner": ownersList, "type": typesList}
+        
+        elif source == "invest-transaction":
+            stocks = read_spv(consts.SPVstockPath)
+            currencies = read_spv(SPVcurrPath)
+            pb = Read("initpbnames")
+            ipb = ReadInvest("ipb")
+            options = {
+                "stocks": stocks,
+                "currency": currencies,
+                "pb": pb,
+                "ipb": ipb,
+            }
 
         payload = jsonify({"success": True, "options": options})
 
