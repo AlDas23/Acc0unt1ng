@@ -260,7 +260,8 @@ export default function InvestStockPricePage() {
                 <div className="stockprice-right">
                     {history && (<HistoryTable
                         data={history}
-                        title="Stock Price History"
+                        tableId="investStockPriceHistoryTable"
+                        columns={["Date", "Stock", "Stock Amount", "Price", "Currency"]}
                         numberColumns={["3-2"]}
                     />)}
                     <PlotComponent imageUrl={imageUrl} />
