@@ -202,6 +202,13 @@ def GetOptions(source):
                 "pb": pb,
                 "ipb": ipb,
             }
+        elif source == "invest-stockprice":
+            stocks = read_spv(consts.SPVstockPath)
+            currencies = read_spv(SPVcurrPath)
+            options = {
+                "stocks": stocks,
+                "currency": currencies,
+            }
 
         payload = jsonify({"success": True, "options": options})
 

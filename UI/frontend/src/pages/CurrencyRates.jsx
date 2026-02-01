@@ -511,7 +511,7 @@ export default function CurrencyRatesPage() {
                             numberColumns={isLegacy ? ["2-4"] : ["4-4"]}
                         />)}
                     </div>
-                    <div className="col-md-8" id="  ">
+                    <div className="col-md-8">
                         {isLegacy ? (imageUrl && <LegacyPlotComponent imageUrl={imageUrl} />)
                             : (imageUrl && options && <PlotComponent
                                 currencyList={plotOptions}
