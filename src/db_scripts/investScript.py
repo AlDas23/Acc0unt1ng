@@ -35,6 +35,7 @@ def AddInvestTransaction(dict):
     iAmount = round(float(dict["isum"]), 6)
     stock = dict["stock"]
     fee = round(float(dict["fee"]), 2)
+    isReflective = dict["isReflective"]
     stockPrice = {
         "date": date,
         "stock": stock,
@@ -95,16 +96,19 @@ def AddInvestTransaction(dict):
             INSERT INTO investTransaction VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?)
                          """
 
-        c.execute(standardQuery, (date, category, subCategory, pb, amount, currency))
         c.execute(
             investQuery, (date, pb, amount, currency, ipbName, iAmount, stock, fee)
         )
-
-        if fee != 0:
+        if isReflective:
             c.execute(
-                standardQuery,
-                (date, "bank taxes", "invest taxes", pb, -fee, currency),
+                standardQuery, (date, category, subCategory, pb, amount, currency)
             )
+
+            if fee != 0:
+                c.execute(
+                    standardQuery,
+                    (date, "bank taxes", "invest taxes", pb, -fee, currency),
+                )
 
         conn.commit()
 

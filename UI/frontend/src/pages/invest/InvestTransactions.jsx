@@ -164,9 +164,30 @@ function Forms({ options }) {
                 </Col>
             </Row>
 
-            <Button variant="primary" type="submit" id="i-t-submit">
-                Add Transaction
-            </Button>
+            <Row><Col md={2}>
+                <Button variant="primary" type="submit" id="i-t-submit">
+                    Add Transaction
+                </Button>
+            </Col>
+                <Col md={2}>
+                    <OverlayTrigger
+                        placement="right"
+                        overlay={
+                            <Tooltip id="tooltip-reflect-transaction">
+                                If checked, the transaction will be reflected in the main balance. Otherwise, it will only affect the invest balance.
+                            </Tooltip>
+                        }
+                    >
+                        <Form.Check
+                            type="checkbox"
+                            id="i-t-isReflective"
+                            name="isReflective"
+                            label="Reflect transaction in main balance"
+                            defaultChecked={true}
+                        />
+                    </OverlayTrigger>
+                </Col>
+            </Row>
         </Form>
     )
 }
