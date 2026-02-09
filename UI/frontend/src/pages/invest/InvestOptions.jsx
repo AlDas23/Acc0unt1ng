@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import Header from "../commonComponents/Header"
-import { CheckLegacy } from '../commonComponents/Common'
+import Header from "../../commonComponents/Header"
+import { CheckLegacy } from '../../commonComponents/Common'
 import Button from 'react-bootstrap/Button';
 import Col from 'react-bootstrap/Col';
 import Form from 'react-bootstrap/Form';
 import Row from 'react-bootstrap/Row';
+import "../../assets/styles/InvestOptionsStyles.css"
 
 
 export default function InvestOptionsPage() {
@@ -15,7 +16,7 @@ export default function InvestOptionsPage() {
     useEffect(() => {
         document.title = "Invest Options";
 
-        const isLegacyResult = CheckLegacy();
+        const isLegacyResult = !CheckLegacy();
         if (isLegacyResult) {
             setError("The current database is in legacy mode and does not support invest transactions.");
         } else {
@@ -23,8 +24,8 @@ export default function InvestOptionsPage() {
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        setStocks(data.stocks);
-                        setStockList(stocks.join('\n'));
+                        setStocks(data.data.stocks);
+                        setStockList(data.data.stocks.join('\n'));
                     }
                 })
                 .catch(() => {
@@ -38,7 +39,7 @@ export default function InvestOptionsPage() {
 
         const formData = new FormData(e.target);
         const stockListUpdated = {
-            stocks: formData.get("stock-list").split("\n").map(item => item.trim()).filter(item => item)
+            stocks: formData.get("stock-values").split("\n").map(item => item.trim()).filter(item => item)
         }
 
         fetch('/api/spv/invest', {
@@ -99,7 +100,7 @@ export default function InvestOptionsPage() {
         return (
             <>
                 <Header />
-                <div className="invest-options container">
+                <div className="invest-optionsPage">
                     <h1>Invest Options</h1>
                     <p>Error: {error}</p>
                 </div>
@@ -110,24 +111,28 @@ export default function InvestOptionsPage() {
     return (
         <>
             <Header />
-            <div className="invest-options container">
+            <div className="invest-optionsPage container-fluid">
                 <h1>Invest Options</h1>
                 <div className="row">
-                    <Form noValidate onSubmit={submitInvestSPV}>
-                        <Row>
-                            <Col>
-                                <Form.Label htmlFor="currency-values">Stocks Values</Form.Label>
-                                {stockList &&
-                                    (<textarea form="spv-form" value={stockList} id="stocks-values" name="stocks-values" rows="13" cols="25" />)}
-                            </Col>
-                        </Row>
-                        <br />
-                        <Row>
-                            <Button variant="primary" type="submit" id="save-spv-btn">
-                                Save Changes
-                            </Button>
-                        </Row>
-                    </Form>
+                    <div className="col-md-12">
+                        <Form noValidate id="invest-spv-form" onSubmit={submitInvestSPV}>
+                            <Row>
+                                <Col md={4}></Col>
+                                <Col md={3}>
+                                    <Form.Label htmlFor="stock-values" id="stock-label">Stock Values</Form.Label>
+                                    <br />
+                                    {stockList &&
+                                        (<textarea value={stockList} onChange={(e) => setStockList(e.target.value)} id="stock-values" name="stock-values" rows="13" cols="20" autoComplete="off" />)}
+                                </Col>
+                            </Row>
+                            <br />
+                            <Row>
+                                <Button variant="primary" type="submit" id="save-spv-btn">
+                                    Save Changes
+                                </Button>
+                            </Row>
+                        </Form>
+                    </div>
                 </div>
                 <br />
                 <hr />
@@ -135,16 +140,18 @@ export default function InvestOptionsPage() {
                 <div className="row">
                     <Form noValidate onSubmit={submitInvestPB}>
                         <Row>
-                            <h3>Add Invest PB</h3>
+                            <Col md={3} xs={8}>
+                                <h3>Add Invest PB</h3>
+                            </Col>
                         </Row>
                         <Row>
                             <Col md={3}>
                                 <Form.Label htmlFor="input-ipb">
                                     Invest PB name
                                 </Form.Label>
-                                <Form.Group id="input-ipb" name="InvestPB" autoComplete="off" />
+                                <Form.Control type="text" id="input-ipb" name="InvestPB" autoComplete="off" />
                             </Col>
-                            <Col md={3}>
+                            <Col md={2}>
                                 <Form.Label htmlFor="input-stock">
                                     Stock name
                                 </Form.Label>
@@ -157,9 +164,11 @@ export default function InvestOptionsPage() {
                         </Row>
                         <br />
                         <Row>
-                            <Button variant="primary" type="submit" id="add-ipb-btn">
-                                Add Invest PB
-                            </Button>
+                            <Col md={3} xs={8}>
+                                <Button variant="primary" type="submit" id="add-ipb-btn">
+                                    Add Invest PB
+                                </Button>
+                            </Col>
                         </Row>
                     </Form>
                 </div>

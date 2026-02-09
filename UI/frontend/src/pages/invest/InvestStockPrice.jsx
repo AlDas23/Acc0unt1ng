@@ -1,18 +1,19 @@
 import { useEffect, useState } from "react";
-import Header from "../commonComponents/Header"
-import { CheckLegacy } from '../commonComponents/Common'
+import Header from "../../commonComponents/Header"
+import { CheckLegacy } from '../../commonComponents/Common'
 import { HistoryTable } from "../../commonComponents/Common";
 import Button from 'react-bootstrap/Button';
 import Col from 'react-bootstrap/Col';
 import Form from 'react-bootstrap/Form';
 import Row from 'react-bootstrap/Row';
+import "../../assets/styles/InvestStockPriceStyles.css";
 
 function PlotComponent({ imageUrl }) {
     return (
-        <>
+        <div className="PlotComponent">
             <h3>Currency dynamics plot</h3>
             <img id="StocksPlot" src={imageUrl} alt="Stocks dynamics plot" />
-        </>
+        </div>
     );
 }
 
@@ -24,7 +25,7 @@ function Forms({ options }) {
             const formDataObj = new FormData(form);
             const formObject = Object.fromEntries(formDataObj.entries());
 
-            if (formObject.date === '' || formObject.stock === '' || isNaN(formObject.price) || formObject.currency === '') {
+            if (formObject.date === '' || formObject.stock === '' || isNaN(formObject.stockPrice) || formObject.currency === '') {
                 alert("All fields are required!");
                 return false;
             }
@@ -76,17 +77,17 @@ function Forms({ options }) {
                     <Form.Select id="i-sp-stock" name="stock" defaultValue="">
                         <option value="" disabled></option>
                         {options.stocks.map((stock, index) => (
-                            <option key={index} value={stock.id}>{stock.name} ({stock.symbol})</option>
+                            <option key={index} value={stock}>{stock}</option>
                         ))}
                     </Form.Select>
                 </Col>
             </Row>
             <Row className="mb-3">
                 <Col>
-                    <Form.Label>Stock amount</Form.Label>
+                    <Form.Label>Stock price</Form.Label>
                 </Col>
                 <Col>
-                    <Form.Control type="text" id="i-sp-stock-amount" name="stockAmount" autoComplete="off" />
+                    <Form.Control type="text" id="i-sp-stock-amount" name="stockPrice" autoComplete="off" />
                 </Col>
             </Row>
             <Row className="mb-3">
@@ -96,8 +97,8 @@ function Forms({ options }) {
                 <Col>
                     <Form.Select id="i-sp-currency" name="currency" defaultValue="">
                         <option value="" disabled></option>
-                        {options.currencies.map((currency, index) => (
-                            <option key={index} value={currency.code}>{currency.code}</option>
+                        {options.currency.map((currency, index) => (
+                            <option value={currency} key={index}>{currency}</option>
                         ))}
                     </Form.Select>
                 </Col>
@@ -119,7 +120,7 @@ export default function InvestStockPricePage() {
     useEffect(() => {
         document.title = "Invest Stock Price";
 
-        const isLegacyResult = CheckLegacy();
+        const isLegacyResult = !CheckLegacy();
         if (isLegacyResult) {
             setError("The current database is in legacy mode and does not support invest transactions.");
             setLoading(false);
@@ -135,7 +136,7 @@ export default function InvestStockPricePage() {
 
                 setOptions(results[0]);
                 setHistory(results[1])
-                setImageUrl(results[2].imageUrl);
+                setImageUrl(results[2]);
                 setLoading(false);
             }
             InitApp();
@@ -230,7 +231,7 @@ export default function InvestStockPricePage() {
         return (
             <>
                 <Header />
-                <div className="invest-stockPricePage container">
+                <div className="invest-stockPricePage">
                     <h1>Invest Stock Price</h1>
                     <p>Loading...</p>
                 </div>
@@ -242,7 +243,7 @@ export default function InvestStockPricePage() {
         return (
             <>
                 <Header />
-                <div className="invest-stockPricePage container">
+                <div className="invest-stockPricePage">
                     <h1>Invest Stock Price</h1>
                     <p>Error: {error}</p>
                 </div>
@@ -252,19 +253,29 @@ export default function InvestStockPricePage() {
     return (
         <>
             <Header />
-            <div className="invest-stockPricePage container">
+            <div className="invest-stockPricePage container-fluid">
                 <h1>Invest Stock Price</h1>
-                <div className="stockprice-left">
-                    {options && (<Forms options={options} />)}
-                </div>
-                <div className="stockprice-right">
-                    {history && (<HistoryTable
-                        data={history}
-                        tableId="investStockPriceHistoryTable"
-                        columns={["Date", "Stock", "Stock Amount", "Price", "Currency"]}
-                        numberColumns={["3-2"]}
-                    />)}
-                    <PlotComponent imageUrl={imageUrl} />
+                <div className="row">
+                    <div className="col-md-5 col-xs-12">
+                        {options && (<Forms options={options} />)}
+                    </div>
+                    <br />
+                    <div className="col-md-6 col-xs-12">
+                        <div className="table-responsive">
+                            {history && (<HistoryTable
+                                data={history}
+                                tableId="investStockPriceHistoryTable"
+                                columns={["ID","Date", "Stock", "Price", "Currency"]}
+                                numberColumns={["3-2"]}
+                            />)}
+                        </div>
+                    </div>
+                    <br />
+                    <div className="row">
+                        <div className="col-md-6 col-xs-10">
+                            <PlotComponent imageUrl={imageUrl} />
+                        </div>
+                    </div>
                 </div>
             </div>
         </>

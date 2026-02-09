@@ -272,6 +272,7 @@ def GetHistory(source, year=consts.currentYear):
     return payload
 
 
+@app.route("/get/plot/<string:source>", methods=["GET"])
 @app.route("/get/plot/<string:source>/<string:filters>", methods=["GET"])
 @db_required
 def GetPlot(source, filters=None):

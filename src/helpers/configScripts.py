@@ -164,3 +164,4 @@ def AssignGlobalConstants(configData):
     consts.expCategories = configData["lists"].get("exp-categories", [])
     consts.subCategories = configData["lists"].get("sub-categories", [])
     consts.currencies = configData["lists"].get("currencies", [])
+    consts.stocks = configData["lists"].get("stocks", [])

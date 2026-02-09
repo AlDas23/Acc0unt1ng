@@ -18,17 +18,15 @@ from helpers.decorators import db_required
 investEndpoints = Blueprint("investEndpoints", __name__)
 
 
-@investEndpoints.route(
-    "/get/invest/history/<string:source>/<string:year>", methods=["GET"]
-)
+
 @investEndpoints.route("/get/invest/history/<string:source>", methods=["GET"])
 @db_required
-def InvestGetHistory(source, year=consts.currentYear):
+def InvestGetHistory(source):
     try:
-        if source != "transactions":
-            history = GetInvestTransactionHistory("main", year)
+        if source == "transactions":
+            history = GetInvestTransactionHistory("main")
         elif source == "stockprice":
-            history = GetInvestTransactionHistory("stock", year)
+            history = GetInvestTransactionHistory("stock")
 
         payload = jsonify(
             {
@@ -184,7 +182,7 @@ def InvestSPVControl():
             return "Error: No JSON data received", 400
 
         try:
-            SPVconf("stocks", content.get["stocks", []])
+            SPVconf("stocks", content.get("stocks", []))
             return jsonify({"success": True})
         except Exception as e:
             print(f"Error occurred: {str(e)}")

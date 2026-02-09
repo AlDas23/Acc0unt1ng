@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react";
-import Header from "../commonComponents/Header"
-import { CheckLegacy } from '../commonComponents/Common'
+import Header from "../../commonComponents/Header"
+import { CheckLegacy } from '../../commonComponents/Common'
 import { HistoryTable } from "../../commonComponents/Common";
 import Button from 'react-bootstrap/Button';
 import Col from 'react-bootstrap/Col';
 import Form from 'react-bootstrap/Form';
+import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import Tooltip from 'react-bootstrap/Tooltip';
 import Row from 'react-bootstrap/Row';
+import "../../assets/styles/InvestTransactionsStyles.css";
 
 function Forms({ options }) {
     return (
@@ -14,6 +17,9 @@ function Forms({ options }) {
             const form = e.target;
             const formDataObj = new FormData(form);
             const formObject = Object.fromEntries(formDataObj.entries());
+
+            const isReflectiveCheckbox = document.getElementById('i-t-isReflective');
+            formObject.isReflective = isReflectiveCheckbox.checked;
 
             if (formObject.date === '' || formObject.pb === '' || isNaN(formObject.amount) || formObject.currency === '' || formObject.ipb === '' || isNaN(formObject.stockAmount) || formObject.stock === '') {
                 alert("All fields except fee are required!");
@@ -40,6 +46,7 @@ function Forms({ options }) {
             } else if (formObject.type === 'sell') {
                 formObject.stockAmount = formObject.stockAmount * -1; // Convert invest amount to negative for sell transactions
             }
+
 
             // Send POST request
             fetch(`/api/add/invest/transaction`, {
@@ -94,8 +101,8 @@ function Forms({ options }) {
                 <Col>
                     <Form.Select id="i-t-person-bank" name="pb" defaultValue="">
                         <option value="" disabled></option>
-                        {options.personBanks.map((pb, index) => (
-                            <option key={index} value={pb.id}>{pb.name}</option>
+                        {options.pb.map((pb, index) => (
+                            <option key={index} value={pb}>{pb}</option>
                         ))}
                     </Form.Select>
                 </Col>
@@ -115,8 +122,8 @@ function Forms({ options }) {
                 <Col>
                     <Form.Select id="i-t-currency" name="currency" defaultValue="">
                         <option value="" disabled></option>
-                        {options.currencies.map((currency, index) => (
-                            <option key={index} value={currency.code}>{currency.code}</option>
+                        {options.currency.map((currency, index) => (
+                            <option key={index} value={currency}>{currency}</option>
                         ))}
                     </Form.Select>
                 </Col>
@@ -128,8 +135,8 @@ function Forms({ options }) {
                 <Col>
                     <Form.Select id="i-t-invest-person-bank" name="ipb" defaultValue="">
                         <option value="" disabled></option>
-                        {options.investPersonBanks.map((ipb, index) => (
-                            <option key={index} value={ipb.id}>{ipb.name}</option>
+                        {options.ipb.map((ipb, index) => (
+                            <option key={index} value={ipb}>{ipb}</option>
                         ))}
                     </Form.Select>
                 </Col>
@@ -150,7 +157,7 @@ function Forms({ options }) {
                     <Form.Select id="i-t-stock" name="stock" defaultValue="">
                         <option value="" disabled></option>
                         {options.stocks.map((stock, index) => (
-                            <option key={index} value={stock.id}>{stock.name} ({stock.symbol})</option>
+                            <option key={index} value={stock}>{stock}</option>
                         ))}
                     </Form.Select>
                 </Col>
@@ -164,12 +171,14 @@ function Forms({ options }) {
                 </Col>
             </Row>
 
-            <Row><Col md={2}>
-                <Button variant="primary" type="submit" id="i-t-submit">
-                    Add Transaction
-                </Button>
-            </Col>
-                <Col md={2}>
+            <Row>
+                <Col md={4}>
+                    <Button variant="primary" type="submit" id="i-t-submit">
+                        Add Transaction
+                    </Button>
+                </Col>
+                <br />
+                <Col md={4}>
                     <OverlayTrigger
                         placement="right"
                         overlay={
@@ -179,10 +188,10 @@ function Forms({ options }) {
                         }
                     >
                         <Form.Check
-                            type="checkbox"
+                            type="switch"
                             id="i-t-isReflective"
                             name="isReflective"
-                            label="Reflect transaction in main balance"
+                            label="Reflect transaction"
                             defaultChecked={true}
                         />
                     </OverlayTrigger>
@@ -201,7 +210,7 @@ export default function InvestTransactionsPage() {
     useEffect(() => {
         document.title = "Invest Transactions";
 
-        const isLegacyResult = CheckLegacy();
+        const isLegacyResult = !CheckLegacy();
         if (isLegacyResult) {
             setError("The current database is in legacy mode and does not support invest transactions.");
             setLoading(false);
@@ -305,23 +314,29 @@ export default function InvestTransactionsPage() {
     return (
         <>
             <Header />
-            <div className="invest-transactionsPage container">
+            <div className="invest-transactionsPage container-fluid">
                 <h1>Invest Transactions</h1>
+                <br />
                 <div className="row">
-                    <div className="col-md-5">
-                        <h2>Add transaction</h2>
+                    <div className="col-md-4 col-xs-10">
+                        <h3>Add transaction</h3>
+                        <br />
                         {options && (<Forms options={options} />)}
                     </div>
-                    <div className="col-md-6">
+                    <br />
+                    <div className="col-md-7 col-xs-12">
                         <h2>Transactions history</h2>
-                        {history && (<HistoryTable
-                            columns={
-                                ["ID", "Date", "Person-Bank", "Amount", "Currency",
-                                    "Invest Person-Bank", "Stock amount", "Stock", "Fee", "Stock price"]}
-                            data={history}
-                            tableId="investTransactionsHistoryTable"
-                            numberColumns={["3-2", "6-6", "8-2", "9-2"]}
-                        />)}
+                        <br />
+                        <div className="table-responsive">
+                            {history && (<HistoryTable
+                                columns={
+                                    ["ID", "Date", "Person-Bank", "Amount", "Currency",
+                                        "Invest Person-Bank", "Stock amount", "Stock", "Fee", "Stock price"]}
+                                data={history}
+                                tableId="investTransactionsHistoryTable"
+                                numberColumns={["3-2", "6-6", "8-2", "9-2"]}
+                            />)}
+                        </div>
                     </div>
                 </div>
             </div>

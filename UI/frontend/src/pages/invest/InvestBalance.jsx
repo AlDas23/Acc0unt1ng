@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { HistoryTable } from "../commonComponents/Common"
-import Header from "../commonComponents/Header";
+import { HistoryTable } from "../../commonComponents/Common"
+import Header from "../../commonComponents/Header";
+import "../../assets/styles/InvestBalanceStyles.css";
 
 export default function InvestBalancePage() {
     const [data, setData] = useState([]);
@@ -35,7 +36,7 @@ export default function InvestBalancePage() {
         return (
             <>
                 <Header />
-                <div className="invest-balance container">
+                <div className="invest-balancePage">
                     <h1>Invest Balance</h1>
                     <p>Loading...</p>
                 </div>
@@ -47,7 +48,7 @@ export default function InvestBalancePage() {
         return (
             <>
                 <Header />
-                <div className="invest-balance container">
+                <div className="invest-balancePage">
                     <h1>Invest Balance</h1>
                     <p>Error: {error}</p>
                 </div>
@@ -58,14 +59,17 @@ export default function InvestBalancePage() {
     return (
         <>
             <Header />
-            <div className="invest-balance container">
+            <div className="invest-balancePage container-fluid">
                 <h1>Invest Balance</h1>
-                {data && (<HistoryTable
-                    data={data}
-                    title="investBalanceTable"
-                    columns={["Invest Person-Bank", "Stock", "Stock Amount", "Converted Value"]}
-                    numberColumns={["2-6", "3-2"]}
-                />)}
+                <br />
+                <div className="table-responsive">
+                    {data && (<HistoryTable
+                        data={data.balance}
+                        tableId="investBalanceTable"
+                        columns={["Invest Person-Bank", "Stock", "Stock Amount", "Converted Value"]}
+                        numberColumns={["2-6", "3-2"]}
+                    />)}
+                </div>
             </div>
         </>
     )

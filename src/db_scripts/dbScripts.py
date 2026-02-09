@@ -179,12 +179,13 @@ def CheckDBLegacy():
             actual_columns = [row[1] for row in c.fetchall()]
 
             # Check if all old columns exist in the actual table
-            if set(old_columns).issubset(set(actual_columns)):
-                print(f"Legacy table {table} found! Switching to legacy mode")
+            if set(old_columns) == set(actual_columns):
+                print(f"Legacy table {table} found!")
                 legacy_tables_found.append(table)
 
         if "exc_rate" in legacy_tables_found:
             consts.isLegacyCurrencyRates = True
+            print("Switiching to legacy currency rates mode")
 
         if "investStockPrice" in legacy_tables_found:
             UpdateDB("investStockPrice")
@@ -258,15 +259,23 @@ def UpdateDB(mode):
         with sqlite3.connect(consts.dbPath) as conn:
             c = conn.cursor()
 
-            # Truncate investStockPrice table to remove any legacy data
-            c.execute("TRUNCATE TABLE investStockPrice")
+            # Drop old investStockPrice table
+            c.execute("DROP TABLE IF EXISTS investStockPrice")
             conn.commit()
-            print("Cleared investStockPrice table of legacy data")
+            print("Removed old investStockPrice table")
 
-            # Add new column 'currency' to investStockPrice table
-            c.execute("ALTER TABLE investStockPrice ADD COLUMN currency text")
+            # Add new investStockPrice table
+            c.execute(
+                """CREATE TABLE investStockPrice (
+                        id integer PRIMARY KEY,
+                        date text,
+                        stock text,
+                        price real,
+                        currency text
+                    )"""
+            )
             conn.commit()
-            print("Added 'currency' column to investStockPrice table")
+            print("Created new investStockPrice table")
             return 0
 
 

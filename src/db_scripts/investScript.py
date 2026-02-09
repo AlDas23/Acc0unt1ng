@@ -29,18 +29,14 @@ def InitInvestPB(name, stock):
 def AddInvestTransaction(dict):
     date = dict["date"]
     pb = dict["pb"]
-    amount = round(float(dict["sum"]), 2)
+    amount = round(float(dict["amount"]), 2)
     currency = dict["currency"]
     ipbName = dict["ipb"]
-    iAmount = round(float(dict["isum"]), 6)
+    iAmount = round(float(dict["stockAmount"]), 6)
     stock = dict["stock"]
     fee = round(float(dict["fee"]), 2)
     isReflective = dict["isReflective"]
-    stockPrice = {
-        "date": date,
-        "stock": stock,
-        "price": 0,
-    }
+    stockPrice = {"date": date, "stock": stock, "price": 0, "currency": currency}
 
     if currency == consts.mainCurrency:
         stockPrice["price"] = round(
@@ -119,31 +115,31 @@ def AddInvestTransaction(dict):
 def AddInvestStockPrice(stockData):
     date = stockData["date"]
     stock = stockData["stock"]
-    price = round(float(stockData["price"]), 2)
+    price = round(float(stockData["stockPrice"]), 2)
+    currency = stockData["currency"]
 
     with sqlite3.connect(dbPath) as conn:
         c = conn.cursor()
 
         # prepare statement for invest transactions
         investQuery = """
-            INSERT INTO investStockPrice VALUES (NULL, ?, ?, ?)
+            INSERT INTO investStockPrice VALUES (NULL, ?, ?, ?, ?)
                          """
 
-        c.execute(investQuery, (date, stock, price))
+        c.execute(investQuery, (date, stock, price, currency))
 
         conn.commit()
 
         return 0
 
 
-def ReadInvest(flag, year=consts.currentYear):
+def ReadInvest(flag):
     with sqlite3.connect(dbPath) as conn:
         c = conn.cursor()
 
         if flag == "alli":
             c.execute(
-                "SELECT * FROM investTransaction WHERE strftime('%Y', date) = ? ORDER BY date DESC, id DESC",
-                (str(year),),
+                "SELECT * FROM investTransaction ORDER BY date DESC, id DESC",
             )
             return c.fetchall()
         elif flag == "ipb":
@@ -151,14 +147,12 @@ def ReadInvest(flag, year=consts.currentYear):
             return [row[0] for row in c.fetchall()]
         elif flag == "stock":
             c.execute(
-                "SELECT * FROM investStockPrice WHERE strftime('%Y', date) = ? ORDER BY date DESC, id DESC",
-                (str(year),),
+                "SELECT * FROM investStockPrice ORDER BY date DESC, id DESC",
             )
             return c.fetchall()
         elif flag == "graphstock":
             c.execute(
-                "SELECT * FROM investStockPrice WHERE strftime('%Y', date) = ? ORDER BY date ASC, id ASC",
-                (str(year),),
+                "SELECT * FROM investStockPrice ORDER BY date ASC, id ASC",
             )
             return c.fetchall()
         elif flag == "ibal":
@@ -181,13 +175,13 @@ def ReadInvest(flag, year=consts.currentYear):
             raise ValueError("Invalid flag value.")
 
 
-def GetInvestTransactionHistory(type, year):
+def GetInvestTransactionHistory(type):
     finalHistory = []
 
     if type == "main":
-        data = ReadInvest("alli", year)
+        data = ReadInvest("alli")
     elif type == "stock":
-        data = ReadInvest("stock", year)
+        data = ReadInvest("stock")
 
     if type == "main":
         for row in data:
@@ -224,6 +218,7 @@ def GetInvestTransactionHistory(type, year):
             date = row[1]
             stock = row[2]
             price = row[3]
+            currency = row[4]
 
             finalHistory.append(
                 [
@@ -231,6 +226,7 @@ def GetInvestTransactionHistory(type, year):
                     date,
                     stock,
                     price,
+                    currency
                 ]
             )
 
