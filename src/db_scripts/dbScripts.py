@@ -123,7 +123,8 @@ def NewDBase():
                     id integer PRIMARY KEY,
                     date text,
                     stock text,
-                    price real
+                    price real,
+                    currency text
                 )"""
         )
 
@@ -170,74 +171,111 @@ def CheckDBStructure():
 def CheckDBLegacy():
     with sqlite3.connect(consts.dbPath) as conn:
         c = conn.cursor()
+
+        legacy_tables_found = []
+
         for table, old_columns in consts.old_tables.items():
             c.execute(f"PRAGMA table_info({table})")
             actual_columns = [row[1] for row in c.fetchall()]
 
             # Check if all old columns exist in the actual table
-            if set(old_columns).issubset(set(actual_columns)):
-                print(f"Legacy table {table} found! Switching to legacy mode")
-                consts.isLegacyCurrencyRates = True
-                return -1
+            if set(old_columns) == set(actual_columns):
+                print(f"Legacy table {table} found!")
+                legacy_tables_found.append(table)
+
+        if "exc_rate" in legacy_tables_found:
+            consts.isLegacyCurrencyRates = True
+            print("Switiching to legacy currency rates mode")
+
+        if "investStockPrice" in legacy_tables_found:
+            UpdateDB("investStockPrice")
+            return 0
+
+        if legacy_tables_found:
+            return -1
         return 0
 
 
-def UpdateDB():
+def UpdateDB(mode):
     if consts.mainCurrency == None:
         raise Exception("Main currency not set! Can't update DB")
 
-    if consts.isLegacyCurrencyRates == False:
-        raise Exception("DB is already up to date! Can't update DB")
-    else:
-        print("Initiate DB update...\n")
+    if mode == "exc_rate":
+        if consts.isLegacyCurrencyRates == False:
+            raise Exception("DB is already up to date! Can't update DB")
+        else:
+            print("Initiate DB update...\n")
+            with sqlite3.connect(consts.dbPath) as conn:
+                c = conn.cursor()
+
+                # Collect all data from old exc_rate table
+                c.execute("SELECT * FROM exc_rate")
+                old_rates = c.fetchall()
+                print("Saved old exhange rates")
+
+                # Drop old exc_rate table
+                c.execute("DROP TABLE IF EXISTS exc_rate")
+                conn.commit()
+                print("Removed old table")
+
+                # Create new exc_rate table
+                c.execute(
+                    """CREATE TABLE exc_rate (
+                            id integer PRIMARY KEY,
+                            date text,
+                            currency_M text,
+                            currency_S text,
+                            rate real
+                        )"""
+                )
+                conn.commit()
+                print("Created new table")
+
+                # Migrate old data to new exc_rate table
+                new_rates = []
+                for rate in old_rates:
+                    date, currency_S, curr_rate = rate
+                    if currency_S == consts.mainCurrency:
+                        continue  # Skip rates that are already in main currency
+                    new_rates.append((date, consts.mainCurrency, currency_S, curr_rate))
+
+                c.executemany(
+                    "INSERT INTO exc_rate (id, date, currency_M, currency_S, rate) VALUES (NULL, ?, ?, ?, ?)",
+                    new_rates,
+                )
+                conn.commit()
+                print("Migrated old data to new table")
+
+                # Read new exc_rate table
+                c.execute("SELECT * FROM exc_rate")
+                all_rates = c.fetchall()
+                print(f"Total {len(all_rates)} exchange rates in new table")
+                print("DB update completed successfully")
+                consts.isLegacyCurrencyRates = False
+
+                return 0
+
+    elif mode == "investStockPrice":
         with sqlite3.connect(consts.dbPath) as conn:
             c = conn.cursor()
 
-            # Collect all data from old exc_rate table
-            c.execute("SELECT * FROM exc_rate")
-            old_rates = c.fetchall()
-            print("Saved old exhange rates")
-
-            # Drop old exc_rate table
-            c.execute("DROP TABLE IF EXISTS exc_rate")
+            # Drop old investStockPrice table
+            c.execute("DROP TABLE IF EXISTS investStockPrice")
             conn.commit()
-            print("Removed old table")
+            print("Removed old investStockPrice table")
 
-            # Create new exc_rate table
+            # Add new investStockPrice table
             c.execute(
-                """CREATE TABLE exc_rate (
+                """CREATE TABLE investStockPrice (
                         id integer PRIMARY KEY,
                         date text,
-                        currency_M text,
-                        currency_S text,
-                        rate real
+                        stock text,
+                        price real,
+                        currency text
                     )"""
             )
             conn.commit()
-            print("Created new table")
-
-            # Migrate old data to new exc_rate table
-            new_rates = []
-            for rate in old_rates:
-                date, currency_S, curr_rate = rate
-                if currency_S == consts.mainCurrency:
-                    continue  # Skip rates that are already in main currency
-                new_rates.append((date, consts.mainCurrency, currency_S, curr_rate))
-
-            c.executemany(
-                "INSERT INTO exc_rate (id, date, currency_M, currency_S, rate) VALUES (NULL, ?, ?, ?, ?)",
-                new_rates,
-            )
-            conn.commit()
-            print("Migrated old data to new table")
-
-            # Read new exc_rate table
-            c.execute("SELECT * FROM exc_rate")
-            all_rates = c.fetchall()
-            print(f"Total {len(all_rates)} exchange rates in new table")
-            print("DB update completed successfully")
-            consts.isLegacyCurrencyRates = False
-
+            print("Created new investStockPrice table")
             return 0
 
 

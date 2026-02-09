@@ -6,6 +6,7 @@ import Col from 'react-bootstrap/Col';
 import Form from 'react-bootstrap/Form';
 import Row from 'react-bootstrap/Row';
 import '../assets/styles/CurrRatePageStyles.css'
+import { CheckLegacy } from '../commonComponents/Common'
 
 function LegacyPlotComponent({ imageUrl }) {
     return (
@@ -299,16 +300,6 @@ export default function CurrencyRatesPage() {
         initializeApp();
     }, []);
 
-    const CheckLegacy = () => {
-        return fetch(`/api/database/status`)
-            .then(response => response.json())
-            .then(data => data.legacy || false)
-            .catch(error => {
-                console.error('Error fetching db status:', error);
-                alert('Unexpected error occurred while fetching db status: ' + error.message);
-                throw error;
-            });
-    };
 
     const GetOptions = () => {
         return fetch(`/api/get/options/currencyrates`)
@@ -520,7 +511,7 @@ export default function CurrencyRatesPage() {
                             numberColumns={isLegacy ? ["2-4"] : ["4-4"]}
                         />)}
                     </div>
-                    <div className="col-md-8" id="  ">
+                    <div className="col-md-8">
                         {isLegacy ? (imageUrl && <LegacyPlotComponent imageUrl={imageUrl} />)
                             : (imageUrl && options && <PlotComponent
                                 currencyList={plotOptions}

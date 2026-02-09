@@ -458,7 +458,7 @@ def ConvReadPlus(x, mode):
 
 def GenerateReport(rType, rFormat, categoryFilter, year):
     # Function for generating table_data for reports page
-    table_data = {"table_dict": {}, "total": [], "yearly_percent": {}}
+    table_data = {"table_dict": {}, "total": [], "yearly_col": {}}
     # Months lsit
     months = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"]
     queryCat = """
@@ -537,41 +537,43 @@ def GenerateReport(rType, rFormat, categoryFilter, year):
                         round(totalConverted[1], 2)
                     ]
 
-        totalRow = [0] * 12
-        for values in table_data["table_dict"].values():
+    totalRow = [0] * 12
+    for values in table_data["table_dict"].values():
+        for i in range(12):
+            totalRow[i] += values[i]
+    totalRow = [round(x, 2) for x in totalRow]
+
+    # Calculate yearly totals for each category
+    yearly_totals = {}
+    for category, monthly_values in table_data["table_dict"].items():
+        yearly_totals[category] = sum(monthly_values)
+
+    # Calculate total for entire year (all categories combined)
+    grand_yearly_total = sum(yearly_totals.values())
+
+    if rFormat == "ron":
+        table_data["total"] = totalRow
+        table_data["year_total"] = sum(totalRow)
+        for category, yearly_total in yearly_totals.items():
+            table_data["yearly_col"][category] = round(yearly_total, 0)
+
+    elif rFormat == "percent":
+        for category, values in table_data["table_dict"].items():
             for i in range(12):
-                totalRow[i] += values[i]
-        totalRow = [round(x, 2) for x in totalRow]
-
-        # Calculate yearly totals for each category
-        yearly_totals = {}
-        for category, monthly_values in table_data["table_dict"].items():
-            yearly_totals[category] = sum(monthly_values)
-
-        # Calculate total for entire year (all categories combined)
-        grand_yearly_total = sum(yearly_totals.values())
+                if totalRow[i] == 0:
+                    table_data["table_dict"][category][i] = 0
+                else:
+                    table_data["table_dict"][category][i] = int(
+                        (values[i] / totalRow[i]) * 100
+                    )
 
         # Calculate percentage of each category to whole year
         for category, yearly_total in yearly_totals.items():
             if grand_yearly_total != 0:
                 percentage = (yearly_total / grand_yearly_total) * 100
-                table_data["yearly_percent"][category] = round(percentage, 0)
+                table_data["yearly_col"][category] = round(percentage, 0)
             else:
-                table_data["yearly_percent"][category] = 0
-
-        if rFormat == "ron":
-            table_data["total"] = totalRow
-            table_data["year_total"] = sum(totalRow)
-
-        elif rFormat == "percent":
-            for category, values in table_data["table_dict"].items():
-                for i in range(12):
-                    if totalRow[i] == 0:
-                        table_data["table_dict"][category][i] = 0
-                    else:
-                        table_data["table_dict"][category][i] = int(
-                            (values[i] / totalRow[i]) * 100
-                        )
+                table_data["yearly_col"][category] = 0
 
     return table_data
 

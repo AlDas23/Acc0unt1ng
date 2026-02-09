@@ -24,7 +24,12 @@ function NavBar() {
                         <NavDropdown.Item href="/options/db">Database options</NavDropdown.Item>
                         <NavDropdown.Item href="/options/pb">Accounts options</NavDropdown.Item>
                     </NavDropdown>
-                    <Nav.Link href="/invest">Invest management</Nav.Link>
+                    <NavDropdown title="Invest management" id="nav-dropdown-invest">
+                        <NavDropdown.Item href="/invest/transactions">Transactions</NavDropdown.Item>
+                        <NavDropdown.Item href="/invest/stockprice">Stock Prices</NavDropdown.Item>
+                        <NavDropdown.Item href="/invest/balance">Balance</NavDropdown.Item>
+                        <NavDropdown.Item href="/invest/options">Options</NavDropdown.Item>
+                    </NavDropdown>
                 </Nav>
             </Navbar.Collapse>
         </Navbar>

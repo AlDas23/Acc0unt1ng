@@ -1,5 +1,4 @@
 import csv
-import os
 import db_scripts.consts as consts
 from helpers.configScripts import ModifyConfigLists
 
@@ -18,6 +17,9 @@ def read_spv(file_name):
     elif file_name == consts.SPVcurrPath:
         if consts.currencies is not None and consts.currencies:
             return consts.currencies.copy()
+    elif file_name == consts.SPVstockPath:
+        if consts.stocks is not None and consts.stocks:
+            return consts.stocks.copy()
 
     values = []
     try:

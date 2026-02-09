@@ -1,5 +1,6 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
+from db_scripts.investScript import ReadInvest
 from db_scripts.script import (
     GetTransactionHistory,
     UpdateRecord,
@@ -25,19 +26,18 @@ import db_scripts.consts as consts
 from helpers.configScripts import ModifyConfigSettings, ReadBackupYears, ReadCurrentYear
 from helpers.decorators import db_required
 from helpers.extras import GetCurrentYear, ParseCurrRatesNames
-from helpers.genPlot import CurrencyRatePlot, plot_to_img_tag_legacy
-
-# from api.api_invest import investPage
+from helpers.genPlot import CurrencyRatePlot, GraphStockPrice, plot_to_img_tag_legacy
+from api.api_invest import investEndpoints
 
 app = Flask(__name__)
-# app.register_blueprint(investPage, url_prefix="/")
+app.register_blueprint(investEndpoints, url_prefix="/")
 CORS(app, resources=r"/*")
 
 
 @app.route("/health", methods=["GET"])
 def health_check():
     consts.currentYear = GetCurrentYear()
-    if (not ReadCurrentYear(consts.currentYear)):
+    if not ReadCurrentYear(consts.currentYear):
         UpdateDBYear()
 
     return jsonify({"status": "ok"}), 200
@@ -77,6 +77,14 @@ def GetList(source):
                 {
                     "success": True,
                     "currencies": currencies,
+                }
+            )
+        elif source == "stocks":
+            stock = read_spv(consts.SPVstockPath)
+            payload = jsonify(
+                {
+                    "success": True,
+                    "stocks": stock,
                 }
             )
         elif source == "currrateplotnames":
@@ -182,6 +190,25 @@ def GetOptions(source):
             ownersList = Read("retmowner")
             typesList = Read("retmtype")
             options = {"owner": ownersList, "type": typesList}
+        
+        elif source == "invest-transaction":
+            stocks = read_spv(consts.SPVstockPath)
+            currencies = read_spv(SPVcurrPath)
+            pb = Read("initpbnames")
+            ipb = ReadInvest("ipb")
+            options = {
+                "stocks": stocks,
+                "currency": currencies,
+                "pb": pb,
+                "ipb": ipb,
+            }
+        elif source == "invest-stockprice":
+            stocks = read_spv(consts.SPVstockPath)
+            currencies = read_spv(SPVcurrPath)
+            options = {
+                "stocks": stocks,
+                "currency": currencies,
+            }
 
         payload = jsonify({"success": True, "options": options})
 
@@ -245,6 +272,7 @@ def GetHistory(source, year=consts.currentYear):
     return payload
 
 
+@app.route("/get/plot/<string:source>", methods=["GET"])
 @app.route("/get/plot/<string:source>/<string:filters>", methods=["GET"])
 @db_required
 def GetPlot(source, filters=None):
@@ -265,6 +293,11 @@ def GetPlot(source, filters=None):
                     filterArr = None
                 plot = CurrencyRatePlot(data, filterArr)
             payload = jsonify({"success": True, "plot": plot})
+        if source == "investstockprice":
+            data = ReadInvest("graphstock")
+            plot = GraphStockPrice(data)
+            payload = jsonify({"success": True, "plot": plot})
+
     except Exception as e:
         print(f"Error occurred: {str(e)}")
         error_message = str(e)
@@ -839,7 +872,7 @@ def MarkPB():
 @app.route("/database/update", methods=["POST"])
 def UpdateDB():
     try:
-        UDB()
+        UDB("exc_rate")
         print("Database updated.")
         return (jsonify({"success": True}), 200)
     except Exception as e:
