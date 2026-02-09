@@ -36,10 +36,10 @@ def AddInvestTransaction(dict):
     stock = dict["stock"]
     fee = round(float(dict["fee"]), 2)
     isReflective = dict["isReflective"]
-    stockPrice = {"date": date, "stock": stock, "price": 0, "currency": currency}
+    stockPrice = {"date": date, "stock": stock, "stockPrice": 0, "currency": currency}
 
     if currency == consts.mainCurrency:
-        stockPrice["price"] = round(
+        stockPrice["stockPrice"] = round(
             (amount if amount > 0 else -amount)
             / (iAmount if iAmount > 0 else -iAmount),
             2,
@@ -108,7 +108,7 @@ def AddInvestTransaction(dict):
 
         conn.commit()
 
-    if stockPrice["price"] != 0:
+    if stockPrice["stockPrice"] != 0:
         AddInvestStockPrice(stockPrice)
 
 
