@@ -37,12 +37,12 @@ h3 {
 }
 
 
-.balance-page>.row>.col,
+/* .balance-page>.row>.col,
 .row>[class^="col-"] {
     margin-bottom: 0 !important;
     padding-right: 4px;
     padding-left: 4px;
-}
+} */
 
 .toggleableTitle {
     display: inline-block;

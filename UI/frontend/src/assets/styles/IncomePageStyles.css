@@ -1,9 +1,10 @@
 .income-page {
-    width: 100%;
+    width: auto;
     margin-top: 16px;
-    margin-left: 20px;
-    margin-right: 20px;
+    margin-left: 3%;
+    margin-right: 1%;
     margin-bottom: 20px;
+    overflow: hidden;
 }
 
 h3 {
@@ -28,31 +29,13 @@ h3 {
     padding: 8px 0 !important;
 }
 
-.form .row > .col,
-.form .row > [class^="col-"] {
-    margin-bottom: 0 !important;
-    padding-right: 4px;
-    padding-left: 4px;
-}
-.form label {
-    margin-bottom: 4px;
-}
-
-#inputDate {
-    height: 36px;
+#IncomeInputDate {
+    height: 43px;
     width: 100%;
 }
 
-#SubmitButton {
-    margin-top: 16px;
-    width: 10%;
-}
-
-#CancelButton {
-    margin-top: 20px;
-    margin-left: 0px;
-    width: 10%;
-    background-color: red;
+.form label {
+    margin-bottom: 4px;
 }
 
 .editable-cell {
@@ -65,8 +48,8 @@ h3 {
     color: #0056b3;
 }
 
-#income-year-selector{
-    width: 15%;
-    margin-left: 86%;
+#income-year-selector {
+    width: 100%;
     margin-bottom: 8px;
+    float: right;
 }

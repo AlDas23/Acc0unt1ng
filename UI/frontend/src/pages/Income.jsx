@@ -18,20 +18,20 @@ const initialFormData = {
 
 function Forms({ options, ValidateForm, handleInputChange, resetForm, editMode, formData }) {
     return (
-        <Form noValidate className="form" id="form" onSubmit={ValidateForm}>
+        <Form noValidate className="form" id="income-form" onSubmit={ValidateForm}>
             <Row>
-                <Col xl="2">
+                <Col md={2}>
                     <Form.Label htmlFor="inputDate">
                         Date
                     </Form.Label>
                     <input type="date"
-                        id={"inputDate"}
-                        name={"Date"}
+                        id="IncomeInputDate"
+                        name="Date"
                         value={formData.date}
                         onChange={handleInputChange}
                     />
                 </Col>
-                <Col xl="2">
+                <Col md={2}>
                     <Form.Label htmlFor="inputCategory">
                         Category
                     </Form.Label>
@@ -47,7 +47,7 @@ function Forms({ options, ValidateForm, handleInputChange, resetForm, editMode, 
                         ))}
                     </Form.Select>
                 </Col>
-                <Col xl="2">
+                <Col md={2}>
                     <Form.Label htmlFor="inputPersonBank">
                         Person-Bank
                     </Form.Label>
@@ -63,7 +63,7 @@ function Forms({ options, ValidateForm, handleInputChange, resetForm, editMode, 
                         ))}
                     </Form.Select>
                 </Col>
-                <Col xl="1">
+                <Col md={1}>
                     <Form.Label htmlFor="inputSum">
                         Amount
                     </Form.Label>
@@ -76,7 +76,7 @@ function Forms({ options, ValidateForm, handleInputChange, resetForm, editMode, 
                         autoComplete="off"
                     />
                 </Col>
-                <Col xl="1">
+                <Col md={1}>
                     <Form.Label htmlFor="inputCurrency">
                         Currency
                     </Form.Label>
@@ -92,7 +92,7 @@ function Forms({ options, ValidateForm, handleInputChange, resetForm, editMode, 
                         ))}
                     </Form.Select>
                 </Col>
-                <Col xl="auto">
+                <Col md={2}>
                     <Form.Label htmlFor="inputComment">
                         Comment
                     </Form.Label>
@@ -107,16 +107,18 @@ function Forms({ options, ValidateForm, handleInputChange, resetForm, editMode, 
                 </Col>
             </Row>
             <Row>
-                <Button type="submit" id="SubmitButton">
-                    {editMode ? "Update Record" : "Add Record"}
-                </Button>
-            </Row>
-            <Row>
-                {editMode && (
-                    <Button type="button" onClick={resetForm} id="CancelButton">
-                        Cancel Edit
+                <Col xs={4} md={2}>
+                    <Button type="submit" id="SubmitButton">
+                        {editMode ? "Update Record" : "Add Record"}
                     </Button>
-                )}
+                </Col>
+                <Col xs={4} md={2}>
+                    {editMode && (
+                        <Button type="button" onClick={resetForm} id="CancelButton">
+                            Cancel Edit
+                        </Button>
+                    )}
+                </Col>
             </Row>
         </Form>
     );
@@ -385,9 +387,9 @@ export default function IncomePage() {
     return (
         <>
             <Header />
-            <div className="income-page container">
-                <div className="row">
-                    <div className="col-bg-12">
+            <div className="income-page container-fluid">
+                <Row>
+                    <Col xs={12} md={11}>
                         <h1>Income Records</h1>
                         {options && (<Forms
                             options={options}
@@ -397,27 +399,35 @@ export default function IncomePage() {
                             editMode={editMode}
                             formData={formData}
                         />)}
-                        <br />
-                    </div>
-                </div>
+                    </Col>
+                </Row>
                 <br />
-                <div className="row">
+                <Row>
                     <h3>History</h3>
                     <br />
-                    <YearSelectorOnChange
-                        yearsList={yearsList}
-                        selectedYear={selectedYear}
-                        onYearChange={OnYearChange}
-                        id="income-year-selector"
-                    />
-                    {history && (<HistoryTableWithEdit
-                        columns={["ID", "Date", "Category", "Person-Bank", "Sum", "Currency", "Comment"]}
-                        data={history}
-                        EditRecord={EditRecord}
-                        tableId={"incomeHistoryTable"}
-                        numberColumns={["4-2"]}
-                    />)}
-                </div>
+                    <Col md={10}>
+                        <br />
+                    </Col>
+                    <Col md={1}>
+                        <YearSelectorOnChange
+                            yearsList={yearsList}
+                            selectedYear={selectedYear}
+                            onYearChange={OnYearChange}
+                            id="income-year-selector"
+                        />
+                    </Col>
+                    <Col xs={12}>
+                        <div className="table-responsive">
+                            {history && (<HistoryTableWithEdit
+                                columns={["ID", "Date", "Category", "Person-Bank", "Sum", "Currency", "Comment"]}
+                                data={history}
+                                EditRecord={EditRecord}
+                                tableId={"incomeHistoryTable"}
+                                numberColumns={["4-2"]}
+                            />)}
+                        </div>
+                    </Col>
+                </Row>
             </div>
         </>
     )

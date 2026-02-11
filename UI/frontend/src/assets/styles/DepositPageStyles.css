@@ -30,12 +30,12 @@ h3 {
     padding: 8px 0 !important;
 }
 
-.form .row > .col,
+/* .form .row > .col,
 .form .row > [class^="col-"] {
     margin-bottom: 0 !important;
     padding-right: 6px;
     padding-left: 6px;
-}
+} */
 
 .form label {
     margin-bottom: 4px;
@@ -49,7 +49,3 @@ h3 {
     width: 100%;
 }
 
-#SubmitButton {
-    margin-top: 16px;
-    width: 10%;
-}

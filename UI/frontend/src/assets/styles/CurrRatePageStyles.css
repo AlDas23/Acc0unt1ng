@@ -29,12 +29,12 @@ h3 {
     padding: 8px 0 !important;
 }
 
-.form .row>.col,
+/* .form .row>.col,
 .form .row>[class^="col-"] {
     margin-bottom: 0 !important;
     padding-right: 4px;
     padding-left: 4px;
-}
+} */
 
 #cr-forms {
     padding-left: 20px;
@@ -44,15 +44,6 @@ h3 {
     margin-bottom: 4px;
 }
 
-#inputDate {
-    height: 36px;
-    width: 100%;
-}
-
-#SubmitButton {
-    margin-top: 16px;
-    width: 10%;
-}
 
 #CurrRatePlot {
     display: block;
