@@ -68,19 +68,19 @@ function Forms({ options }) {
                 });
         }}>
             <Row>
-                <Col>
+                <Col md={2}>
                     <Form.Label htmlFor="inputDateIn">
                         Deposit Date
                     </Form.Label>
                     <input type="date" id="inputDateIn" name="DateIn" defaultValue={new Date().toISOString().split('T')[0]} className="datePicker" />
                 </Col>
-                <Col>
+                <Col md={3}>
                     <Form.Label htmlFor="inputName">
                         Deposit Name
                     </Form.Label>
                     <Form.Control type="text" id="inputName" name="Name" autoComplete="off" />
                 </Col>
-                <Col >
+                <Col md={2}>
                     <Form.Label htmlFor="inputOwner">
                         Person-bank
                     </Form.Label>
@@ -91,13 +91,13 @@ function Forms({ options }) {
                         ))}
                     </Form.Select>
                 </Col>
-                <Col >
+                <Col md={1}>
                     <Form.Label htmlFor="inpuSum">
                         Sum
                     </Form.Label>
                     <Form.Control type="text" id="inpuSum" name="Sum" autoComplete="off" />
                 </Col>
-                <Col >
+                <Col md={1}>
                     <Form.Label htmlFor="inputCurrency">
                         Currency
                     </Form.Label>
@@ -108,31 +108,33 @@ function Forms({ options }) {
                         ))}
                     </Form.Select>
                 </Col>
-                <Col >
+            </Row>
+            <Row className="Deposit-middlerow">
+                <Col md={1}>
                     <Form.Label htmlFor="inputMonths">
                         Months
                     </Form.Label>
                     <Form.Control type="text" id="inputMonths" name="Months" autoComplete="off" />
                 </Col>
-                <Col >
+                <Col md={2}>
                     <Form.Label htmlFor="inputDateOut">
                         Closing Date
                     </Form.Label>
                     <input type="date" id="inputDateOut" name="DateOut" className="datePicker" />
                 </Col>
-                <Col >
+                <Col md={1}>
                     <Form.Label htmlFor="inputPercent">
                         %
                     </Form.Label>
                     <Form.Control type="text" id="inputPercent" name="Percent" autoComplete="off" />
                 </Col>
-                <Col >
+                <Col md={1}>
                     <Form.Label htmlFor="inputCurrencyRate">
                         Currency Rate
                     </Form.Label>
                     <Form.Control type="text" id="inputCurrencyRate" name="CurrencyRate" autoComplete="off" />
                 </Col>
-                <Col>
+                <Col md={4}>
                     <Form.Label htmlFor="inputComment">
                         Comment
                     </Form.Label>
@@ -141,7 +143,9 @@ function Forms({ options }) {
 
             </Row>
             <Row>
-                <Button type="submit" id="SubmitButton">Submit record</Button>
+                <Col md={2} xs={6}>
+                    <Button type="submit" id="SubmitButton">Submit record</Button>
+                </Col>
             </Row>
         </Form>
     );
@@ -294,35 +298,38 @@ export default function DepositPage() {
     return (
         <>
             <Header />
-            <div className="deposit-page container">
+            <div className="deposit-page container-fluid">
                 <h1>Deposit Records</h1>
                 {options && (<Forms options={options} />)}
                 <br />
-                <div className="row">
-                    <div className="col xl-12">
+                <Row>
+                    <Col>
                         <h3>Active deposits</h3>
-                        {historyO && (<HistoryTable
-                            columns={["Deposit Date", "Name", "Person-bank", "Sum", "Currency", "Months", "Closing Date", "%", "Currency rate", "Expected amount", "Comment"]}
-                            data={historyO}
-                            tableId="openDepositsTable"
-                            numberColumns={["3-2", "7-1", "8-4", "9-2"]}
-                        />)}
-                    </div>
-                </div>
+                        <div className="table-responsive">
+                            {historyO && (<HistoryTable
+                                columns={["Deposit Date", "Name", "Person-bank", "Sum", "Currency", "Months", "Closing Date", "%", "Currency rate", "Expected amount", "Comment"]}
+                                data={historyO}
+                                tableId="openDepositsTable"
+                                numberColumns={["3-2", "7-1", "8-4", "9-2"]}
+                            />)}
+                        </div>
+                    </Col>
+                </Row>
                 <br />
-                <div className="row">
-                    <div className="col xl-12">
+                <Row>
+                    <Col>
                         <h3>Closed deposits</h3>
-                        {historyC && (<HistoryTable
-                            columns={["Deposit Date", "Name", "Person-bank", "Sum", "Currency", "Months", "Closing Date", "%", "Currency rate", "Expected amount", "Comment"]}
-                            data={historyC}
-                            tableId="closedDepositsTable"
-                            numberColumns={["3-2", "7-1", "8-4", "9-2"]}
-                        />)}
-                    </div>
-                </div>
+                        <div className="table-responsive">
+                            {historyC && (<HistoryTable
+                                columns={["Deposit Date", "Name", "Person-bank", "Sum", "Currency", "Months", "Closing Date", "%", "Currency rate", "Expected amount", "Comment"]}
+                                data={historyC}
+                                tableId="closedDepositsTable"
+                                numberColumns={["3-2", "7-1", "8-4", "9-2"]}
+                            />)}
+                        </div>
+                    </Col>
+                </Row>
             </div>
         </>
     )
-
 }
