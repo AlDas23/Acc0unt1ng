@@ -1,9 +1,10 @@
 .balance-page {
-    width: 100%;
+    width: auto;
     margin-top: 16px;
-    margin-left: 20px;
-    margin-right: 20px;
+    margin-left: 3%;
+    margin-right: 1%;
     margin-bottom: 20px;
+    /* overflow: hidden; */
 }
 
 h3 {
@@ -15,11 +16,11 @@ h3 {
 #owner-table,
 #type-table,
 #curr-type-table {
-    width: 80%;
+    width:100%;
 }
 
 #balance-table {
-    width: 90%;
+    width: 100%;
 }
 
 #curr-table .ht-cell,

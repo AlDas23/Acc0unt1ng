@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import Header from "../commonComponents/Header";
+// import { MobileViewUnAvailableModal } from "../commonComponents/Common";
+// import { useIsMobile } from "../commonComponents/CustomHooks";
 import Col from 'react-bootstrap/Col';
 import Form from 'react-bootstrap/Form';
 import Row from 'react-bootstrap/Row';
@@ -16,6 +18,7 @@ export function OptionsPBPage() {
     const [personBankName, setPersonBankName] = useState('');
     const [submitStatusPB, setSubmitStatusPB] = useState('idle');
     const [submitStatusMARK, setSubmitStatusMARK] = useState('idle');
+    // const [showMobileModal, setShowMobileModal] = useState(false);
 
     useEffect(() => {
         document.title = "PB options"
@@ -79,6 +82,11 @@ export function OptionsPBPage() {
             .catch(error => {
                 console.error('Error fetching markers:', error);
             });
+
+        // Check if mobile and show modal if true
+        // if (useIsMobile()) {
+        //     setShowMobileModal(true);
+        // }
     }, []);
 
     const markPB = (e) => {
@@ -167,6 +175,7 @@ export function OptionsPBPage() {
     return (
         <>
             <Header />
+            {/* <MobileViewUnAvailableModal show={showMobileModal} onHide={() => setShowMobileModal(false)} /> */}
             <div className="options-page container">
                 <div className="row">
                     <h3>Modify markers</h3>
@@ -444,27 +453,28 @@ export function OptionsDBPage() {
     return (
         <>
             <Header />
-            <div className="options-page container">
+            <div className="options-page container-fluid">
                 <h2>Special Values Control</h2>
-                <div className="row">
+                <br />  
+                <Row>
                     <Form noValidate id="spv-form" onSubmit={saveChanges}>
                         <Row>
-                            <Col>
+                            <Col md={3}>
                                 <Form.Label htmlFor="currency-values">Currency Values</Form.Label>
                                 {currentLists &&
                                     (<textarea form="spv-form" value={currencyValues} onChange={(e) => setCurrencyValues(e.target.value)} id="currency-values" name="currency-values" rows="13" cols="25" />)}
                             </Col>
-                            <Col>
+                            <Col md={3}>
                                 <Form.Label htmlFor="inccat-values">Income Category Values</Form.Label>
                                 {currentLists &&
                                     (<textarea form="spv-form" value={incCatValues} onChange={(e) => setIncCatValues(e.target.value)} id="inccat-values" name="inccat-values" rows="13" cols="25" />)}
                             </Col>
-                            <Col>
+                            <Col md={3}>
                                 <Form.Label htmlFor="expcat-values">Expense Category Values</Form.Label>
                                 {currentLists &&
                                     (<textarea form="spv-form" value={expCatValues} onChange={(e) => setExpCatValues(e.target.value)} id="expcat-values" name="expcat-values" rows="13" cols="25" />)}
                             </Col>
-                            <Col>
+                            <Col md={3}>
                                 <Form.Label htmlFor="subcat-values">Subcategory Values</Form.Label>
                                 {currentLists &&
                                     (<textarea form="spv-form" value={subCatValues} onChange={(e) => setSubCatValues(e.target.value)} id="subcat-values" name="subcat-values" rows="13" cols="25" />)}
@@ -472,12 +482,14 @@ export function OptionsDBPage() {
                         </Row>
                         <br />
                         <Row>
-                            <Button variant="primary" type="submit" id="save-spv-btn">
-                                Save Changes
-                            </Button>
+                            <Col md={2}>
+                                <Button variant="primary" type="submit" id="save-spv-btn">
+                                    Save Changes
+                                </Button>
+                            </Col>
                         </Row>
                     </Form>
-                </div>
+                </Row>
                 <div>
                     <br />
                     <br />

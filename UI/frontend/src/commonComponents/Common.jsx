@@ -1,5 +1,7 @@
 import { memo } from 'react';
 import Form from 'react-bootstrap/Form';
+import Modal from 'react-bootstrap/Modal';
+import Button from "react-bootstrap/esm/Button";
 
 function TableBody({ data, EditRecord, numberColumns = [] }) {
     // Parse number column settings
@@ -90,12 +92,33 @@ export function YearSelectorOnChange({ yearsList, selectedYear, onYearChange, id
 }
 
 export const CheckLegacy = () => {
-        return fetch(`/api/database/status`)
-            .then(response => response.json())
-            .then(data => data.legacy || false)
-            .catch(error => {
-                console.error('Error fetching db status:', error);
-                alert('Unexpected error occurred while fetching db status: ' + error.message);
-                throw error;
-            });
-    };
+    return fetch(`/api/database/status`)
+        .then(response => response.json())
+        .then(data => data.legacy || false)
+        .catch(error => {
+            console.error('Error fetching db status:', error);
+            alert('Unexpected error occurred while fetching db status: ' + error.message);
+            throw error;
+        });
+};
+
+export const MobileViewUnAvailableModal = ({ props }) => {
+    return (
+        <Modal {...props} size='lg' aria-labelledby="contained-modal-title-vcenter"
+            centered>
+            <Modal.Header closeButton>
+                <Modal.Title id="contained-modal-title-vcenter">
+                    Mobile view is unavailable
+                </Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+                <p>
+                    The mobile version for this page is unavailable. Please consider using desktop version.
+                </p>
+            </Modal.Body>
+            <Modal.Footer>
+                <Button onClick={props.onHide}>I understand</Button>
+            </Modal.Footer>
+        </Modal>
+    )
+}

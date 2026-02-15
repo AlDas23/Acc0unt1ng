@@ -429,7 +429,7 @@ function Forms({ options, formDataSTD, formDataADV, handleInputChangeSTD, handle
             <br />
             <Row className="form-advanced">
                 <Col>
-                    <h2 style={editMode.isEditing && selectedTable === 'standard' ? { display: 'none' } : null}>Advanced Transfer</h2>
+                    <h2 style={editMode.isEditing && selectedTable === 'standard' ? { display: 'none' } : null}>Cross-currency Transfer</h2>
                     <AdvancedTransferForm
                         options={options}
                         formData={formDataADV}
@@ -777,7 +777,7 @@ export default function TransferPage() {
                                 }
                             }}
                             className={selectedTable === 'advanced' ? 'selectedTable' : ''}>
-                            Advanced Transfers
+                            Cross-currency Transfers
                         </h3>
                     </Col>
                 </Row>

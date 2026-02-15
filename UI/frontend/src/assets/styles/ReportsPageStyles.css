@@ -2,14 +2,10 @@
 .year-report-page {
     width: auto;
     margin-top: 16px;
-    margin-left: 3%;
+    margin-left: 2%;
     margin-right: 1%;
     margin-bottom: 20px;
-    /* overflow: hidden; */
-}
-
-.year-report-page {
-    width: 96%;
+    overflow: hidden;
 }
 
 .year-report-page>.row>.col-md-3,
@@ -76,5 +72,4 @@
 
 #yearReport-year-selector{
     margin: 6px 2px 6px 2px;
-    width: 20%;
 }
