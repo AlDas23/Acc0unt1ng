@@ -320,17 +320,7 @@ function AdvancedTransferForm({ options, formData, handleInputChange, editMode, 
             </Row>
             <Row>
                 <Col md={2}>
-                    <Form.Label htmlFor="inputADVCurrencyRate">
-                        Currency Rate
-                    </Form.Label>
-                    <Form.Control
-                        type="text"
-                        id="inputADVCurrencyRate"
-                        name="CurrencyRate"
-                        value={formData.currencyRate}
-                        onChange={handleInputChange}
-                        autoComplete="off"
-                    />
+
                 </Col>
                 <Col md={2}>
                     <Form.Label htmlFor="inputADVReceiver">
@@ -379,6 +369,19 @@ function AdvancedTransferForm({ options, formData, handleInputChange, editMode, 
                 </Col>
             </Row>
             <Row>
+                <Col md={2}>
+                    <Form.Label htmlFor="inputADVCurrencyRate">
+                        Currency Rate
+                    </Form.Label>
+                    <Form.Control
+                        type="text"
+                        id="inputADVCurrencyRate"
+                        name="CurrencyRate"
+                        value={formData.currencyRate}
+                        onChange={handleInputChange}
+                        autoComplete="off"
+                    />
+                </Col>
                 <Col md={4}>
                     <Form.Label htmlFor="inputADVComment">
                         Comment
@@ -399,6 +402,7 @@ function AdvancedTransferForm({ options, formData, handleInputChange, editMode, 
                         {editMode.isEditing && editMode.type === 'advanced' ? "Update Record" : "Add Record"}
                     </Button>
                 </Col>
+                <br />
                 <Col xs={4} md={2}>
                     {editMode.isEditing && editMode.type === 'advanced' && (
                         <Button type="button" onClick={resetForm} id="CancelButtonAdvanced">
@@ -766,7 +770,7 @@ export default function TransferPage() {
                             Standard Transfers
                         </h3>
                     </Col>
-                    <Col md={2}>
+                    <Col md={3}>
                         <h3
                             id="advTitle"
                             onClick={() => {
