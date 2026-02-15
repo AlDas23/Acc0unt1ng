@@ -1,9 +1,10 @@
 .currency-rates-page {
-    width: 100%;
+    width: auto;
     margin-top: 16px;
-    margin-left: 20px;
-    margin-right: 20px;
+    margin-left: 3%;
+    margin-right: 1%;
     margin-bottom: 20px;
+    overflow: hidden;
 }
 
 h3 {
@@ -28,31 +29,19 @@ h3 {
 .form {
     padding: 8px 0 !important;
 }
-
-.form .row>.col,
-.form .row>[class^="col-"] {
-    margin-bottom: 0 !important;
-    padding-right: 4px;
-    padding-left: 4px;
-}
-
-#cr-forms {
-    padding-left: 20px;
+#CurrRateInputDate {
+    height: 45px;
+    width: 100%;
 }
 
 .form label {
     margin-bottom: 4px;
 }
 
-#inputDate {
-    height: 36px;
-    width: 100%;
+#CurrecyRateForm {
+    margin-left: 13px;
 }
 
-#SubmitButton {
-    margin-top: 16px;
-    width: 10%;
-}
 
 #CurrRatePlot {
     display: block;
@@ -91,4 +80,19 @@ h3 {
 .checkbox-container .checkboxLabel {
     margin: 0;
     white-space: nowrap;
+}
+
+#checkReverse, #checkReverseLabel {
+    margin-top: 24px;
+    height: 28px;
+}
+
+#checkReverseLabel {
+    text-align: left;
+}
+
+@media only screen and (max-width: 800px) {
+    .CurrRate-plotComponent {
+        display: none;
+    }
 }

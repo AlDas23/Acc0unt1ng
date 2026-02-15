@@ -91,7 +91,7 @@ function FormsLegacy({ options }) {
 
 function Forms({ options }) {
     return (
-        <Form noValidate className="form" id="form" onSubmit={(e) => {
+        <Form noValidate className="form" id="CurrecyRateForm" onSubmit={(e) => {
             e.preventDefault();
 
             const form = e.target;
@@ -149,13 +149,13 @@ function Forms({ options }) {
                 });
         }}>
             <Row>
-                <Col xl="2">
+                <Col md={2} xs={11}>
                     <Form.Label htmlFor="inputDate">
                         Date
                     </Form.Label>
-                    <input type="date" id="inputDate" name="Date" defaultValue={new Date().toISOString().split('T')[0]} />
+                    <input type="date" id="CurrRateInputDate" name="Date" defaultValue={new Date().toISOString().split('T')[0]} />
                 </Col>
-                <Col xl="2">
+                <Col md={1} xs={11}>
                     <Form.Label htmlFor="inputCurrency_M">
                         Currency Sell
                     </Form.Label>
@@ -166,7 +166,7 @@ function Forms({ options }) {
                         ))}
                     </Form.Select>
                 </Col>
-                <Col xl="2">
+                <Col md={1} xs={11}>
                     <Form.Label htmlFor="inputCurrency_S">
                         Currency Buy
                     </Form.Label>
@@ -177,25 +177,29 @@ function Forms({ options }) {
                         ))}
                     </Form.Select>
                 </Col>
-                <Col xl="2">
+                <Col md={1} xs={11}>
                     <Form.Label htmlFor="inputRate">
                         Rate
                     </Form.Label>
                     <Form.Control type="text" id="inputRate" name="Rate" autoComplete="off" />
                 </Col>
-                <Col xl="2">
-                    <Form.Label htmlFor="checkReverse">
-                        Calculate reverse rate
-                    </Form.Label>
+            </Row>
+            <Row>
+                <Col md={1} xs={2}>
+                    <Button type="submit" value="Submit" id="SubmitButton">Submit</Button>
+                </Col>
+                <Col md={1} xs={4}>
                     <Form.Check
                         type="switch"
                         id="checkReverse"
                         name="IsReverse"
                     />
                 </Col>
-            </Row>
-            <Row>
-                <Button type="submit" value="Submit" id="SubmitButton">Submit</Button>
+                <Col md={2} xs={4}>
+                    <Form.Label htmlFor="checkReverse" id="checkReverseLabel">
+                        Reverse rate
+                    </Form.Label>
+                </Col>
             </Row>
         </Form>
     );
@@ -208,7 +212,7 @@ function PlotComponent({ currencyList, onFilterChange, FetchFilteredPlot, imageU
     }
 
     return (
-        <>
+        <div className="CurrRate-plotComponent">
             <h3 className="currPlotText">Currency dynamics plot</h3>
             <br />
             <p className="currPlotText">Select currencies to display on the plot:</p>
@@ -238,7 +242,7 @@ function PlotComponent({ currencyList, onFilterChange, FetchFilteredPlot, imageU
             </Form>
             <br />
             <img id="CurrRatePlot" src={imageUrl} alt="Currency dynamics plot" />
-        </>
+        </div>
     )
 };
 
@@ -491,27 +495,29 @@ export default function CurrencyRatesPage() {
     return (
         <>
             <Header />
-            <div className="currency-rates-page container">
+            <div className="currency-rates-page container-fluid">
                 <h1>Currency Rates</h1>
-                <div className="row" id="cr-forms">
+                <Row>
                     {options && (isLegacy ? (<FormsLegacy
                         options={options}
                     />) : (<Forms options={options} />))}
-                </div>
+                </Row>
                 <br />
-                <div className="row">
-                    <div className="col-md-4">
+                <Row>
+                    <Col md={4}>
                         <h3>Currency Rates History</h3>
-                        {history && (<HistoryTable
-                            columns={isLegacy ?
-                                ["Date", "Currency", "Rate"]
-                                : ["ID", "Date", "Currency Sell", "Currency Buy", "Rate"]}
-                            data={history}
-                            tableId="CurrRateHistoryTable"
-                            numberColumns={isLegacy ? ["2-4"] : ["4-4"]}
-                        />)}
-                    </div>
-                    <div className="col-md-8">
+                        <div className="table-responsive">
+                            {history && (<HistoryTable
+                                columns={isLegacy ?
+                                    ["Date", "Currency", "Rate"]
+                                    : ["ID", "Date", "Currency Sell", "Currency Buy", "Rate"]}
+                                data={history}
+                                tableId="CurrRateHistoryTable"
+                                numberColumns={isLegacy ? ["2-4"] : ["4-4"]}
+                            />)}
+                        </div>
+                    </Col>
+                    <Col md={8}>
                         {isLegacy ? (imageUrl && <LegacyPlotComponent imageUrl={imageUrl} />)
                             : (imageUrl && options && <PlotComponent
                                 currencyList={plotOptions}
@@ -519,8 +525,8 @@ export default function CurrencyRatesPage() {
                                 FetchFilteredPlot={FetchFilteredPlot}
                                 imageUrl={imageUrl}
                             />)}
-                    </div>
-                </div>
+                    </Col>
+                </Row>
             </div>
         </>
     );

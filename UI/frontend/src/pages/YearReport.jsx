@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { HistoryTable, YearSelectorOnChange } from "../commonComponents/Common"
 import Header from "../commonComponents/Header";
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
 import '../assets/styles/ReportsPageStyles.css';
 
 export default function YearReportPage() {
@@ -181,36 +183,49 @@ export default function YearReportPage() {
     return (
         <>
             <Header />
-            <div className="year-report-page">
-                <h1>Yearly Report for <YearSelectorOnChange
-                    yearsList={yearsList}
-                    selectedYear={currentYear}
-                    onYearChange={OnYearChange}
-                    id="yearReport-year-selector"
-                /></h1>
-                <div className="row">
-                    <div className="col-md-4">
+            <div className="year-report-page container-fluid">
+                <Row>
+                    <Col md={3}>
+                        <h1>Yearly Report for <YearSelectorOnChange
+                            yearsList={yearsList}
+                            selectedYear={currentYear}
+                            onYearChange={OnYearChange}
+                            id="yearReport-year-selector"
+                        /></h1>
+                    </Col>
+                </Row>
+                <br />
+                <Row>
+                    <Col md={4} xs={12}>
                         <h3>Income</h3>
-                        {data.income && (<HistoryTable
-                            columns={["Month", ...currencyList, "Total in Main currency"]}
-                            data={data.income}
-                            tableId="income-table" />)}
-                    </div>
-                    <div className="col-md-4">
+                        <div className="table-responsive">
+                            {data.income && (<HistoryTable
+                                columns={["Month", ...currencyList, "Total in Main currency"]}
+                                data={data.income}
+                                tableId="income-table" />)}
+                        </div>
+                    </Col>
+                    <Col md={4} xs={12}>
+                        <br />
                         <h3>Expenses</h3>
-                        {data.expense && (<HistoryTable
-                            columns={["Month", ...currencyList, "Total in Main currency"]}
-                            data={data.expense}
-                            tableId="expense-table" />)}
-                    </div>
-                    <div className="col-md-3">
+                        <div className="table-responsive">
+                            {data.expense && (<HistoryTable
+                                columns={["Month", ...currencyList, "Total in Main currency"]}
+                                data={data.expense}
+                                tableId="expense-table" />)}
+                        </div>
+                    </Col>
+                    <Col md={3} xs={12}>
+                        <br />
                         <h3>Total balance</h3>
-                        {data.total && (<HistoryTable
-                            columns={["Month", "Incomes", "Expenses", "Balance"]}
-                            data={data.total}
-                            tableId="total-table" />)}
-                    </div>
-                </div>
+                        <div className="table-responsive">
+                            {data.total && (<HistoryTable
+                                columns={["Month", "Incomes", "Expenses", "Balance"]}
+                                data={data.total}
+                                tableId="total-table" />)}
+                        </div>
+                    </Col>
+                </Row>
             </div>
         </>
     );

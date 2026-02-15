@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import Header from "../commonComponents/Header";
 import Button from 'react-bootstrap/Button';
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
 import "../assets/styles/ReportsPageStyles.css";
 
 function CreateReportTable({ tableData }) {
@@ -14,7 +16,7 @@ function CreateReportTable({ tableData }) {
                     {[...Array(12)].map((_, i) => (
                         <th key={i} className="genRep_HeaderCell">{i + 1}</th>
                     ))}
-                    <th className="genRep_HeaderCell">Year %</th>
+                    <th className="genRep_HeaderCell">Year Total</th>
                 </tr>
             </thead>
             <tbody>
@@ -200,82 +202,106 @@ export default function ReportsPage() {
     return (
         <>
             <Header />
-            <div className="reports-page container">
+            <div className="reports-page container-fluid">
                 <h3>Reports view</h3>
-                {years && (<div className="row">
-                    <label htmlFor="rep_year">Report year</label>
-                    <select
-                        name="rep_year"
-                        id="rep_year"
-                        value={reportYear}
-                        onChange={handleReportYearChange}
-                    >
-                        {years.map((year, index) => (
-                            <option key={index} value={year}>{year}</option>
-                        ))}
-                    </select>
-                </div>)}
-                <div className="row">
-                    <label htmlFor="rep_type">Report type</label>
-                    <select
-                        name="rep_type"
-                        id="rep_type"
-                        value={reportType}
-                        onChange={handleReportTypeChange}
-                    >
-                        <option value="" disabled>Select a type</option>
-                        <option value="inccat">Income categories</option>
-                        <option value="expcat">Expense categories</option>
-                        <option value="subcat">Expense sub-categories</option>
-                    </select>
-                </div>
-                <div className="row">
-                    <label htmlFor="rep_format">Output format</label>
-                    <select
-                        name="rep_format"
-                        id="rep_format"
-                        value={reportFormat}
-                        onChange={(e) => setReportFormat(e.target.value)}
-                    >
-                        <option value="percent">Converted to %</option>
-                        <option value="ron">Converted to Main currency</option>
-                    </select>
-                </div>
-                <div className="row">
-                    <label
-                        id="rep_cat_label"
-                        htmlFor="rep_cat"
-                        style={{ display: isCategoryFilterVisible ? 'inline' : 'none' }}
-                    >
-                        Category filter
-                    </label>
-                    <select
-                        name="rep_cat"
-                        id="rep_cat"
-                        value={category}
-                        onChange={(e) => setCategory(e.target.value)}
-                        style={{ display: isCategoryFilterVisible ? 'inline' : 'none' }}
-                        disabled={!isCategoryFilterVisible}
-                    >
-                        <option value="all">All</option>
-                        {categories.map((cat, index) => (
-                            <option key={index} value={cat}>{cat}</option>
-                        ))}
-                    </select>
-                </div>
-                <div className="row">
-                    <Button
-                        id="showTableButton"
-                        onClick={validateReport}
-                    >
-                        {tableData === null ? "Show report" : "Refresh report"}
-                    </Button>
-                </div>
-                <div id="rep-table" className="row">
-                    <CreateReportTable
-                        tableData={tableData} />
-                </div>
-            </div>
+                {years && (<Row className="ReportsTable-FormRow">
+                    <Col md={2} xs={6}>
+                        <label htmlFor="rep_year">Report year</label>
+                    </Col>
+                    <Col md={2} xs={6}>
+                        <select
+                            className="ReportsTable-FormSelect"
+                            name="rep_year"
+                            id="rep_year"
+                            value={reportYear}
+                            onChange={handleReportYearChange}
+                        >
+                            {years.map((year, index) => (
+                                <option key={index} value={year}>{year}</option>
+                            ))}
+                        </select>
+                    </Col>
+                </Row>)}
+                <Row className="ReportsTable-FormRow">
+                    <Col md={2} xs={6}>
+                        <label htmlFor="rep_type">Report type</label>
+                    </Col>
+                    <Col md={2} xs={6}>
+                        <select
+                            className="ReportsTable-FormSelect"
+                            name="rep_type"
+                            id="rep_type"
+                            value={reportType}
+                            onChange={handleReportTypeChange}
+                        >
+                            <option value="" disabled>Select a type</option>
+                            <option value="inccat">Income categories</option>
+                            <option value="expcat">Expense categories</option>
+                            <option value="subcat">Expense sub-categories</option>
+                        </select>
+                    </Col>
+                </Row>
+                <Row className="ReportsTable-FormRow">
+                    <Col md={2} xs={6}>
+                        <label htmlFor="rep_format">Output format</label>
+                    </Col>
+                    <Col md={2} xs={6}>
+                        <select
+                            className="ReportsTable-FormSelect"
+                            name="rep_format"
+                            id="rep_format"
+                            value={reportFormat}
+                            onChange={(e) => setReportFormat(e.target.value)}
+                        >
+                            <option value="percent">Percent convertion</option>
+                            <option value="ron">Main currency convertion</option>
+                        </select>
+                    </Col>
+                </Row>
+                <Row className="ReportsTable-FormRow">
+                    <Col md={2} xs={6}>
+                        <label
+                            id="rep_cat_label"
+                            htmlFor="rep_cat"
+                            style={{ display: isCategoryFilterVisible ? 'inline' : 'none' }}
+                        >
+                            Category filter
+                        </label>
+                    </Col>
+                    <Col md={2} xs={6}>
+                        <select
+                            className="ReportsTable-FormSelect"
+                            name="rep_cat"
+                            id="rep_cat"
+                            value={category}
+                            onChange={(e) => setCategory(e.target.value)}
+                            style={{ display: isCategoryFilterVisible ? 'inline' : 'none' }}
+                            disabled={!isCategoryFilterVisible}
+                        >
+                            <option value="all">All</option>
+                            {categories.map((cat, index) => (
+                                <option key={index} value={cat}>{cat}</option>
+                            ))}
+                        </select>
+                    </Col>
+                </Row>
+                <Row className="ReportsTable-FormRow">
+                    <Col md={4}>
+                        <Button
+                            id="showTableButton"
+                            onClick={validateReport}
+                        >
+                            {tableData === null ? "Show report" : "Refresh report"}
+                        </Button>
+                    </Col>
+                </Row>
+                <Row id="rep-table">
+                    <div className="table-responsive">
+                        <CreateReportTable
+                            tableData={tableData} />
+                    </div>
+                </Row>
+            </div >
         </>
     );
 }

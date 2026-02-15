@@ -4,6 +4,7 @@ import Header from "../commonComponents/Header";
 import Button from 'react-bootstrap/Button';
 import Col from 'react-bootstrap/Col';
 import Form from 'react-bootstrap/Form';
+import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import '../assets/styles/TransferPageStyles.css'
 
@@ -86,19 +87,19 @@ function StandardTransferForm({ options, formData, handleInputChange, editMode, 
             style={editMode.isEditing && editMode.type === 'advanced' ? { display: 'none' } : null}
         >
             <Row>
-                <Col xl="2">
+                <Col md={2}>
                     <Form.Label htmlFor="inputDate">
                         Date
                     </Form.Label>
                     <input
                         type="date"
-                        id="inputDate"
+                        id="TransferStdInputDate"
                         name="Date"
                         value={formData.date}
                         onChange={handleInputChange}
                     />
                 </Col>
-                <Col xl="2">
+                <Col md={2}>
                     <Form.Label htmlFor="inputSender">
                         Sender
                     </Form.Label>
@@ -114,7 +115,7 @@ function StandardTransferForm({ options, formData, handleInputChange, editMode, 
                         ))}
                     </Form.Select>
                 </Col>
-                <Col xl="2">
+                <Col md={2}>
                     <Form.Label htmlFor="inputReceiver">
                         Receiver
                     </Form.Label>
@@ -130,7 +131,7 @@ function StandardTransferForm({ options, formData, handleInputChange, editMode, 
                         ))}
                     </Form.Select>
                 </Col>
-                <Col xl="1">
+                <Col md={2}>
                     <Form.Label htmlFor="inputSum">
                         Sum
                     </Form.Label>
@@ -143,7 +144,7 @@ function StandardTransferForm({ options, formData, handleInputChange, editMode, 
                         autoComplete="off"
                     />
                 </Col>
-                <Col xl="1">
+                <Col md={1}>
                     <Form.Label htmlFor="inputCurrency">
                         Currency
                     </Form.Label>
@@ -159,7 +160,7 @@ function StandardTransferForm({ options, formData, handleInputChange, editMode, 
                         ))}
                     </Form.Select>
                 </Col>
-                <Col xl="auto">
+                <Col md={3}>
                     <Form.Label htmlFor="inputComment">
                         Comment
                     </Form.Label>
@@ -174,16 +175,18 @@ function StandardTransferForm({ options, formData, handleInputChange, editMode, 
                 </Col>
             </Row>
             <Row>
-                <Button type="submit" id="SubmitButtonStandard">
-                    {editMode.isEditing && editMode.type === 'standard' ? "Update Record" : "Add Record"}
-                </Button>
-            </Row>
-            <Row>
-                {editMode.isEditing && editMode.type === 'standard' && (
-                    <Button type="button" onClick={resetForm} id="CancelButtonStandard">
-                        Cancel Edit
+                <Col xs={4} md={2}>
+                    <Button type="submit" id="SubmitButtonStandard">
+                        {editMode.isEditing && editMode.type === 'standard' ? "Update Record" : "Add Record"}
                     </Button>
-                )}
+                </Col>
+                <Col xs={4} md={2}>
+                    {editMode.isEditing && editMode.type === 'standard' && (
+                        <Button type="button" onClick={resetForm} id="CancelButtonStandard">
+                            Cancel Edit
+                        </Button>
+                    )}
+                </Col>
             </Row>
         </Form>
     )
@@ -256,20 +259,20 @@ function AdvancedTransferForm({ options, formData, handleInputChange, editMode, 
         }}
             style={editMode.isEditing && editMode.type === 'standard' ? { display: 'none' } : null}
         >
-            <Row className="adv1">
-                <Col xl="2">
+            <Row>
+                <Col md={2}>
                     <Form.Label htmlFor="inputADVDate">
                         Date
                     </Form.Label>
                     <input
                         type="date"
-                        id="inputADVDate"
+                        id="TransferAdvInputDate"
                         name="ADVDate"
                         value={formData.date}
                         onChange={handleInputChange}
                     />
                 </Col>
-                <Col xl="auto">
+                <Col md={2}>
                     <Form.Label htmlFor="inputADVSender">
                         Sender
                     </Form.Label>
@@ -285,7 +288,7 @@ function AdvancedTransferForm({ options, formData, handleInputChange, editMode, 
                         ))}
                     </Form.Select>
                 </Col>
-                <Col xl="auto">
+                <Col md={1}>
                     <Form.Label htmlFor="inputADVSSum">
                         Sum
                     </Form.Label>
@@ -298,7 +301,7 @@ function AdvancedTransferForm({ options, formData, handleInputChange, editMode, 
                         autoComplete="off"
                     />
                 </Col>
-                <Col xl="auto">
+                <Col md={1}>
                     <Form.Label htmlFor="inputADVSCurrency">
                         Currency
                     </Form.Label>
@@ -315,8 +318,21 @@ function AdvancedTransferForm({ options, formData, handleInputChange, editMode, 
                     </Form.Select>
                 </Col>
             </Row>
-            <Row className="adv2">
-                <Col xl="auto">
+            <Row>
+                <Col md={2}>
+                    <Form.Label htmlFor="inputADVCurrencyRate">
+                        Currency Rate
+                    </Form.Label>
+                    <Form.Control
+                        type="text"
+                        id="inputADVCurrencyRate"
+                        name="CurrencyRate"
+                        value={formData.currencyRate}
+                        onChange={handleInputChange}
+                        autoComplete="off"
+                    />
+                </Col>
+                <Col md={2}>
                     <Form.Label htmlFor="inputADVReceiver">
                         Receiver
                     </Form.Label>
@@ -332,7 +348,7 @@ function AdvancedTransferForm({ options, formData, handleInputChange, editMode, 
                         ))}
                     </Form.Select>
                 </Col>
-                <Col xl="auto">
+                <Col md={1}>
                     <Form.Label htmlFor="inputADVRSum">
                         Sum
                     </Form.Label>
@@ -345,7 +361,7 @@ function AdvancedTransferForm({ options, formData, handleInputChange, editMode, 
                         autoComplete="off"
                     />
                 </Col>
-                <Col xl="auto">
+                <Col md={1}>
                     <Form.Label htmlFor="inputADVRCurrency">
                         Currency
                     </Form.Label>
@@ -362,21 +378,8 @@ function AdvancedTransferForm({ options, formData, handleInputChange, editMode, 
                     </Form.Select>
                 </Col>
             </Row>
-            <Row className="adv3">
-                <Col xl="2">
-                    <Form.Label htmlFor="inputADVCurrencyRate">
-                        Currency Rate
-                    </Form.Label>
-                    <Form.Control
-                        type="text"
-                        id="inputADVCurrencyRate"
-                        name="CurrencyRate"
-                        value={formData.currencyRate}
-                        onChange={handleInputChange}
-                        autoComplete="off"
-                    />
-                </Col>
-                <Col xl="3">
+            <Row>
+                <Col md={4}>
                     <Form.Label htmlFor="inputADVComment">
                         Comment
                     </Form.Label>
@@ -391,16 +394,18 @@ function AdvancedTransferForm({ options, formData, handleInputChange, editMode, 
                 </Col>
             </Row>
             <Row>
-                <Button type="submit" id="SubmitButtonAdvanced">
-                    {editMode.isEditing && editMode.type === 'advanced' ? "Update Record" : "Add Record"}
-                </Button>
-            </Row>
-            <Row>
-                {editMode.isEditing && editMode.type === 'advanced' && (
-                    <Button type="button" onClick={resetForm} id="CancelButtonAdvanced">
-                        Cancel Edit
+                <Col xs={4} md={2}>
+                    <Button type="submit" id="SubmitButtonAdvanced">
+                        {editMode.isEditing && editMode.type === 'advanced' ? "Update Record" : "Add Record"}
                     </Button>
-                )}
+                </Col>
+                <Col xs={4} md={2}>
+                    {editMode.isEditing && editMode.type === 'advanced' && (
+                        <Button type="button" onClick={resetForm} id="CancelButtonAdvanced">
+                            Cancel Edit
+                        </Button>
+                    )}
+                </Col>
             </Row>
         </Form>
     )
@@ -408,9 +413,9 @@ function AdvancedTransferForm({ options, formData, handleInputChange, editMode, 
 
 function Forms({ options, formDataSTD, formDataADV, handleInputChangeSTD, handleInputChangeADV, editMode, resetForm, selectedTable }) {
     return (
-        <div className="forms">
-            <div className="form-standard row">
-                <div className="col-xl-12">
+        <Container>
+            <Row className="form-standard">
+                <Col>
                     <h2 style={editMode.isEditing && selectedTable === 'advanced' ? { display: 'none' } : null}>Standard Transfer</h2>
                     <StandardTransferForm
                         options={options}
@@ -419,12 +424,12 @@ function Forms({ options, formDataSTD, formDataADV, handleInputChangeSTD, handle
                         editMode={editMode}
                         resetForm={resetForm}
                     />
-                </div>
-            </div>
+                </Col>
+            </Row>
             <br />
-            <div className="form-advanced row">
-                <div className="col-xl-12">
-                    <h2 style={editMode.isEditing && selectedTable === 'standard' ? { display: 'none' } : null}>Advanced Transfer</h2>
+            <Row className="form-advanced">
+                <Col>
+                    <h2 style={editMode.isEditing && selectedTable === 'standard' ? { display: 'none' } : null}>Cross-currency Transfer</h2>
                     <AdvancedTransferForm
                         options={options}
                         formData={formDataADV}
@@ -432,9 +437,9 @@ function Forms({ options, formDataSTD, formDataADV, handleInputChangeSTD, handle
                         editMode={editMode}
                         resetForm={resetForm}
                     />
-                </div>
-            </div>
-        </div>
+                </Col>
+            </Row>
+        </Container>
     );
 }
 
@@ -725,10 +730,10 @@ export default function TransferPage() {
     return (
         <>
             <Header />
-            <div className="transfer-page container">
+            <div className="transfer-page container-fluid">
                 <h1>Transfer Records</h1>
                 <br />
-                <div className="row">
+                <Row>
                     {options && (<Forms
                         options={options}
                         formDataSTD={formDataSTD}
@@ -740,15 +745,15 @@ export default function TransferPage() {
                         selectedTable={selectedTable}
                     />)}
                     <br />
-                </div>
+                </Row>
                 <br />
-                <div className="row">
+                <Row>
                     <h3>History</h3>
-                </div>
+                </Row>
                 <br />
-                <div className="row">
-                    <div className="col-md-2">
-                        <p
+                <Row>
+                    <Col md={2}>
+                        <h3
                             id="stdTitle"
                             onClick={() => {
                                 setSelectedTable('standard');
@@ -759,10 +764,10 @@ export default function TransferPage() {
                             }}
                             className={selectedTable === 'standard' ? 'selectedTable' : ''}>
                             Standard Transfers
-                        </p>
-                    </div>
-                    <div className="col-md-2">
-                        <p
+                        </h3>
+                    </Col>
+                    <Col md={2}>
+                        <h3
                             id="advTitle"
                             onClick={() => {
                                 setSelectedTable('advanced');
@@ -772,18 +777,20 @@ export default function TransferPage() {
                                 }
                             }}
                             className={selectedTable === 'advanced' ? 'selectedTable' : ''}>
-                            Advanced Transfers
-                        </p>
-                    </div>
-                </div>
-                <YearSelectorOnChange
-                    yearsList={yearsList}
-                    selectedYear={selectedYear}
-                    onYearChange={OnYearChange}
-                    id="transfer-year-selector"
-                />
-                <div className="row">
-                    <div className="col-md-12">
+                            Cross-currency Transfers
+                        </h3>
+                    </Col>
+                </Row>
+                <Col md={1}>
+                    <YearSelectorOnChange
+                        yearsList={yearsList}
+                        selectedYear={selectedYear}
+                        onYearChange={OnYearChange}
+                        id="transfer-year-selector"
+                    />
+                </Col>
+                <Row>
+                    <div className="table-responsive">
                         {selectedTable === 'standard' && history && (<HistoryTableWithEdit
                             columns={["ID", "Date", "Sender", "Receiver", "Sum", "Currency", "Comment"]}
                             data={history}
@@ -799,7 +806,7 @@ export default function TransferPage() {
                             numberColumns={["3-2", "6-2", "8-4"]}
                         />)}
                     </div>
-                </div>
+                </Row>
             </div>
         </>
     )

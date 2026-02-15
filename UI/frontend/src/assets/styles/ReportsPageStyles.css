@@ -1,14 +1,11 @@
 .reports-page,
 .year-report-page {
-    width: 100%;
+    width: auto;
     margin-top: 16px;
-    margin-left: 20px;
-    margin-right: 20px;
+    margin-left: 2%;
+    margin-right: 1%;
     margin-bottom: 20px;
-}
-
-.year-report-page {
-    width: 96%;
+    overflow: hidden;
 }
 
 .year-report-page>.row>.col-md-3,
@@ -17,10 +14,13 @@
     margin-right: 12px;
 }
 
-.reports-page>.row:not(#rep-table) {
-    width: 40%;
+.ReportsTable-FormRow {
     margin-top: 8px;
     margin-bottom: 8px;
+}
+
+.ReportsTable-FormSelect {
+    width: 100%;
 }
 
 .genRep_HeaderCell {
@@ -31,7 +31,7 @@
     border: 1px solid;
     text-align: center;
     font-weight: bold;
-    min-width: 45px;
+    min-width: 80px;
     max-width: 150px;
     background-color: #b7b7b7;
 }
@@ -43,20 +43,13 @@
     padding-bottom: 1px;
     border: 1px solid;
     text-align: right;
-    min-width: 45px;
+    min-width: 80px;
     max-width: 100px;
-}
-
-#showTableButton {
-    width: 30%;
-    height: 32px;
-    margin-top: 4px;
-    padding-top: 2px;
 }
 
 #rep-table {
     margin-top: 16px;
-    width: 90%;
+    width: 100%;
 }
 
 #income-table,
@@ -79,5 +72,4 @@
 
 #yearReport-year-selector{
     margin: 6px 2px 6px 2px;
-    width: 20%;
 }

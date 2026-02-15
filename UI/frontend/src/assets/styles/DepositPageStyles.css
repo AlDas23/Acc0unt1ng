@@ -1,9 +1,10 @@
 .deposit-page {
-    width: 100%;
+    width: auto;
     margin-top: 16px;
-    margin-left: 20px;
-    margin-right: 20px;
+    margin-left: 3%;
+    margin-right: 1%;
     margin-bottom: 20px;
+    overflow: hidden;
 }
 
 h3 {
@@ -30,13 +31,6 @@ h3 {
     padding: 8px 0 !important;
 }
 
-.form .row > .col,
-.form .row > [class^="col-"] {
-    margin-bottom: 0 !important;
-    padding-right: 6px;
-    padding-left: 6px;
-}
-
 .form label {
     margin-bottom: 4px;
     text-align: center;
@@ -44,12 +38,12 @@ h3 {
     display: block;
 }
 
-.datePicker {
-    height: 36px;
+#inputDateOut, #inputDateIn {
+    height: 43px;
     width: 100%;
 }
 
-#SubmitButton {
-    margin-top: 16px;
-    width: 10%;
+.Deposit-middlerow {
+    margin-top: 6px;
+    margin-bottom: 6px;
 }

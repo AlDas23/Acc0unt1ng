@@ -12,7 +12,7 @@ function PlotComponent({ imageUrl }) {
     return (
         <div className="PlotComponent">
             <h3>Currency dynamics plot</h3>
-            <img id="StocksPlot" src={imageUrl} alt="Stocks dynamics plot" />
+            <img id="StocksPlot" src={imageUrl} width={750} alt="Stocks dynamics plot" />
         </div>
     );
 }
