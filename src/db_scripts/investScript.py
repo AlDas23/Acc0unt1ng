@@ -82,7 +82,7 @@ def AddInvestTransaction(dict):
         if iAmount < 0:
             category= "invest income"
         else:
-            category, subCategory = "invest expense"
+            category = subCategory = "invest expense"
 
         # prepare statements for standard and invest transactions
         standardQuery = """
