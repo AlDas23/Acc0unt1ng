@@ -17,7 +17,7 @@ const initialFormData = {
     comment: ''
 };
 
-function Forms({ options, ValidateForm, handleInputChange, resetForm, editMode, formData }) {
+function Forms({ options, ValidateForm, DeleteRecord, handleInputChange, resetForm, editMode, formData, deleteConfirm }) {
     return (
         <Form noValidate className="form" id="expense-form" onSubmit={ValidateForm}>
             <Row>
@@ -131,6 +131,13 @@ function Forms({ options, ValidateForm, handleInputChange, resetForm, editMode, 
                 </Col>
                 <Col xs={4} md={2}>
                     {editMode && (
+                        <Button type="button" onClick={DeleteRecord} id="DeleteButton">
+                            {deleteConfirm ? "Confirm Delete?" : "Delete Record"}
+                        </Button>
+                    )}
+                </Col>
+                <Col xs={4} md={2}>
+                    {editMode && (
                         <Button type="button" onClick={resetForm} id="CancelButton">
                             Cancel Edit
                         </Button>
@@ -151,6 +158,7 @@ export default function ExpensePage() {
     const [editingId, setEditingId] = useState(null);
     const [yearsList, setYearsList] = useState([]);
     const [selectedYear, setSelectedYear] = useState(null);
+    const [deleteConfirm, setDeleteConfirm] = useState(false);
 
     useEffect(() => {
         document.title = "Expense Records";
@@ -222,6 +230,39 @@ export default function ExpensePage() {
 
         // Send POST request
         fetch(endpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(requestData)
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    resetForm();
+                    window.location.reload();
+                } else {
+                    alert('Error: ' + (data.message || 'Failed to process transaction'));
+                }
+            })
+            .catch(error => {
+                console.error('Unexpected error:', error);
+                alert('Unexpected error occurred');
+            });
+    }
+
+    const DeleteRecord = () => {
+        if (!deleteConfirm) {
+            setDeleteConfirm(true);
+            return;
+        }
+
+        const requestData = {
+            toDelete: true,
+        };
+
+        // Send POST request
+        fetch(`/api/edit/expense/${editingId}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -418,10 +459,12 @@ export default function ExpensePage() {
                         {options && (<Forms
                             options={options}
                             ValidateForm={ValidateForm}
+                            DeleteRecord={DeleteRecord}
                             handleInputChange={handleInputChange}
                             resetForm={resetForm}
                             editMode={editMode}
                             formData={formData}
+                            deleteConfirm={deleteConfirm}
                         />)}
                         <br />
                     </Col>
@@ -431,7 +474,7 @@ export default function ExpensePage() {
                     <h3>History</h3>
                     <br />
                     <Col md={10}>
-                    <br />
+                        <br />
                     </Col>
                     <Col md={1}>
                         <YearSelectorOnChange

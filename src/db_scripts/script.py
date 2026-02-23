@@ -1,6 +1,6 @@
 import sqlite3
 from datetime import datetime
-from db_scripts.baseScripts import Read, MarkerRead, ReadLegacy
+from db_scripts.baseScripts import DelRecord, Read, MarkerRead, ReadLegacy
 import db_scripts.consts as consts
 from db_scripts.SPVScripts import read_spv
 
@@ -840,3 +840,23 @@ def ConvertToRON(currency, amount, date, c=None):
     converted_amount = int(amount * excRate)
 
     return converted_amount
+
+
+def DeleteRecord(id, type):
+    if type == "main":
+        table = "main"
+    elif type == "tran":
+        table = "transfer"
+    elif type == "advtran":
+        table = "advtransfer"
+    elif type == "currrate":
+        table = "exc_rate"
+    elif type == "itran":
+        table = "investTransaction"
+    elif type == "isp":
+        table = "investStockPrice"
+    else:
+        raise ValueError("Invalid type for deletion")
+
+    DelRecord(id, table)
+    print(f"Record with id {id} deleted from {table} table.")
