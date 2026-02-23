@@ -845,9 +845,9 @@ def ConvertToRON(currency, amount, date, c=None):
 def DeleteRecord(id, type):
     if type == "main":
         table = "main"
-    elif type == "tran":
+    elif type == "standard":
         table = "transfer"
-    elif type == "advtran":
+    elif type == "advanced":
         table = "advtransfer"
     elif type == "currrate":
         table = "exc_rate"

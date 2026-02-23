@@ -144,6 +144,23 @@ def EditIncome(id):
         if content is None:
             return "Error: No JSON data received", 400
 
+        if content.get("toDelete"):
+            try:
+                DeleteRecord(str(id), "main")
+                return jsonify({"success": True})
+            except Exception as e:
+                print(f"Error occurred while deleting: {str(e)}")
+                error_message = str(e)
+                return (
+                    jsonify(
+                        {
+                            "success": False,
+                            "message": error_message,
+                        }
+                    ),
+                    400,
+                )
+
         # Parse JSON data into string line
         line = ",".join([str(content[key]) for key in content.keys()])
         line = f"{id}," + line  # Prepend the ID to the line
@@ -215,6 +232,23 @@ def EditTransfer(id):
         content = request.get_json()
         if content is None:
             return "Error: No JSON data received", 400
+
+        if content.get("toDelete"):
+            try:
+                DeleteRecord(str(id), content.get("type"))
+                return jsonify({"success": True})
+            except Exception as e:
+                print(f"Error occurred while deleting: {str(e)}")
+                error_message = str(e)
+                return (
+                    jsonify(
+                        {
+                            "success": False,
+                            "message": error_message,
+                        }
+                    ),
+                    400,
+                )
 
         transferType = content.pop("transferType", "")
         # Parse JSON data into string line

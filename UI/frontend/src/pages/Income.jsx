@@ -16,7 +16,7 @@ const initialFormData = {
     comment: ''
 };
 
-function Forms({ options, ValidateForm, handleInputChange, resetForm, editMode, formData }) {
+function Forms({ options, ValidateForm, handleInputChange, resetForm, editMode, formData, deleteConfirm, DeleteRecord }) {
     return (
         <Form noValidate className="form" id="income-form" onSubmit={ValidateForm}>
             <Row>
@@ -114,6 +114,13 @@ function Forms({ options, ValidateForm, handleInputChange, resetForm, editMode, 
                 </Col>
                 <Col xs={4} md={2}>
                     {editMode && (
+                        <Button type="button" onClick={DeleteRecord} id="DeleteButton">
+                            {deleteConfirm ? "Confirm Delete?" : "Delete Record"}
+                        </Button>
+                    )}
+                </Col>
+                <Col xs={4} md={2}>
+                    {editMode && (
                         <Button type="button" onClick={resetForm} id="CancelButton">
                             Cancel Edit
                         </Button>
@@ -134,6 +141,7 @@ export default function IncomePage() {
     const [editingId, setEditingId] = useState(null);
     const [yearsList, setYearsList] = useState([]);
     const [selectedYear, setSelectedYear] = useState(null);
+    const [deleteConfirm, setDeleteConfirm] = useState(false);
 
     useEffect(() => {
         document.title = "Income Records";
@@ -277,6 +285,39 @@ export default function IncomePage() {
             });
     }
 
+    const DeleteRecord = () => {
+        if (!deleteConfirm) {
+            setDeleteConfirm(true);
+            return;
+        }
+
+        const requestData = {
+            toDelete: true,
+        };
+
+        // Send POST request
+        fetch(`/api/edit/income/${editingId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(requestData)
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    resetForm();
+                    window.location.reload();
+                } else {
+                    alert('Error: ' + (data.message || 'Failed to process transaction'));
+                }
+            })
+            .catch(error => {
+                console.error('Unexpected error:', error);
+                alert('Unexpected error occurred');
+            });
+    }
+
     const GetYearsList = () => {
         return fetch(`/api/get/list/exYears`)
             .then(response => {
@@ -398,6 +439,8 @@ export default function IncomePage() {
                             resetForm={resetForm}
                             editMode={editMode}
                             formData={formData}
+                            deleteConfirm={deleteConfirm}
+                            DeleteRecord={DeleteRecord}
                         />)}
                     </Col>
                 </Row>

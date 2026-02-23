@@ -29,7 +29,7 @@ const initialFormDataADV = {
     comment: ''
 };
 
-function StandardTransferForm({ options, formData, handleInputChange, editMode, resetForm }) {
+function StandardTransferForm({ options, formData, handleInputChange, editMode, resetForm, DeleteRecord, deleteConfirm }) {
     return (
         <Form noValidate className="form" id="formStandard" onSubmit={(e) => {
             e.preventDefault();
@@ -182,6 +182,13 @@ function StandardTransferForm({ options, formData, handleInputChange, editMode, 
                 </Col>
                 <Col xs={4} md={2}>
                     {editMode.isEditing && editMode.type === 'standard' && (
+                        <Button type="button" onClick={DeleteRecord} id="DeleteButton">
+                            {deleteConfirm ? "Confirm Delete?" : "Delete Record"}
+                        </Button>
+                    )}
+                </Col>
+                <Col xs={4} md={2}>
+                    {editMode.isEditing && editMode.type === 'standard' && (
                         <Button type="button" onClick={resetForm} id="CancelButtonStandard">
                             Cancel Edit
                         </Button>
@@ -192,7 +199,7 @@ function StandardTransferForm({ options, formData, handleInputChange, editMode, 
     )
 };
 
-function AdvancedTransferForm({ options, formData, handleInputChange, editMode, resetForm }) {
+function AdvancedTransferForm({ options, formData, handleInputChange, editMode, resetForm, DeleteRecord, deleteConfirm }) {
     return (
         <Form noValidate className="form" id="formAdvanced" onSubmit={(e) => {
             e.preventDefault();
@@ -402,7 +409,13 @@ function AdvancedTransferForm({ options, formData, handleInputChange, editMode, 
                         {editMode.isEditing && editMode.type === 'advanced' ? "Update Record" : "Add Record"}
                     </Button>
                 </Col>
-                <br />
+                <Col xs={4} md={2}>
+                    {editMode.isEditing && editMode.type === 'advanced' && (
+                        <Button type="button" onClick={DeleteRecord} id="ADVDeleteButton">
+                            {deleteConfirm ? "Confirm Delete?" : "Delete Record"}
+                        </Button>
+                    )}
+                </Col>
                 <Col xs={4} md={2}>
                     {editMode.isEditing && editMode.type === 'advanced' && (
                         <Button type="button" onClick={resetForm} id="CancelButtonAdvanced">
@@ -415,7 +428,7 @@ function AdvancedTransferForm({ options, formData, handleInputChange, editMode, 
     )
 };
 
-function Forms({ options, formDataSTD, formDataADV, handleInputChangeSTD, handleInputChangeADV, editMode, resetForm, selectedTable }) {
+function Forms({ options, formDataSTD, formDataADV, handleInputChangeSTD, handleInputChangeADV, editMode, resetForm, selectedTable, DeleteRecord, deleteConfirm }) {
     return (
         <Container>
             <Row className="form-standard">
@@ -427,6 +440,8 @@ function Forms({ options, formDataSTD, formDataADV, handleInputChangeSTD, handle
                         handleInputChange={handleInputChangeSTD}
                         editMode={editMode}
                         resetForm={resetForm}
+                        deleteConfirm={deleteConfirm}
+                        DeleteRecord={DeleteRecord}
                     />
                 </Col>
             </Row>
@@ -440,6 +455,8 @@ function Forms({ options, formDataSTD, formDataADV, handleInputChangeSTD, handle
                         handleInputChange={handleInputChangeADV}
                         editMode={editMode}
                         resetForm={resetForm}
+                        deleteConfirm={deleteConfirm}
+                        DeleteRecord={DeleteRecord}
                     />
                 </Col>
             </Row>
@@ -460,6 +477,7 @@ export default function TransferPage() {
     const [selectedTable, setSelectedTable] = useState('standard');
     const [yearsList, setYearsList] = useState([]);
     const [selectedYear, setSelectedYear] = useState(null);
+    const [deleteConfirm, setDeleteConfirm] = useState(false);
 
 
     useEffect(() => {
@@ -613,6 +631,40 @@ export default function TransferPage() {
         }
     }
 
+    const DeleteRecord = () => {
+        if (!deleteConfirm) {
+            setDeleteConfirm(true);
+            return;
+        }
+
+        const requestData = {
+            type: editMode.type,
+            toDelete: true,
+        };
+
+        // Send POST request
+        fetch(`/api/edit/transfer/${editMode.id}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(requestData)
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    resetForm();
+                    window.location.reload();
+                } else {
+                    alert('Error: ' + (data.message || 'Failed to process transaction'));
+                }
+            })
+            .catch(error => {
+                console.error('Unexpected error:', error);
+                alert('Unexpected error occurred');
+            });
+    }
+
     const GetYearsList = () => {
         return fetch(`/api/get/list/exYears`)
             .then(response => {
@@ -747,6 +799,8 @@ export default function TransferPage() {
                         editMode={editMode}
                         resetForm={resetForm}
                         selectedTable={selectedTable}
+                        DeleteRecord={DeleteRecord}
+                        deleteConfirm={deleteConfirm}
                     />)}
                     <br />
                 </Row>

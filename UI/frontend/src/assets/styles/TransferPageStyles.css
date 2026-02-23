@@ -51,6 +51,12 @@ h3 {
 #CancelButtonAdvanced {
     margin-top: 20px;
     margin-left: 0px;
+    background-color: rgb(221, 203, 9);
+}
+
+#ADVDeleteButton {
+    margin-top: 20px;
+    margin-left: 0px;
     background-color: red;
 }
 
