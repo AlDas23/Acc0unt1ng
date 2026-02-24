@@ -356,6 +356,9 @@ def GenerateTable(flag):
                 -- PBD logic
                 UNION ALL
                 SELECT owner AS person_bank, currency, -sum FROM deposit WHERE isOpen = 1
+                -- Deposits alone
+                UNION ALL
+                SELECT name AS person_bank, currency, sum FROM deposit WHERE isOpen = 1
             ) p 
             JOIN Marker_type mt ON p.person_bank = mt.bank_rec
             GROUP BY p.currency, mt.type
