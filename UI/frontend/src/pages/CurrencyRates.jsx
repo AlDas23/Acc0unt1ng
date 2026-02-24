@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { HistoryTable } from "../commonComponents/Common";
+import { HistoryTableWithEdit } from "../commonComponents/Common";
 import Header from "../commonComponents/Header";
 import Button from 'react-bootstrap/Button';
 import Col from 'react-bootstrap/Col';
@@ -7,6 +7,14 @@ import Form from 'react-bootstrap/Form';
 import Row from 'react-bootstrap/Row';
 import '../assets/styles/CurrRatePageStyles.css'
 import { CheckLegacy } from '../commonComponents/Common'
+
+const initialFormData = {
+    date: new Date().toISOString().split('T')[0],
+    currency_M: "",
+    currency_S: "",
+    rate: "",
+    isReverse: false
+};
 
 function LegacyPlotComponent({ imageUrl }) {
     return (
@@ -89,46 +97,47 @@ function FormsLegacy({ options }) {
     );
 };
 
-function Forms({ options }) {
+function Forms({ options, DeleteRecord, handleInputChange, resetForm, formData, editMode, deleteConfirm, editingId }) {
     return (
         <Form noValidate className="form" id="CurrecyRateForm" onSubmit={(e) => {
             e.preventDefault();
+            var { date, currency_M, currency_S, rate, isReverse } = formData;
 
-            const form = e.target;
-            const formDataObj = new FormData(form);
-            const formObject = Object.fromEntries(formDataObj.entries());
-
-            if (formObject.Currency_S === "" && formObject.Currency_M === "") {
+            if (currency_S === "" && currency_M === "") {
                 alert("Currency cannot be empty!")
                 return false;
             }
 
-            if (formObject.Currency_S === formObject.Currency_M) {
+            if (currency_S === currency_M) {
                 alert("Selected currencies cannot be same!")
                 return false;
             }
 
-            if (isNaN(formObject.Rate) || formObject.Rate <= 0) {
+            if (isNaN(rate) || rate <= 0) {
                 alert("Rate is not a number!")
                 return false;
             }
 
-            if (formObject.IsReverse) {
-                formObject.Rate = 1 / formObject.Rate;
-                const temp = formObject.Currency_S;
-                formObject.Currency_S = formObject.Currency_M;
-                formObject.Currency_M = temp;
+            if (isReverse) {
+                rate = 1 / rate;
+                const temp = currency_S;
+                currency_S = currency_M;
+                currency_M = temp;
             }
 
             const payload = {
-                date: formObject.Date,
-                currency_M: formObject.Currency_M,
-                currency_S: formObject.Currency_S,
-                rate: formObject.Rate
+                date: date,
+                currency_M: currency_M,
+                currency_S: currency_S,
+                rate: rate
             }
 
+            const endpoint = editMode
+                ? `/api/edit/currencyrates/${editingId}`
+                : `/api/add/currencyrates`;
+
             // Send POST request
-            fetch("/api/add/currencyrates", {
+            fetch(endpoint, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -153,13 +162,17 @@ function Forms({ options }) {
                     <Form.Label htmlFor="inputDate">
                         Date
                     </Form.Label>
-                    <input type="date" id="CurrRateInputDate" name="Date" defaultValue={new Date().toISOString().split('T')[0]} />
+                    <input type="date" id="CurrRateInputDate" name="Date" value={formData.date}
+                        onChange={handleInputChange} />
                 </Col>
                 <Col md={1} xs={11}>
                     <Form.Label htmlFor="inputCurrency_M">
                         Currency Sell
                     </Form.Label>
-                    <Form.Select id="inputCurrency_M" name="Currency_M" defaultValue={""}>
+                    <Form.Select id="inputCurrency_M" name="Currency_M"
+                        value={formData.currency_M}
+                        onChange={handleInputChange}
+                    >
                         <option value="" disabled></option>
                         {options.currency.map((currency, index) => (
                             <option value={currency} key={index}>{currency}</option>
@@ -170,7 +183,10 @@ function Forms({ options }) {
                     <Form.Label htmlFor="inputCurrency_S">
                         Currency Buy
                     </Form.Label>
-                    <Form.Select id="inputCurrency_S" name="Currency_S" defaultValue={""}>
+                    <Form.Select id="inputCurrency_S" name="Currency_S"
+                        value={formData.currency_S}
+                        onChange={handleInputChange}
+                    >
                         <option value="" disabled></option>
                         {options.currency.map((currency, index) => (
                             <option value={currency} key={index}>{currency}</option>
@@ -181,25 +197,44 @@ function Forms({ options }) {
                     <Form.Label htmlFor="inputRate">
                         Rate
                     </Form.Label>
-                    <Form.Control type="text" id="inputRate" name="Rate" autoComplete="off" />
+                    <Form.Control type="text" id="inputRate" name="Rate" autoComplete="off"
+                        value={formData.rate}
+                        onChange={handleInputChange}
+                    />
                 </Col>
             </Row>
             <Row>
                 <Col md={1} xs={2}>
                     <Button type="submit" value="Submit" id="SubmitButton">Submit</Button>
                 </Col>
-                <Col md={1} xs={4}>
-                    <Form.Check
-                        type="switch"
-                        id="checkReverse"
-                        name="IsReverse"
-                    />
-                </Col>
-                <Col md={2} xs={4}>
-                    <Form.Label htmlFor="checkReverse" id="checkReverseLabel">
-                        Reverse rate
-                    </Form.Label>
-                </Col>
+                {editMode ? (
+                    <>
+                        <Col xs={4} md={2}>
+                            <Button type="button" onClick={DeleteRecord} id="DeleteButton">
+                                {deleteConfirm ? "Confirm Delete?" : "Delete Record"}
+                            </Button>
+                        </Col>
+                        <Col xs={4} md={2}>
+                            <Button type="button" onClick={resetForm} id="CancelButton">
+                                Cancel Edit
+                            </Button>
+                        </Col>
+                    </>) : (
+                    <>
+                        <Col md={1} xs={4}>
+                            <Form.Check
+                                type="switch"
+                                id="checkReverse"
+                                name="IsReverse"
+                            />
+                        </Col>
+                        <Col md={2} xs={4}>
+                            <Form.Label htmlFor="checkReverse" id="checkReverseLabel">
+                                Reverse rate
+                            </Form.Label>
+                        </Col>
+                    </>
+                )}
             </Row>
         </Form>
     );
@@ -248,6 +283,10 @@ function PlotComponent({ currencyList, onFilterChange, FetchFilteredPlot, imageU
 
 export default function CurrencyRatesPage() {
     const [options, setOptions] = useState(null);
+    const [formData, setFormData] = useState(initialFormData);
+    const [editMode, setEditMode] = useState(false);
+    const [editingId, setEditingId] = useState(null);
+    const [deleteConfirm, setDeleteConfirm] = useState(false);
     const [plotOptions, setPlotOptions] = useState(null);
     const [history, setHistory] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -447,6 +486,89 @@ export default function CurrencyRatesPage() {
         }
     }
 
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        const key = name.replace('input', '');
+        setFormData(prevData => ({
+            ...prevData,
+            [key.charAt(0).toLowerCase() + key.slice(1)]: value
+        }));
+    };
+
+    const resetForm = () => {
+        setFormData(initialFormData);
+        setEditMode(false);
+        setEditingId(null);
+
+        // Show all rows again
+        const rows = document.querySelectorAll('.history-table tbody tr');
+        rows.forEach(row => {
+            row.style.display = '';
+        });
+    }
+
+    const EditRecord = (element) => {
+        const row = element.target.parentNode;
+        const cells = row.getElementsByTagName("td");
+        const id = cells[0].innerText;
+
+        const clickedRow = element.target.closest('tr');
+        const rows = document.querySelectorAll('.history-table tbody tr');
+
+        rows.forEach(row => {
+            if (row !== clickedRow) {
+                row.style.display = 'none';
+            } else {
+                row.style.display = ''; // Ensure the clicked row remains visible
+            }
+        });
+
+        // Populate form by calling setFormData
+        setFormData({
+            date: cells[1].innerText,
+            currency_M: cells[2].innerText,
+            currency_S: cells[3].innerText,
+            rate: cells[4].innerText,
+            isReverse: false
+        });
+
+        setEditMode(true);
+        setEditingId(id);
+    }
+
+    const DeleteRecord = () => {
+        if (!deleteConfirm) {
+            setDeleteConfirm(true);
+            return;
+        }
+
+        const requestData = {
+            toDelete: true,
+        };
+
+        // Send POST request
+        fetch(`/api/edit/currencyrates/${editingId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(requestData)
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    resetForm();
+                    window.location.reload();
+                } else {
+                    alert('Error: ' + (data.message || 'Failed to process transaction'));
+                }
+            })
+            .catch(error => {
+                console.error('Unexpected error:', error);
+                alert('Unexpected error occurred');
+            });
+    }
+
     const onFilterChange = (currency, isChecked) => {
         if (isChecked) {
             setSelectedCurrencies(prev => [...prev, currency]);
@@ -500,19 +622,28 @@ export default function CurrencyRatesPage() {
                 <Row>
                     {options && (isLegacy ? (<FormsLegacy
                         options={options}
-                    />) : (<Forms options={options} />))}
+                    />) : (<Forms options={options}
+                        DeleteRecord={DeleteRecord}
+                        handleInputChange={handleInputChange}
+                        resetForm={resetForm}
+                        editMode={editMode}
+                        editingId={editingId}
+                        formData={formData}
+                        deleteConfirm={deleteConfirm}
+                    />))}
                 </Row>
                 <br />
                 <Row>
                     <Col md={4}>
                         <h3>Currency Rates History</h3>
                         <div className="table-responsive">
-                            {history && (<HistoryTable
+                            {history && (<HistoryTableWithEdit
                                 columns={isLegacy ?
                                     ["Date", "Currency", "Rate"]
                                     : ["ID", "Date", "Currency Sell", "Currency Buy", "Rate"]}
                                 data={history}
                                 tableId="CurrRateHistoryTable"
+                                EditRecord={EditRecord}
                                 numberColumns={isLegacy ? ["2-4"] : ["4-4"]}
                             />)}
                         </div>

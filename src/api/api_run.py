@@ -342,6 +342,50 @@ def AddCurrencyRate():
         )
 
 
+@app.route("/edit/currencyrates/<int:id>", methods=["POST"])
+def EditCurrencyRate(id):
+    content = request.get_json()
+    if content is None:
+        return "Error: No JSON data received", 400
+
+    if content.get("toDelete"):
+        try:
+            DeleteRecord(str(id), "currate")
+            return jsonify({"success": True})
+        except Exception as e:
+            print(f"Error occurred while deleting: {str(e)}")
+            error_message = str(e)
+            return (
+                jsonify(
+                    {
+                        "success": False,
+                        "message": error_message,
+                    }
+                ),
+                400,
+            )
+
+    # Parse JSON data into string line
+    line = ",".join([str(content[key]) for key in content.keys()])
+    line = f"{id}," + line  # Prepend the ID to the line
+
+    try:
+        UpdateRecord(line, "currate")
+        return jsonify({"success": True})
+    except Exception as e:
+        print(f"Error occurred: {str(e)}")
+        error_message = str(e)
+        return (
+            jsonify(
+                {
+                    "success": False,
+                    "message": error_message,
+                }
+            ),
+            400,
+        )
+
+
 @app.route("/get/balance/<string:source>", methods=["POST"])
 @db_required
 def Balance(source):

@@ -37,6 +37,11 @@ def UpdateRecord(inp, mode):
                     int(inp[0]),
                 ),
             )
+        elif mode == "currate":
+            c.execute(
+                "UPDATE exc_rate SET date = ?, currency_M = ?, currency_S = ?, rate = ? WHERE id = ?",
+                (inp[1], inp[2], inp[3], inp[4], int(inp[0])),
+            )
 
         conn.commit()
 
@@ -849,7 +854,7 @@ def DeleteRecord(id, type):
         table = "transfer"
     elif type == "advanced":
         table = "advtransfer"
-    elif type == "currrate":
+    elif type == "currate":
         table = "exc_rate"
     elif type == "itran":
         table = "investTransaction"
