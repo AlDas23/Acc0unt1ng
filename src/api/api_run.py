@@ -1,8 +1,7 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-from db_scripts.investScript import ReadInvest
 from db_scripts.script import (
-    GetTransactionHistory,
+    DeleteRecord,
     UpdateRecord,
     GenerateReport,
     GetYearlyData,
@@ -17,20 +16,19 @@ from db_scripts.baseScripts import (
     MarkerRead,
     Re_Calculate_deposit,
     Read,
-    ReadLegacy,
 )
 from db_scripts.dbScripts import CheckDB, NewDBase, UpdateDB as UDB, UpdateDBYear
 from db_scripts.SPVScripts import SPVconf, read_spv
-from db_scripts.consts import SPVcatExpPath, SPVcatIncPath, SPVcurrPath, SPVsubcatPath
 import db_scripts.consts as consts
-from helpers.configScripts import ModifyConfigSettings, ReadBackupYears, ReadCurrentYear
+from helpers.configScripts import ModifyConfigSettings, ReadCurrentYear
 from helpers.decorators import db_required
-from helpers.extras import GetCurrentYear, ParseCurrRatesNames
-from helpers.genPlot import CurrencyRatePlot, GraphStockPrice, plot_to_img_tag_legacy
+from helpers.extras import GetCurrentYear
 from api.api_invest import investEndpoints
+from api.api_get import getEndpoints
 
 app = Flask(__name__)
 app.register_blueprint(investEndpoints, url_prefix="/")
+app.register_blueprint(getEndpoints, url_prefix="/")
 CORS(app, resources=r"/*")
 
 
@@ -41,277 +39,6 @@ def health_check():
         UpdateDBYear()
 
     return jsonify({"status": "ok"}), 200
-
-
-@app.route("/get/list/<string:source>", methods=["GET"])
-@db_required
-def GetList(source):
-    try:
-        if source == "categories_exp":
-            expCategories = read_spv(SPVcatExpPath)
-            payload = jsonify(
-                {
-                    "success": True,
-                    "categories": expCategories,
-                }
-            )
-        elif source == "categories_inc":
-            incCategories = read_spv(SPVcatIncPath)
-            payload = jsonify(
-                {
-                    "success": True,
-                    "categories": incCategories,
-                }
-            )
-        elif source == "subcategories":
-            subCategories = read_spv(SPVsubcatPath)
-            payload = jsonify(
-                {
-                    "success": True,
-                    "subcategories": subCategories,
-                }
-            )
-        elif source == "currency":
-            currencies = read_spv(SPVcurrPath)
-            payload = jsonify(
-                {
-                    "success": True,
-                    "currencies": currencies,
-                }
-            )
-        elif source == "stocks":
-            stock = read_spv(consts.SPVstockPath)
-            payload = jsonify(
-                {
-                    "success": True,
-                    "stocks": stock,
-                }
-            )
-        elif source == "currrateplotnames":
-            originalCurrencies = [
-                currency
-                for currency in read_spv(SPVcurrPath)
-                if currency != consts.mainCurrency
-            ]
-            currRatePlotNames = Read("currratenamesinv")
-            originalCurrencies.extend(
-                f"{item}->{consts.mainCurrency}" for item in currRatePlotNames
-            )
-            payload = jsonify(
-                {
-                    "success": True,
-                    "cuurrateplotnames": originalCurrencies,
-                }
-            )
-        elif source == "pb":
-            pb = Read("initpbnames")
-            payload = jsonify(
-                {
-                    "success": True,
-                    "data": pb,
-                }
-            )
-        elif source == "markers":
-            owners = Read("exowner")
-            types = Read("extype")
-            payload = jsonify(
-                {"success": True, "data": {"owners": owners, "types": types}}
-            )
-        elif source == "exYears":
-            years = ReadBackupYears()
-            years.append(consts.currentYear)
-            years = sorted(set(years), reverse=True)
-            payload = jsonify({"success": True, "data": {"years": years}})
-    except Exception as e:
-        print(f"Error occurred: {str(e)}")
-        error_message = str(e)
-        payload = (
-            jsonify(
-                {
-                    "success": False,
-                    "message": error_message,
-                }
-            ),
-            400,
-        )
-
-    return payload
-
-
-@app.route("/get/options/<string:source>", methods=["GET"])
-@db_required
-def GetOptions(source):
-    try:
-        if source == "expense":
-            categories = read_spv(SPVcatExpPath)
-            sub_categories = read_spv(SPVsubcatPath)
-            currencies = read_spv(SPVcurrPath)
-            person_banks = Read("retacc")
-            options = {
-                "categories": categories,
-                "subcategories": sub_categories,
-                "currency": currencies,
-                "pb": person_banks,
-            }
-
-        elif source == "income":
-            categories = read_spv(SPVcatIncPath)
-            currencies = read_spv(SPVcurrPath)
-            person_banks = Read("retacc")
-            options = {
-                "categories": categories,
-                "currency": currencies,
-                "pb": person_banks,
-            }
-
-        elif source == "transfer":
-            currencies = read_spv(SPVcurrPath)
-            person_banks = Read("retacc")
-            options = {
-                "currency": currencies,
-                "pb": person_banks,
-            }
-
-        elif source == "deposit":
-            currencies = read_spv(SPVcurrPath)
-            person_banks = Read("retacc")
-            options = {
-                "currencies": currencies,
-                "pb": person_banks,
-            }
-
-        elif source == "currencyrates":
-            currencies = read_spv(SPVcurrPath)
-            options = {
-                "currency": currencies,
-            }
-
-        elif source == "balance":
-            ownersList = Read("retmowner")
-            typesList = Read("retmtype")
-            options = {"owner": ownersList, "type": typesList}
-        
-        elif source == "invest-transaction":
-            stocks = read_spv(consts.SPVstockPath)
-            currencies = read_spv(SPVcurrPath)
-            pb = Read("initpbnames")
-            ipb = ReadInvest("ipb")
-            options = {
-                "stocks": stocks,
-                "currency": currencies,
-                "pb": pb,
-                "ipb": ipb,
-            }
-        elif source == "invest-stockprice":
-            stocks = read_spv(consts.SPVstockPath)
-            currencies = read_spv(SPVcurrPath)
-            options = {
-                "stocks": stocks,
-                "currency": currencies,
-            }
-
-        payload = jsonify({"success": True, "options": options})
-
-    except Exception as e:
-        print(f"Error occurred: {str(e)}")
-        error_message = str(e)
-        payload = (
-            jsonify(
-                {
-                    "success": False,
-                    "message": error_message,
-                }
-            ),
-            400,
-        )
-
-    return payload
-
-
-@app.route("/get/history/<string:source>/<string:year>", methods=["GET"])
-@app.route("/get/history/<string:source>", methods=["GET"])
-@db_required
-def GetHistory(source, year=consts.currentYear):
-    try:
-        if source == "expense":
-            history = GetTransactionHistory("expense", year)
-        elif source == "income":
-            history = GetTransactionHistory("income", year)
-        elif source == "transfer":
-            history = GetTransactionHistory("transfer", year)
-        elif source == "transferADV":
-            history = GetTransactionHistory("advtransfer", year)
-        elif source == "depositO":
-            Re_Calculate_deposit()
-            history = GetTransactionHistory("depositO", year)
-        elif source == "depositC":
-            history = GetTransactionHistory("depositC", year)
-        elif source == "currencyrates":
-            history = GetTransactionHistory("currencyrates", year)
-
-        payload = jsonify(
-            {
-                "success": True,
-                "history": history,
-            }
-        )
-
-    except Exception as e:
-        print(f"Error occurred: {str(e)}")
-        error_message = str(e)
-        payload = (
-            jsonify(
-                {
-                    "success": False,
-                    "message": error_message,
-                }
-            ),
-            400,
-        )
-
-    return payload
-
-
-@app.route("/get/plot/<string:source>", methods=["GET"])
-@app.route("/get/plot/<string:source>/<string:filters>", methods=["GET"])
-@db_required
-def GetPlot(source, filters=None):
-    try:
-        if source == "currencyrates":
-            if consts.isLegacyCurrencyRates:
-                data = ReadLegacy("currrate")
-                plot = plot_to_img_tag_legacy(
-                    data, "Currency Rates Over Time", "Date", "Rate"
-                )
-            else:
-                data = Read("currrateplot")
-                data.extend(
-                    ParseCurrRatesNames(Read("currrateplotinv"), consts.mainCurrency)
-                )
-                filterArr = filters.split("|")
-                if filterArr == ["None"]:
-                    filterArr = None
-                plot = CurrencyRatePlot(data, filterArr)
-            payload = jsonify({"success": True, "plot": plot})
-        if source == "investstockprice":
-            data = ReadInvest("graphstock")
-            plot = GraphStockPrice(data)
-            payload = jsonify({"success": True, "plot": plot})
-
-    except Exception as e:
-        print(f"Error occurred: {str(e)}")
-        error_message = str(e)
-        payload = (
-            jsonify(
-                {
-                    "success": False,
-                    "message": error_message,
-                }
-            ),
-            400,
-        )
-
-    return payload
 
 
 @app.route("/add/expense", methods=["POST"])
@@ -345,6 +72,23 @@ def EditExpense(id):
     content = request.get_json()
     if content is None:
         return "Error: No JSON data received", 400
+
+    if content.get("toDelete"):
+        try:
+            DeleteRecord(str(id), "main")
+            return jsonify({"success": True})
+        except Exception as e:
+            print(f"Error occurred while deleting: {str(e)}")
+            error_message = str(e)
+            return (
+                jsonify(
+                    {
+                        "success": False,
+                        "message": error_message,
+                    }
+                ),
+                400,
+            )
 
     # Parse JSON data into string line
     line = ",".join([str(content[key]) for key in content.keys()])
@@ -399,6 +143,23 @@ def EditIncome(id):
         content = request.get_json()
         if content is None:
             return "Error: No JSON data received", 400
+
+        if content.get("toDelete"):
+            try:
+                DeleteRecord(str(id), "main")
+                return jsonify({"success": True})
+            except Exception as e:
+                print(f"Error occurred while deleting: {str(e)}")
+                error_message = str(e)
+                return (
+                    jsonify(
+                        {
+                            "success": False,
+                            "message": error_message,
+                        }
+                    ),
+                    400,
+                )
 
         # Parse JSON data into string line
         line = ",".join([str(content[key]) for key in content.keys()])
@@ -471,6 +232,23 @@ def EditTransfer(id):
         content = request.get_json()
         if content is None:
             return "Error: No JSON data received", 400
+
+        if content.get("toDelete"):
+            try:
+                DeleteRecord(str(id), content.get("type"))
+                return jsonify({"success": True})
+            except Exception as e:
+                print(f"Error occurred while deleting: {str(e)}")
+                error_message = str(e)
+                return (
+                    jsonify(
+                        {
+                            "success": False,
+                            "message": error_message,
+                        }
+                    ),
+                    400,
+                )
 
         transferType = content.pop("transferType", "")
         # Parse JSON data into string line
@@ -549,6 +327,50 @@ def AddCurrencyRate():
 
     try:
         Add(line, "currrate")
+        return jsonify({"success": True})
+    except Exception as e:
+        print(f"Error occurred: {str(e)}")
+        error_message = str(e)
+        return (
+            jsonify(
+                {
+                    "success": False,
+                    "message": error_message,
+                }
+            ),
+            400,
+        )
+
+
+@app.route("/edit/currencyrates/<int:id>", methods=["POST"])
+def EditCurrencyRate(id):
+    content = request.get_json()
+    if content is None:
+        return "Error: No JSON data received", 400
+
+    if content.get("toDelete"):
+        try:
+            DeleteRecord(str(id), "currate")
+            return jsonify({"success": True})
+        except Exception as e:
+            print(f"Error occurred while deleting: {str(e)}")
+            error_message = str(e)
+            return (
+                jsonify(
+                    {
+                        "success": False,
+                        "message": error_message,
+                    }
+                ),
+                400,
+            )
+
+    # Parse JSON data into string line
+    line = ",".join([str(content[key]) for key in content.keys()])
+    line = f"{id}," + line  # Prepend the ID to the line
+
+    try:
+        UpdateRecord(line, "currate")
         return jsonify({"success": True})
     except Exception as e:
         print(f"Error occurred: {str(e)}")
@@ -745,10 +567,10 @@ def DBCreate():
 def SPVControl():
     if request.method == "GET":
         try:
-            expCat = read_spv(SPVcatExpPath)
-            incCat = read_spv(SPVcatIncPath)
-            subCat = read_spv(SPVsubcatPath)
-            curr = read_spv(SPVcurrPath)
+            expCat = read_spv(consts.SPVcatExpPath)
+            incCat = read_spv(consts.SPVcatIncPath)
+            subCat = read_spv(consts.SPVsubcatPath)
+            curr = read_spv(consts.SPVcurrPath)
             data = {
                 "currency": curr,
                 "incomeCategories": incCat,

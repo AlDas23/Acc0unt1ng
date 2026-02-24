@@ -765,26 +765,14 @@ def MarkerRead(mode, markers=None):
             return []
 
 
-def Del(del_id, type):
+def DelRecord(id, table):
     with sqlite3.connect(dbPath) as conn:
         c = conn.cursor()
-
-        if type == "main":
-            c.execute("SELECT 1 FROM main WHERE id = ?", (del_id,))
-            exists = c.fetchone()
-            if exists != None:
-                c.execute("DELETE FROM main WHERE id = ?", (del_id,))
-            else:
-                print("Record with id ", del_id, " does not exist.\n")
-
-        elif type == "transfer":
-            c.execute("SELECT 1 FROM transfer WHERE id = ?", (del_id,))
-            exists = c.fetchone()
-            if exists != None:
-                c.execute("DELETE FROM transfer WHERE id = ?", (del_id,))
-            else:
-                print("Record with id ", del_id, " does not exist.\n")
-
+        c.execute(f"SELECT COUNT(1) FROM {table} WHERE id = ?", (id,))
+        count = c.fetchone()[0]
+        if count == 0:
+            raise ValueError("Record with the specified ID does not exist.")
+        c.execute(f"DELETE FROM {table} WHERE id = ?", (id,))
         conn.commit()
 
 

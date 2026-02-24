@@ -1,6 +1,6 @@
 import sqlite3
 from datetime import datetime
-from db_scripts.baseScripts import Read, MarkerRead, ReadLegacy
+from db_scripts.baseScripts import DelRecord, Read, MarkerRead, ReadLegacy
 import db_scripts.consts as consts
 from db_scripts.SPVScripts import read_spv
 
@@ -36,6 +36,11 @@ def UpdateRecord(inp, mode):
                     inp[9],
                     int(inp[0]),
                 ),
+            )
+        elif mode == "currate":
+            c.execute(
+                "UPDATE exc_rate SET date = ?, currency_M = ?, currency_S = ?, rate = ? WHERE id = ?",
+                (inp[1], inp[2], inp[3], inp[4], int(inp[0])),
             )
 
         conn.commit()
@@ -351,6 +356,9 @@ def GenerateTable(flag):
                 -- PBD logic
                 UNION ALL
                 SELECT owner AS person_bank, currency, -sum FROM deposit WHERE isOpen = 1
+                -- Deposits alone
+                UNION ALL
+                SELECT name AS person_bank, currency, sum FROM deposit WHERE isOpen = 1
             ) p 
             JOIN Marker_type mt ON p.person_bank = mt.bank_rec
             GROUP BY p.currency, mt.type
@@ -840,3 +848,23 @@ def ConvertToRON(currency, amount, date, c=None):
     converted_amount = int(amount * excRate)
 
     return converted_amount
+
+
+def DeleteRecord(id, type):
+    if type == "main":
+        table = "main"
+    elif type == "standard":
+        table = "transfer"
+    elif type == "advanced":
+        table = "advtransfer"
+    elif type == "currate":
+        table = "exc_rate"
+    elif type == "itran":
+        table = "investTransaction"
+    elif type == "isp":
+        table = "investStockPrice"
+    else:
+        raise ValueError("Invalid type for deletion")
+
+    DelRecord(id, table)
+    print(f"Record with id {id} deleted from {table} table.")

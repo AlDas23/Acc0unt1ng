@@ -52,7 +52,13 @@ h3 {
 #CancelButton {
     margin-top: 20px;
     margin-left: 0px;
-    background-color: red;
+    background-color: rgb(221, 203, 9);
+}
+
+#DeleteButton {
+    margin-top: 20px;
+    margin-left: 0px;
+    background-color: rgb(231, 46, 46);
 }
 
 .editable-cell {
