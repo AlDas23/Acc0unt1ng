@@ -7,6 +7,8 @@ import Form from 'react-bootstrap/Form';
 import Row from 'react-bootstrap/Row';
 import '../assets/styles/CurrRatePageStyles.css'
 import { CheckLegacy } from '../commonComponents/Common'
+import OverlayTrigger from "react-bootstrap/esm/OverlayTrigger";
+import Tooltip from 'react-bootstrap/Tooltip';
 
 const initialFormData = {
     date: new Date().toISOString().split('T')[0],
@@ -101,7 +103,9 @@ function Forms({ options, DeleteRecord, handleInputChange, resetForm, formData, 
     return (
         <Form noValidate className="form" id="CurrecyRateForm" onSubmit={(e) => {
             e.preventDefault();
-            var { date, currency_M, currency_S, rate, isReverse } = formData;
+            var { date, currency_M, currency_S, rate } = formData;
+            const isReverseCheckbox = document.getElementById('checkReverse');
+            var isReverse = isReverseCheckbox.checked;
 
             if (currency_S === "" && currency_M === "") {
                 alert("Currency cannot be empty!")
@@ -118,18 +122,12 @@ function Forms({ options, DeleteRecord, handleInputChange, resetForm, formData, 
                 return false;
             }
 
-            if (isReverse) {
-                rate = 1 / rate;
-                const temp = currency_S;
-                currency_S = currency_M;
-                currency_M = temp;
-            }
-
             const payload = {
                 date: date,
                 currency_M: currency_M,
                 currency_S: currency_S,
-                rate: rate
+                rate: rate,
+                isReverse: isReverse
             }
 
             const endpoint = editMode
@@ -222,11 +220,21 @@ function Forms({ options, DeleteRecord, handleInputChange, resetForm, formData, 
                     </>) : (
                     <>
                         <Col md={1} xs={4}>
-                            <Form.Check
-                                type="switch"
-                                id="checkReverse"
-                                name="IsReverse"
-                            />
+                            <OverlayTrigger
+                                placement="left"
+                                overlay={
+                                    <Tooltip id="tooltip-reverse-currrate">
+                                        If checked, two currency rates will be recorded.
+                                        One with original rate, and one with reversed rate.
+                                    </Tooltip>
+                                }
+                            >
+                                <Form.Check
+                                    type="switch"
+                                    id="checkReverse"
+                                    name="IsReverse"
+                                />
+                            </OverlayTrigger>
                         </Col>
                         <Col md={2} xs={4}>
                             <Form.Label htmlFor="checkReverse" id="checkReverseLabel">

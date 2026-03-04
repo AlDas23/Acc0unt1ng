@@ -322,11 +322,15 @@ def AddCurrencyRate():
     if content is None:
         return "Error: No JSON data received", 400
 
-    # Parse JSON data into string line
-    line = ",".join([str(content[key]) for key in content.keys()])
+    if consts.isLegacyCurrencyRates:
+        # Parse JSON data into string line
+        line = ",".join([str(content[key]) for key in content.keys()])
 
     try:
-        Add(line, "currrate")
+        if consts.isLegacyCurrencyRates:
+            Add(line, "currrate")
+        else:
+            Add(content, "currrate")
         return jsonify({"success": True})
     except Exception as e:
         print(f"Error occurred: {str(e)}")

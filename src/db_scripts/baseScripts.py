@@ -172,17 +172,38 @@ def Add(input_field, mode):
                 )
 
             else:
-                values = input_field.split(",")
+                values = [
+                    input_field["date"],
+                    input_field["currency_M"],
+                    input_field["currency_S"],
+                    round(float(input_field["rate"]), 4),
+                ]
+                if input_field["isReverse"] == True:
+                    reverseValues = [
+                        input_field["date"],
+                        input_field["currency_S"],
+                        input_field["currency_M"],
+                        round(1 / float(input_field["rate"]), 4),
+                    ]
 
-                values[3] = round(float(values[3]), 4)
                 records = {
                     curr_keys[i]: values[i] for i in range(len(curr_keys))
                 }  # Make dictionary with all values to add
+                if input_field["isReverse"] == True:
+                    reverseRecords = {
+                        curr_keys[i]: reverseValues[i] for i in range(len(curr_keys))
+                    }
 
                 c.execute(
                     "INSERT INTO exc_rate VALUES (NULL, :date, :currency_M, :currency_S, :rate)",
                     records,
                 )
+
+                if input_field["isReverse"] == True:
+                    c.execute(
+                        "INSERT INTO exc_rate VALUES (NULL, :date, :currency_M, :currency_S, :rate)",
+                        reverseRecords,
+                    )
 
         conn.commit()
 
