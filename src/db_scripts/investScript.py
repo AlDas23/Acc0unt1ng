@@ -103,7 +103,7 @@ def AddInvestTransaction(dict):
             if fee != 0:
                 c.execute(
                     standardQuery,
-                    (date, "bank taxes", "invest taxes", pb, -fee, currency),
+                    (date, "Bank taxes", "invest taxes", pb, -fee, currency),
                 )
 
         conn.commit()
