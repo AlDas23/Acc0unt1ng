@@ -568,7 +568,7 @@ def Read(x, year=None):
             c.execute(
                 """
                 SELECT 
-                    strftime('%Y-%m', date) AS month, 
+                    substr(strftime('%Y-%m', date), 3, 5) AS month, 
                     date, 
                     sum,
                     currency
@@ -584,7 +584,7 @@ def Read(x, year=None):
             c.execute(
                 """
                 SELECT 
-                    strftime('%Y-%m', "date") AS month,
+                    substr(strftime('%Y-%m', date), 3, 5) AS month,
                     currency,
                     ABS(sum) AS expense,
                     "date"
@@ -600,7 +600,7 @@ def Read(x, year=None):
             c.execute(
                 """
                     SELECT 
-                    strftime('%Y-%m', "date") AS month,
+                    substr(strftime('%Y-%m', date), 3, 5) AS month,
                     currency,
                     ABS(sum) AS expense,
                     "date"
@@ -631,7 +631,7 @@ def Read(x, year=None):
 
         elif x == "currrate":
             c.execute(
-                "SELECT * FROM exc_rate ORDER BY date DESC LIMIT 60",
+                "SELECT id, substr(strftime('%Y-%m-%d', date), 3, 8), currency_M, currency_S, rate FROM exc_rate ORDER BY date DESC LIMIT 60",
             )
             return c.fetchall()
 
