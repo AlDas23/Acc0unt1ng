@@ -81,6 +81,8 @@ def AddInvestTransaction(dict):
         subCategory = ""
         if iAmount < 0:
             category= "invest income"
+            # add fee to amount if it's a sell transaction
+            amount += fee
         else:
             category = subCategory = "invest expense"
 
