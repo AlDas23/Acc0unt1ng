@@ -17,9 +17,9 @@ Proceed to open `http://localhost:80`
 
 To stop application, simply use command `docker compose down`.
 
-### Colab version
+### Colab version - *Deprecated*
 
-To use colab version go to "colab" branch of this repository.
+To use colab version go to "colab" branch of this repository. 
 
 ## Initial setup requirements
 
@@ -68,4 +68,4 @@ On **DB Options** page, below SPV lists you can find Main Currency selector:
 
 Any currency inside currency SPV is valid to be main currency. Main currency can be switched anytime.
 
-Note: Calculation to main currency **IS** dependant on the amount of currency rates exisitng in Database. The higher the count, the better is convertation calculation.
+Note: Calculation to main currency **IS** dependant on the amount of currency rates existing in Database. The higher the count, the better is conversion calculation.
