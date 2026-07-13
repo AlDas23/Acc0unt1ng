@@ -1,6 +1,7 @@
-# Acc0unt1ng
+# Acc0unt1ng - Colab Branch - *Deprecated*
 
-A python based project for managing accounting.
+This branch **is no longer supported** due to switching to docker and docker compose model for 
+the project. This branch *may* work, but no new features or fixes is planned to it.
 
 ## Getting started
 
