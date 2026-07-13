@@ -167,3 +167,4 @@ cython_debug/
 # Database and configs
 db/
 config/*.toml
+.vscode/settings.json
