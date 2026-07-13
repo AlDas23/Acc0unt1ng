@@ -37,7 +37,7 @@ def Add(input_field, mode):
                 values[3] = values[3] * -1
             c.execute(
                 "SELECT 1 FROM Init_PB WHERE person_bank = ? AND currency = ?",
-                (values[2], values[4]),
+                (values[1], values[4]),
             )
             # Check if person_bank - currency pair exists
             exists = c.fetchone()
