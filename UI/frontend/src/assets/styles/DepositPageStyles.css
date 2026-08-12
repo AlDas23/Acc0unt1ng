@@ -27,6 +27,12 @@ h3 {
     padding-bottom: 1px;
 }
 
+.historytable-close-btn{
+    width: 100%;
+    background-color: rgb(237, 38, 38);
+
+}
+
 .form {
     padding: 8px 0 !important;
 }

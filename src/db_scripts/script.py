@@ -859,6 +859,8 @@ def DeleteRecord(id, type):
         table = "advtransfer"
     elif type == "currate":
         table = "exc_rate"
+    elif type == "deposit":
+        table = "deposit"
     elif type == "itran":
         table = "investTransaction"
     elif type == "isp":
