@@ -789,11 +789,19 @@ def MarkerRead(mode, markers=None):
 def DelRecord(id, table):
     with sqlite3.connect(dbPath) as conn:
         c = conn.cursor()
-        c.execute(f"SELECT COUNT(1) FROM {table} WHERE id = ?", (id,))
+        if table != "deposit":
+            c.execute(f"SELECT COUNT(1) FROM {table} WHERE id = ?", (id,))
+        else:
+            c.execute(f"SELECT COUNT(1) FROM {table} WHERE name = ?", (id,))
         count = c.fetchone()[0]
         if count == 0:
             raise ValueError("Record with the specified ID does not exist.")
-        c.execute(f"DELETE FROM {table} WHERE id = ?", (id,))
+        if table != "deposit":
+            c.execute(f"DELETE FROM {table} WHERE id = ?", (id,))
+        else:
+            c.execute(f"DELETE FROM {table} WHERE name = ?", (id,))
+            # Cleanup Marker_type
+            c.execute(f"DELETE FROM Marker_type WHERE bank_rec = ? AND type = ?", (id, "deposit"))
         conn.commit()
 
 

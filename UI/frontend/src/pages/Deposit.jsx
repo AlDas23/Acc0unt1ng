@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { HistoryTable } from "../commonComponents/Common";
+import { HistoryTable, HistoryTableWithClose } from "../commonComponents/Common";
 import Header from "../commonComponents/Header";
 import Button from 'react-bootstrap/Button';
 import Col from 'react-bootstrap/Col';
@@ -271,6 +271,36 @@ export default function DepositPage() {
         }
     }
 
+    const CloseDeposit = (e, rowIndex) => {
+        e.preventDefault();
+        const rowData = historyO[rowIndex];
+        const depositName = rowData[1];
+
+        if (!window.confirm(`Are you sure you want to close the deposit "${depositName}"?`)) {
+            return;
+        }
+
+        // Send POST request
+        fetch(`/api/edit/deposit/${depositName}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.reload();
+                } else {
+                    alert('Error: ' + (data.message || 'Failed to process transaction'));
+                }
+            })
+            .catch(error => {
+                console.error('Unexpected error:', error);
+                alert('Unexpected error occurred');
+            });
+    }
+
     if (loading) {
         return (
             <>
@@ -306,9 +336,10 @@ export default function DepositPage() {
                     <Col>
                         <h3>Active deposits</h3>
                         <div className="table-responsive">
-                            {historyO && (<HistoryTable
+                            {historyO && (<HistoryTableWithClose
                                 columns={["Deposit Date", "Name", "Person-bank", "Sum", "Currency", "Months", "Closing Date", "%", "Currency rate", "Expected amount", "Comment"]}
                                 data={historyO}
+                                CloseFn={CloseDeposit}
                                 tableId="openDepositsTable"
                                 numberColumns={["3-2", "7-1", "8-4", "9-2"]}
                             />)}

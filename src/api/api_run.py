@@ -316,6 +316,26 @@ def AddDeposit():
         )
 
 
+@app.route("/edit/deposit/<string:id>", methods=["POST"])
+def EditDeposit(id):
+    
+    try:
+        DeleteRecord(id, "deposit")
+        return jsonify({"success": True})
+    except Exception as e:
+        print(f"Error occurred while deleting: {str(e)}")
+        error_message = str(e)
+        return (
+            jsonify(
+                {
+                    "success": False,
+                    "message": error_message,
+                }
+            ),
+            400,
+        )
+
+
 @app.route("/add/currencyrates", methods=["POST"])
 def AddCurrencyRate():
     content = request.get_json()

@@ -3,7 +3,7 @@ import Form from 'react-bootstrap/Form';
 import Modal from 'react-bootstrap/Modal';
 import Button from "react-bootstrap/esm/Button";
 
-function TableBody({ data, EditRecord, numberColumns = [] }) {
+function TableBody({ data, EditRecord, CloseFn, numberColumns = [] }) {
     // Parse number column settings
     const formatSettings = numberColumns.reduce((acc, setting) => {
         const [colIndex, decimals] = setting.split('-').map(Number);
@@ -26,6 +26,17 @@ function TableBody({ data, EditRecord, numberColumns = [] }) {
                                 : cell}
                         </td>
                     ))}
+                    {CloseFn && (
+                        <td className="ht-cell close-cell" key={`cell-${rowIndex}-close`}>
+                            <button
+                                type="button"
+                                className="historytable-close-btn"
+                                onClick={(e) => CloseFn(e, rowIndex)}
+                            >
+                                Close
+                            </button>
+                        </td>
+                    )}
                 </tr>
             ))}
         </tbody>
@@ -43,6 +54,22 @@ export const HistoryTable = memo(function HistoryTable({ columns, data, tableId,
                 </tr>
             </thead>
             <TableBody data={data} numberColumns={numberColumns} />
+        </table>
+    );
+});
+
+export const HistoryTableWithClose = memo(function HistoryTable({ columns, data, CloseFn, tableId, numberColumns }) {
+    return (
+        <table className="history-table table-bordered" id={tableId || undefined}>
+            <thead>
+                <tr>
+                    {columns.map((col, index) => (
+                        <th className="ht-cell" key={`col-${index}`}>{col}</th>
+                    ))}
+                    <th className="ht-cell close-header" key="col-close"></th>
+                </tr>
+            </thead>
+            <TableBody data={data} CloseFn={CloseFn} numberColumns={numberColumns} />
         </table>
     );
 });
