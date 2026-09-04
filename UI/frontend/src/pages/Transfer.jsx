@@ -233,6 +233,11 @@ function AdvancedTransferForm({ options, formData, handleInputChange, editMode, 
                 return false;
             }
 
+            if (formObject.CurrencyRate !== "" && (isNaN(parseFloat(formObject.CurrencyRate))) || parseFloat(formObject.CurrencyRate) <= 0) {
+                alert("Please enter a valid currency rate.");
+                return false;
+            }
+
             // Append transfer type to the formObject
             formObject.transferType = 'advanced';
 
