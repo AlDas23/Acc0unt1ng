@@ -5,7 +5,10 @@ import Button from 'react-bootstrap/Button';
 import Col from 'react-bootstrap/Col';
 import Form from 'react-bootstrap/Form';
 import Row from 'react-bootstrap/Row';
+import Pagination from "react-bootstrap/Pagination";
 import '../assets/styles/ExpensePageStyles.css'
+
+const PAGE_SIZE = 50;
 
 const initialFormData = {
     date: new Date().toISOString().split('T')[0],
@@ -159,6 +162,15 @@ export default function ExpensePage() {
     const [yearsList, setYearsList] = useState([]);
     const [selectedYear, setSelectedYear] = useState(null);
     const [deleteConfirm, setDeleteConfirm] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+
+    const totalPages = Math.ceil((history?.length || 0) / PAGE_SIZE);
+    const firstRecordIndex = (currentPage - 1) * PAGE_SIZE;
+    const visibleHistory = history?.slice(
+        firstRecordIndex,
+        firstRecordIndex + PAGE_SIZE
+    ) || [];
+
 
     useEffect(() => {
         document.title = "Expense Records";
@@ -197,6 +209,9 @@ export default function ExpensePage() {
                 setLoading(false);
                 console.error('Error loading history:', error);
             });
+
+        setCurrentPage(1);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedYear]);
 
     const ValidateForm = async (e) => {
@@ -293,6 +308,11 @@ export default function ExpensePage() {
         }));
     };
 
+    const handlePageChange = (page) => {
+        setCurrentPage(page);
+        resetForm();
+    };
+
     const resetForm = () => {
         setFormData(initialFormData);
         setEditMode(false);
@@ -387,6 +407,40 @@ export default function ExpensePage() {
                 alert('Unexpected error occurred while fetching history: ' + error.message);
                 throw error;
             });
+    }
+
+    function getPageItems(currentPage, totalPages) {
+        if (totalPages <= 7) {
+            return Array.from({ length: totalPages }, (_, index) => index + 1);
+        }
+
+        const visiblePages = new Set([
+            1,
+            2,
+            currentPage - 2,
+            currentPage - 1,
+            currentPage,
+            currentPage + 1,
+            currentPage + 2,
+            totalPages - 1,
+            totalPages
+        ]);
+
+        const pages = [...visiblePages]
+            .filter(page => page >= 1 && page <= totalPages)
+            .sort((a, b) => a - b);
+
+        const items = [];
+
+        pages.forEach((page, index) => {
+            if (index > 0 && page - pages[index - 1] > 1) {
+                items.push(`ellipsis-${page}`);
+            }
+
+            items.push(page);
+        });
+
+        return items;
     }
 
     const OnYearChange = (event) => {
@@ -487,13 +541,52 @@ export default function ExpensePage() {
                     <Col xs={12}>
                         <div className="table-responsive">
                             {history && (
-                                <HistoryTableWithEdit
-                                    columns={["ID", "Date", "Category", "Sub-category", "Person-Bank", "Sum", "Currency", "Comment"]}
-                                    data={history}
-                                    EditRecord={EditRecord}
-                                    tableId={"expenseHistoryTable"}
-                                    numberColumns={["5-2"]}
-                                />
+                                <>
+                                    <HistoryTableWithEdit
+                                        columns={["ID", "Date", "Category", "Sub-category", "Person-Bank", "Sum", "Currency", "Comment"]}
+                                        data={visibleHistory}
+                                        EditRecord={EditRecord}
+                                        tableId={"expenseHistoryTable"}
+                                        numberColumns={["5-2"]}
+                                    />
+
+                                    {totalPages > 1 && editMode !== true && (
+                                        <Pagination aria-label="Expense history pages"
+                                        className="flex-wrap">
+                                            <Pagination.First
+                                                disabled={currentPage === 1}
+                                                onClick={() => handlePageChange(1)}
+                                            />
+                                            <Pagination.Prev
+                                                disabled={currentPage === 1}
+                                                onClick={() => handlePageChange(currentPage - 1)}
+                                            />
+
+                                            {getPageItems(currentPage, totalPages).map(item =>
+                                                typeof item === "number" ? (
+                                                    <Pagination.Item
+                                                        key={item}
+                                                        active={item === currentPage}
+                                                        onClick={() => handlePageChange(item)}
+                                                    >
+                                                        {item}
+                                                    </Pagination.Item>
+                                                ) : (
+                                                    <Pagination.Ellipsis key={item} disabled />
+                                                )
+                                            )}
+
+                                            <Pagination.Next
+                                                disabled={currentPage === totalPages}
+                                                onClick={() => handlePageChange(currentPage + 1)}
+                                            />
+                                            <Pagination.Last
+                                                disabled={currentPage === totalPages}
+                                                onClick={() => handlePageChange(totalPages)}
+                                            />
+                                        </Pagination>
+                                    )}
+                                </>
                             )}
                         </div>
                     </Col>
