@@ -6,7 +6,10 @@ import Col from 'react-bootstrap/Col';
 import Form from 'react-bootstrap/Form';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
+import Pagination from "react-bootstrap/Pagination";
 import '../assets/styles/TransferPageStyles.css'
+
+const PAGE_SIZE = 50;
 
 const initialFormDataSTD = {
     date: new Date().toISOString().split('T')[0],
@@ -483,6 +486,22 @@ export default function TransferPage() {
     const [yearsList, setYearsList] = useState([]);
     const [selectedYear, setSelectedYear] = useState(null);
     const [deleteConfirm, setDeleteConfirm] = useState(false);
+    const [currentPageS, setCurrentPageS] = useState(1);
+    const [currentPageADV, setCurrentPageADV] = useState(1);
+
+    const totalPages = Math.ceil((history?.length || 0) / PAGE_SIZE);
+    const firstRecordIndex = (currentPageS - 1) * PAGE_SIZE;
+    const visibleHistory = history?.slice(
+        firstRecordIndex,
+        firstRecordIndex + PAGE_SIZE
+    ) || [];
+
+    const totalPagesADV = Math.ceil((historyADV?.length || 0) / PAGE_SIZE);
+    const firstRecordIndexADV = (currentPageADV - 1) * PAGE_SIZE;
+    const visibleHistoryADV = historyADV?.slice(
+        firstRecordIndexADV,
+        firstRecordIndexADV + PAGE_SIZE
+    ) || [];
 
 
     useEffect(() => {
@@ -532,6 +551,10 @@ export default function TransferPage() {
                 setLoading(false);
                 console.error('Error loading advanced history:', error);
             });
+
+        setCurrentPageS(1);
+        setCurrentPageADV(1);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedYear]);
 
     const handleInputChangeSTD = (e) => {
@@ -558,6 +581,16 @@ export default function TransferPage() {
             ...prevData,
             [key.charAt(0).toLowerCase() + key.slice(1)]: value
         }));
+    };
+
+
+    const handlePageChange = (page, type) => {
+        if (type === 1) {
+            setCurrentPageS(page);
+        } else {
+            setCurrentPageADV(page);
+        }
+        resetForm();
     };
 
     const resetForm = () => {
@@ -725,6 +758,40 @@ export default function TransferPage() {
             });
     }
 
+    function getPageItems(currentPage, totalPages) {
+        if (totalPages <= 7) {
+            return Array.from({ length: totalPages }, (_, index) => index + 1);
+        }
+
+        const visiblePages = new Set([
+            1,
+            2,
+            currentPage - 2,
+            currentPage - 1,
+            currentPage,
+            currentPage + 1,
+            currentPage + 2,
+            totalPages - 1,
+            totalPages
+        ]);
+
+        const pages = [...visiblePages]
+            .filter(page => page >= 1 && page <= totalPages)
+            .sort((a, b) => a - b);
+
+        const items = [];
+
+        pages.forEach((page, index) => {
+            if (index > 0 && page - pages[index - 1] > 1) {
+                items.push(`ellipsis-${page}`);
+            }
+
+            items.push(page);
+        });
+
+        return items;
+    }
+
     const OnYearChange = (event) => {
         const selectedYear = event.target.value;
         setSelectedYear(selectedYear);
@@ -854,20 +921,101 @@ export default function TransferPage() {
                 </Col>
                 <Row>
                     <div className="table-responsive">
-                        {selectedTable === 'standard' && history && (<HistoryTableWithEdit
-                            columns={["ID", "Date", "Sender", "Receiver", "Sum", "Currency", "Comment"]}
-                            data={history}
-                            EditRecord={EditRecord}
-                            tableId={"StandardTransferTable"}
-                            numberColumns={["4-2"]}
-                        />)}
-                        {selectedTable === 'advanced' && historyADV && (<HistoryTableWithEdit
-                            columns={["ID", "Date", "Sender", "Sum", "Currency", "Receiver", "Sum", "Currency", "Currency Rate", "Comment"]}
-                            data={historyADV}
-                            EditRecord={EditRecord}
-                            tableId={"AdvancedTransferTable"}
-                            numberColumns={["3-2", "6-2", "8-4"]}
-                        />)}
+                        {selectedTable === 'standard' && history && (<>
+                            <HistoryTableWithEdit
+                                columns={["ID", "Date", "Sender", "Receiver", "Sum", "Currency", "Comment"]}
+                                data={visibleHistory}
+                                EditRecord={EditRecord}
+                                tableId={"StandardTransferTable"}
+                                numberColumns={["4-2"]}
+                            />
+                            {totalPages > 1 && editMode.isEditing !== true &&(
+                                <Pagination aria-label="Transfer standard history pages"
+                                    className="flex-wrap">
+                                    <Pagination.First
+                                        disabled={currentPageS === 1}
+                                        onClick={() => handlePageChange(1, 1)}
+                                    />
+                                    <Pagination.Prev
+                                        disabled={currentPageS === 1}
+                                        onClick={() => handlePageChange(currentPageS - 1, 1)}
+                                    />
+
+                                    {getPageItems(currentPageS, totalPages).map(item =>
+                                        typeof item === "number" ? (
+                                            <Pagination.Item
+                                                key={item}
+                                                active={item === currentPageS}
+                                                onClick={() => handlePageChange(item, 1)}
+                                            >
+                                                {item}
+                                            </Pagination.Item>
+                                        ) : (
+                                            <Pagination.Ellipsis key={item} disabled />
+                                        )
+                                    )}
+
+                                    <Pagination.Next
+                                        disabled={currentPageS === totalPages}
+                                        onClick={() => handlePageChange(currentPageS + 1, 1)}
+                                    />
+                                    <Pagination.Last
+                                        disabled={currentPageS === totalPages}
+                                        onClick={() => handlePageChange(totalPages, 1)}
+                                    />
+                                </Pagination>
+                            )}
+                        </>
+
+                        )}
+                        {selectedTable === 'advanced' && historyADV && (
+                            <>
+                                <HistoryTableWithEdit
+                                    columns={["ID", "Date", "Sender", "Sum", "Currency", "Receiver", "Sum", "Currency", "Currency Rate", "Comment"]}
+                                    data={visibleHistoryADV}
+                                    EditRecord={EditRecord}
+                                    tableId={"AdvancedTransferTable"}
+                                    numberColumns={["3-2", "6-2", "8-4"]}
+                                />
+
+                                {totalPagesADV > 1 && editMode.isEditing !== true &&(
+                                    <Pagination aria-label="Transfer advanced history pages"
+                                        className="flex-wrap">
+                                        <Pagination.First
+                                            disabled={currentPageADV === 1}
+                                            onClick={() => handlePageChange(1, 2)}
+                                        />
+                                        <Pagination.Prev
+                                            disabled={currentPageADV === 1}
+                                            onClick={() => handlePageChange(currentPageADV - 1, 2)}
+                                        />
+
+                                        {getPageItems(currentPageADV, totalPagesADV).map(item =>
+                                            typeof item === "number" ? (
+                                                <Pagination.Item
+                                                    key={item}
+                                                    active={item === currentPageADV}
+                                                    onClick={() => handlePageChange(item, 2)}
+                                                >
+                                                    {item}
+                                                </Pagination.Item>
+                                            ) : (
+                                                <Pagination.Ellipsis key={item} disabled />
+                                            )
+                                        )}
+
+                                        <Pagination.Next
+                                            disabled={currentPageADV === totalPagesADV}
+                                            onClick={() => handlePageChange(currentPageADV + 1, 2)}
+                                        />
+                                        <Pagination.Last
+                                            disabled={currentPageADV === totalPagesADV}
+                                            onClick={() => handlePageChange(totalPagesADV, 2)}
+                                        />
+                                    </Pagination>
+                                )}
+                            </>
+                        )}
                     </div>
                 </Row>
             </div>
