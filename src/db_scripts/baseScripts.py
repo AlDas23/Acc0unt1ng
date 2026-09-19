@@ -158,67 +158,42 @@ def Add(input_field, mode):
             c.execute("INSERT INTO Marker_type VALUES(?, ?)", (values[1], "deposit"))
 
         elif mode == "currrate":
-            if consts.isLegacyCurrencyRates:
-                values = input_field.split(",")
-
-                values[2] = round(float(values[2]), 4)
-                records = {
-                    curr_keys[i]: values[i] for i in range(len(curr_keys_legacy))
-                }  # Make dictionary with all values to add
-
-                c.execute(
-                    "INSERT INTO exc_rate VALUES (:date, :currency, :rate)",
-                    records,
-                )
-
-            else:
-                values = [
+            values = [
+                input_field["date"],
+                input_field["currency_M"],
+                input_field["currency_S"],
+                round(float(input_field["rate"]), 4),
+            ]
+            if input_field["isReverse"] == True:
+                reverseValues = [
                     input_field["date"],
-                    input_field["currency_M"],
                     input_field["currency_S"],
-                    round(float(input_field["rate"]), 4),
+                    input_field["currency_M"],
+                    round(1 / float(input_field["rate"]), 4),
                 ]
-                if input_field["isReverse"] == True:
-                    reverseValues = [
-                        input_field["date"],
-                        input_field["currency_S"],
-                        input_field["currency_M"],
-                        round(1 / float(input_field["rate"]), 4),
-                    ]
 
-                records = {
-                    curr_keys[i]: values[i] for i in range(len(curr_keys))
-                }  # Make dictionary with all values to add
-                if input_field["isReverse"] == True:
-                    reverseRecords = {
-                        curr_keys[i]: reverseValues[i] for i in range(len(curr_keys))
-                    }
+            records = {
+                curr_keys[i]: values[i] for i in range(len(curr_keys))
+            }  # Make dictionary with all values to add
+            if input_field["isReverse"] == True:
+                reverseRecords = {
+                    curr_keys[i]: reverseValues[i] for i in range(len(curr_keys))
+                }
 
+            c.execute(
+                "INSERT INTO exc_rate VALUES (NULL, :date, :currency_M, :currency_S, :rate)",
+                records,
+            )
+
+            if input_field["isReverse"] == True:
                 c.execute(
                     "INSERT INTO exc_rate VALUES (NULL, :date, :currency_M, :currency_S, :rate)",
-                    records,
+                    reverseRecords,
                 )
-
-                if input_field["isReverse"] == True:
-                    c.execute(
-                        "INSERT INTO exc_rate VALUES (NULL, :date, :currency_M, :currency_S, :rate)",
-                        reverseRecords,
-                    )
 
         conn.commit()
 
     Re_Calculate_deposit()
-
-
-def ReadLegacy(x):
-    with sqlite3.connect(dbPath) as conn:
-        c = conn.cursor()
-        if x == "currrate":
-            c.execute(
-                "SELECT * FROM exc_rate WHERE strftime('%Y', date) = ? ORDER BY date DESC",
-                (consts.currentYear,),
-            )
-            return c.fetchall()
 
 
 def Read(x, year=None):
@@ -250,8 +225,7 @@ def Read(x, year=None):
             )
             return c.fetchall()
         elif x == "allacc":
-            c.execute(
-                """
+            c.execute("""
                     SELECT person_bank, currency, SUM(sum) 
                     FROM (
                         SELECT person_bank, currency, sum FROM main
@@ -267,8 +241,7 @@ def Read(x, year=None):
                         SELECT person_bank_to AS person_bank, currency, sum FROM transfer) 
                         GROUP BY person_bank, currency
                         ORDER BY person_bank ASC
-                """
-            )
+                """)
             return c.fetchall()
         elif x == "alldep":
             c.execute("SELECT * FROM deposit ORDER BY date_out DESC")
@@ -631,7 +604,8 @@ def Read(x, year=None):
 
         elif x == "currrate":
             c.execute(
-                "SELECT id, substr(strftime('%Y-%m-%d', date), 3, 8), currency_M, currency_S, rate FROM exc_rate ORDER BY date DESC LIMIT 60",
+                "SELECT id, substr(strftime('%Y-%m-%d', date), 3, 8), currency_M, currency_S, rate FROM exc_rate WHERE strftime('%Y', date) = ? ORDER BY date DESC",
+                (year,),
             )
             return c.fetchall()
 
@@ -801,7 +775,10 @@ def DelRecord(id, table):
         else:
             c.execute(f"DELETE FROM {table} WHERE name = ?", (id,))
             # Cleanup Marker_type
-            c.execute(f"DELETE FROM Marker_type WHERE bank_rec = ? AND type = ?", (id, "deposit"))
+            c.execute(
+                f"DELETE FROM Marker_type WHERE bank_rec = ? AND type = ?",
+                (id, "deposit"),
+            )
         conn.commit()
 
 

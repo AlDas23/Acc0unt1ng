@@ -66,9 +66,14 @@ const useHistory = (apiType, year) => {
     const fetchHistory = useCallback(async () => {
         try {
             setError(null);
-            
-            const response = await fetch(`/api/get/history/${apiType}/${year}`);
 
+            var response;
+            if (year === null) {
+                response = await fetch(`/api/get/history/${apiType}`);
+             } else {
+                response = await fetch(`/api/get/history/${apiType}/${year}`);
+            }
+            
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
@@ -93,7 +98,7 @@ const useHistory = (apiType, year) => {
         }
     }, [apiType, year]);
 
-     useEffect(() => {
+    useEffect(() => {
         fetchHistory();
     }, [fetchHistory]);
 

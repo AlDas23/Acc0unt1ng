@@ -145,7 +145,7 @@ export default function IncomePage() {
     const [selectedYear, setSelectedYear] = useState(null);
     const [deleteConfirm, setDeleteConfirm] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
-    const { options, optionsError } = useOptions("income");
+    const { options, error : optionsError } = useOptions("income");
     const { history, historyError } = useHistory("income", selectedYear);
 
     const totalPages = Math.ceil((history?.length || 0) / PAGE_SIZE);

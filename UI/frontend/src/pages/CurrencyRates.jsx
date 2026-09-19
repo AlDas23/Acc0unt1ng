@@ -1,14 +1,15 @@
 import { useEffect, useState } from "react";
-import { HistoryTableWithEdit } from "../commonComponents/Common";
+import { HistoryTableWithEdit, YearSelectorOnChange } from "../commonComponents/Common";
+import { useOptions, useHistory } from "../commonComponents/CustomHooks";
 import Header from "../commonComponents/Header";
 import Button from 'react-bootstrap/Button';
 import Col from 'react-bootstrap/Col';
 import Form from 'react-bootstrap/Form';
 import Row from 'react-bootstrap/Row';
 import '../assets/styles/CurrRatePageStyles.css'
-import { CheckLegacy } from '../commonComponents/Common'
 import OverlayTrigger from "react-bootstrap/esm/OverlayTrigger";
 import Tooltip from 'react-bootstrap/Tooltip';
+import Pagination from "react-bootstrap/Pagination";
 
 const initialFormData = {
     date: new Date().toISOString().split('T')[0],
@@ -18,86 +19,7 @@ const initialFormData = {
     isReverse: false
 };
 
-function LegacyPlotComponent({ imageUrl }) {
-    return (
-        <>
-            <h3>Currency dynamics plot</h3>
-            <img id="CurrRatePlot" src={imageUrl} alt="Currency dynamics plot" />
-        </>
-    );
-}
-
-function FormsLegacy({ options }) {
-    return (
-        <Form noValidate className="form" id="form" onSubmit={(e) => {
-            e.preventDefault();
-
-            const form = e.target;
-            const formDataObj = new FormData(form);
-            const formObject = Object.fromEntries(formDataObj.entries());
-
-            if (formObject.currency === "") {
-                alert("Currency cannot be empty!")
-                return false;
-            }
-
-            if (isNaN(formObject.Rate) || formObject.Rate <= 0) {
-                alert("Rate is not a number!")
-                return false;
-            }
-
-            // Send POST request
-            fetch("/api/add/currencyrates", {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formObject)
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        window.location.reload();
-                    } else {
-                        alert('Error: ' + (data.message || 'Failed to add currency rate'));
-                    }
-                })
-                .catch(error => {
-                    console.error('Unexpected error:', error);
-                    alert('Unexpected error occurred');
-                });
-        }}>
-            <Row>
-                <Col xl="2">
-                    <Form.Label htmlFor="inputDate">
-                        Date
-                    </Form.Label>
-                    <input type="date" id="inputDate" name="Date" defaultValue={new Date().toISOString().split('T')[0]} />
-                </Col>
-                <Col xl="2">
-                    <Form.Label htmlFor="inputCurrency">
-                        Currency
-                    </Form.Label>
-                    <Form.Select id="inputCurrency" name="Currency" defaultValue={""}>
-                        <option value="" disabled></option>
-                        {options.currency.map((currency, index) => (
-                            <option value={currency} key={index}>{currency}</option>
-                        ))}
-                    </Form.Select>
-                </Col>
-                <Col xl="2">
-                    <Form.Label htmlFor="inputRate">
-                        Rate
-                    </Form.Label>
-                    <Form.Control type="text" id="inputRate" name="Rate" autoComplete="off" />
-                </Col>
-            </Row>
-            <Row>
-                <Button type="submit" value="Submit" id="SubmitButton">Submit</Button>
-            </Row>
-        </Form>
-    );
-};
+const PAGE_SIZE = 30;
 
 function Forms({ options, DeleteRecord, handleInputChange, resetForm, formData, editMode, deleteConfirm, editingId }) {
     return (
@@ -290,95 +212,88 @@ function PlotComponent({ currencyList, onFilterChange, FetchFilteredPlot, imageU
 };
 
 export default function CurrencyRatesPage() {
-    const [options, setOptions] = useState(null);
     const [formData, setFormData] = useState(initialFormData);
     const [editMode, setEditMode] = useState(false);
     const [editingId, setEditingId] = useState(null);
     const [deleteConfirm, setDeleteConfirm] = useState(false);
     const [plotOptions, setPlotOptions] = useState(null);
-    const [history, setHistory] = useState(null);
+    const [imageUrl, setImageUrl] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [imageUrl, setImageUrl] = useState(null);
-    const [isLegacy, setIsLegacy] = useState(null);
     const [selectedCurrencies, setSelectedCurrencies] = useState([]);
+    const [yearsList, setYearsList] = useState([]);
+    const [selectedYear, setSelectedYear] = useState(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const { options, error : optionsError } = useOptions("currencyrates");
+    const { history, historyError } = useHistory("currencyrates", selectedYear);
+
+    const totalPages = Math.ceil((history?.length || 0) / PAGE_SIZE);
+    const firstRecordIndex = (currentPage - 1) * PAGE_SIZE;
+    const visibleHistory = history?.slice(
+        firstRecordIndex,
+        firstRecordIndex + PAGE_SIZE
+    ) || [];
+
 
     useEffect(() => {
         document.title = "Currency Rates";
 
-        const initializeApp = async () => {
-            try {
-                // Check if DB is legacy
-                const isLegacyResult = await CheckLegacy();
-                if (isLegacyResult) {
-                    console.info("Legacy DB schema used! Switching to legacy mode");
-                    setIsLegacy(true);
-                } else {
-                    setIsLegacy(false);
-                }
-
-                const promises = [
-                    GetOptions(),
-                    GetHistory(),
-                    GetPlot()
-                ];
-
-                // Only add GetPlotOptions if not legacy
-                if (!isLegacyResult) {
-                    promises.push(GetPlotOptions());
-                }
-
-                const results = await Promise.all(promises);
-
-                const [optionsData, historyData, plotUrl] = results;
-                const plotOptions = !isLegacyResult ? results[3] : null;
-
-                setOptions(optionsData);
-                setHistory(historyData);
-                setImageUrl(plotUrl);
-                if (!isLegacyResult) {
-                    setPlotOptions(plotOptions);
-                }
-                setLoading(false);
-
-            } catch (error) {
-                setError('Failed to initialize page: ' + error.message);
-                setLoading(false);
-                console.error('Error initializing page:', error);
-            }
-        };
-
-        initializeApp();
-    }, []);
-
-
-    const GetOptions = () => {
-        return fetch(`/api/get/options/currencyrates`)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.redirect) {
-                    alert('Database is missing or corrupted. You will be redirected to the setup page.');
-                    window.location.href = data.redirect;
-                    return Promise.reject('Redirect initiated');
-                }
-
-                if (data.success) {
-                    return data.options;
-                } else {
-                    throw new Error(data.message || 'Failed to load options');
-                }
+        // Fetch years list
+        GetYearsList()
+            .then(yearsData => {
+                setYearsList(yearsData);
+                setSelectedYear(yearsData[0]);
             })
             .catch(error => {
-                console.error('Error fetching options:', error);
-                alert('Unexpected error occurred while fetching options: ' + error.message);
-                throw error;
+                setError('Failed to load years list: ' + error.message);
+                console.error('Error loading years list:', error);
             });
-    }
+
+        // Fetch plot options
+        GetPlotOptions()
+            .then(plotOptionsData => {
+                setPlotOptions(plotOptionsData);
+            })
+            .catch(error => {
+                setError('Failed to load plot options: ' + error.message);
+                console.error('Error loading plot options:', error);
+            });
+
+        // Fetch initial plot
+        GetPlot()
+            .then(plotUrl => {
+                setImageUrl(plotUrl);
+            })
+            .catch(error => {
+                setError('Failed to load initial plot: ' + error.message);
+                console.error('Error loading initial plot:', error);
+            });
+    }, []);
+
+    useEffect(() => {
+
+        // Fetch options error
+        if (optionsError) {
+            setError('Failed to load options: ' + optionsError);
+            setLoading(false);
+            console.error('Error loading options:', optionsError);
+            return;
+        }
+        // Fetch history error
+        if (historyError) {
+            setError('Failed to load history: ' + historyError);
+            setLoading(false);
+            console.error('Error loading history:', historyError);
+            return;
+        }
+
+        // If both options and history are loaded, set loading to false
+        if (options !== null && history !== null) {
+            setLoading(false);
+        }
+
+        setCurrentPage(1);
+    }, [optionsError, historyError, selectedYear, options, history]);
 
     const GetPlotOptions = () => {
         return fetch(`/api/get/list/currrateplotnames`)
@@ -408,8 +323,38 @@ export default function CurrencyRatesPage() {
             });
     }
 
-    const GetHistory = () => {
-        return fetch(`/api/get/history/currencyrates`)
+    const GetPlot = () => {
+        const filters = selectedCurrencies.length > 0 ? selectedCurrencies.join("|") : "None";
+
+        return fetch(`/api/get/plot/currencyrates/${filters}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.redirect) {
+                    alert('Database is missing or corrupted. You will be redirected to the setup page.');
+                    window.location.href = data.redirect;
+                    return Promise.reject('Redirect initiated');
+                }
+
+                if (data.success) {
+                    return data.plot;
+                } else {
+                    throw new Error(data.message || 'Failed to load plot');
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching plot:', error);
+                alert('Unexpected error occurred while fetching plot: ' + error.message);
+                throw error;
+            });
+    }
+
+    const GetYearsList = () => {
+        return fetch(`/api/get/list/exYears`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
@@ -424,74 +369,15 @@ export default function CurrencyRatesPage() {
                 }
 
                 if (data.success) {
-                    return data.history;
+                    return data.data.years;
                 } else {
-                    throw new Error(data.message || 'Failed to load history');
+                    throw new Error(data.message || 'Failed to load years list');
                 }
             })
             .catch(error => {
-                console.error('Error fetching history:', error);
-                alert('Unexpected error occurred while fetching history: ' + error.message);
-                throw error;
+                console.error('Error fetching years list:', error);
+                alert('Unexpected error occurred while fetching years list: ' + error.message);
             });
-    }
-
-    const GetPlot = () => {
-        if (isLegacy) {
-            return fetch(`/api/get/plot/currencyrates`)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.redirect) {
-                        alert('Database is missing or corrupted. You will be redirected to the setup page.');
-                        window.location.href = data.redirect;
-                        return Promise.reject('Redirect initiated');
-                    }
-
-                    if (data.success) {
-                        return data.plot;
-                    } else {
-                        throw new Error(data.message || 'Failed to load plot');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error fetching plot:', error);
-                    alert('Unexpected error occurred while fetching plot: ' + error.message);
-                    throw error;
-                });
-        } else {
-            const filters = selectedCurrencies.length > 0 ? selectedCurrencies.join("|") : "None";
-
-            return fetch(`/api/get/plot/currencyrates/${filters}`)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.redirect) {
-                        alert('Database is missing or corrupted. You will be redirected to the setup page.');
-                        window.location.href = data.redirect;
-                        return Promise.reject('Redirect initiated');
-                    }
-
-                    if (data.success) {
-                        return data.plot;
-                    } else {
-                        throw new Error(data.message || 'Failed to load plot');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error fetching plot:', error);
-                    alert('Unexpected error occurred while fetching plot: ' + error.message);
-                    throw error;
-                });
-        }
     }
 
     const handleInputChange = (e) => {
@@ -502,6 +388,48 @@ export default function CurrencyRatesPage() {
             [key.charAt(0).toLowerCase() + key.slice(1)]: value
         }));
     };
+
+    const handlePageChange = (page) => {
+        setCurrentPage(page);
+        resetForm();
+    };
+
+    function getPageItems(currentPage, totalPages) {
+        if (totalPages <= 7) {
+            return Array.from({ length: totalPages }, (_, index) => index + 1);
+        }
+
+        const visiblePages = new Set([
+            1,
+            2,
+            currentPage - 1,
+            currentPage,
+            currentPage + 1,
+            totalPages - 1,
+            totalPages
+        ]);
+
+        const pages = [...visiblePages]
+            .filter(page => page >= 1 && page <= totalPages)
+            .sort((a, b) => a - b);
+
+        const items = [];
+
+        pages.forEach((page, index) => {
+            if (index > 0 && page - pages[index - 1] > 1) {
+                items.push(`ellipsis-${page}`);
+            }
+
+            items.push(page);
+        });
+
+        return items;
+    }
+
+    const OnYearChange = (event) => {
+        const selectedYear = event.target.value;
+        setSelectedYear(selectedYear);
+    }
 
     const resetForm = () => {
         setFormData(initialFormData);
@@ -628,9 +556,7 @@ export default function CurrencyRatesPage() {
             <div className="currency-rates-page container-fluid">
                 <h1>Currency Rates</h1>
                 <Row>
-                    {options && (isLegacy ? (<FormsLegacy
-                        options={options}
-                    />) : (<Forms options={options}
+                    {options && (<Forms options={options}
                         DeleteRecord={DeleteRecord}
                         handleInputChange={handleInputChange}
                         resetForm={resetForm}
@@ -638,32 +564,79 @@ export default function CurrencyRatesPage() {
                         editingId={editingId}
                         formData={formData}
                         deleteConfirm={deleteConfirm}
-                    />))}
+                    />)}
                 </Row>
                 <br />
                 <Row>
                     <Col md={4}>
                         <h3>Currency Rates History</h3>
+                        
+                        <Col md={3}>
+                            <YearSelectorOnChange
+                                yearsList={yearsList}
+                                selectedYear={selectedYear}
+                                onYearChange={OnYearChange}
+                                id="currency-rates-year-selector"
+                            />
+                        </Col>
+                        <br/>
                         <div className="table-responsive">
-                            {history && (<HistoryTableWithEdit
-                                columns={isLegacy ?
-                                    ["Date", "Currency", "Rate"]
-                                    : ["ID", "Date", "Currency Sell", "Currency Buy", "Rate"]}
-                                data={history}
-                                tableId="CurrRateHistoryTable"
-                                EditRecord={EditRecord}
-                                numberColumns={isLegacy ? ["2-4"] : ["4-4"]}
-                            />)}
+                            {history && (
+                                <> <HistoryTableWithEdit
+                                    columns={["ID", "Date", "Currency Sell", "Currency Buy", "Rate"]}
+                                    data={visibleHistory}
+                                    tableId="CurrRateHistoryTable"
+                                    EditRecord={EditRecord}
+                                    numberColumns={["4-4"]}
+                                />
+
+                                    {totalPages > 1 && editMode !== true && (
+                                        <Pagination aria-label="CurrencyRates history pages"
+                                            className="flex-wrap">
+                                            <Pagination.First
+                                                disabled={currentPage === 1}
+                                                onClick={() => handlePageChange(1)}
+                                            />
+                                            <Pagination.Prev
+                                                disabled={currentPage === 1}
+                                                onClick={() => handlePageChange(currentPage - 1)}
+                                            />
+
+                                            {getPageItems(currentPage, totalPages).map(item =>
+                                                typeof item === "number" ? (
+                                                    <Pagination.Item
+                                                        key={item}
+                                                        active={item === currentPage}
+                                                        onClick={() => handlePageChange(item)}
+                                                    >
+                                                        {item}
+                                                    </Pagination.Item>
+                                                ) : (
+                                                    <Pagination.Ellipsis key={item} disabled />
+                                                )
+                                            )}
+
+                                            <Pagination.Next
+                                                disabled={currentPage === totalPages}
+                                                onClick={() => handlePageChange(currentPage + 1)}
+                                            />
+                                            <Pagination.Last
+                                                disabled={currentPage === totalPages}
+                                                onClick={() => handlePageChange(totalPages)}
+                                            />
+                                        </Pagination>
+                                    )}
+
+                                </>)}
                         </div>
                     </Col>
                     <Col md={8}>
-                        {isLegacy ? (imageUrl && <LegacyPlotComponent imageUrl={imageUrl} />)
-                            : (imageUrl && options && <PlotComponent
-                                currencyList={plotOptions}
-                                onFilterChange={onFilterChange}
-                                FetchFilteredPlot={FetchFilteredPlot}
-                                imageUrl={imageUrl}
-                            />)}
+                        {(imageUrl && options && <PlotComponent
+                            currencyList={plotOptions}
+                            onFilterChange={onFilterChange}
+                            FetchFilteredPlot={FetchFilteredPlot}
+                            imageUrl={imageUrl}
+                        />)}
                     </Col>
                 </Row>
             </div>

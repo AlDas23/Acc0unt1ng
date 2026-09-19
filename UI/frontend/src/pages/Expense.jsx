@@ -162,8 +162,8 @@ export default function ExpensePage() {
     const [selectedYear, setSelectedYear] = useState(null);
     const [deleteConfirm, setDeleteConfirm] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
-    const { options, optionsError } = useOptions("expense");
-    const { history, historyError } = useHistory("expense", selectedYear);
+    const { options, error : optionsError } = useOptions("expense");
+    const { history, error : historyError } = useHistory("expense", selectedYear);
 
     const totalPages = Math.ceil((history?.length || 0) / PAGE_SIZE);
     const firstRecordIndex = (currentPage - 1) * PAGE_SIZE;

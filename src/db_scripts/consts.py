@@ -125,7 +125,7 @@ old_tables = {
 
 currentYear = None
 
-isLegacyCurrencyRates = False
+# isLegacyCurrencyRates = False
 
 mainCurrency = None
 

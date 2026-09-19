@@ -487,8 +487,8 @@ export default function TransferPage() {
     const [currentPageS, setCurrentPageS] = useState(1);
     const [currentPageADV, setCurrentPageADV] = useState(1);
     const { options, optionsError } = useOptions("transfer");
-    const { history, historyError } = useHistory("transfer", selectedYear);
-    const { historyADV, historyADVError } = useHistory("transferADV", selectedYear);
+    const { history, error : historyError } = useHistory("transfer", selectedYear);
+    const { history : historyADV, error : historyADVError } = useHistory("transferADV", selectedYear);
 
     const totalPages = Math.ceil((history?.length || 0) / PAGE_SIZE);
     const firstRecordIndex = (currentPageS - 1) * PAGE_SIZE;
@@ -530,10 +530,16 @@ export default function TransferPage() {
         }
 
         // Fetch history error
-        if (historyError || historyADVError) {
+        if (historyError) {
             setError('Failed to load history: ' + historyError);
             setLoading(false);
             console.error('Error loading history:', historyError);
+            return;
+        }
+        if (historyADVError) {
+            setError('Failed to load advanced history: ' + historyADVError);
+            setLoading(false);
+            console.error('Error loading advanced history:', historyADVError);
             return;
         }
 

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { HistoryTable, HistoryTableWithClose } from "../commonComponents/Common";
+import { useOptions, useHistory } from "../commonComponents/CustomHooks";
 import Header from "../commonComponents/Header";
 import Button from 'react-bootstrap/Button';
 import Col from 'react-bootstrap/Col';
@@ -155,12 +156,12 @@ function Forms({ options }) {
 }
 
 export default function DepositPage() {
-    const [options, setOptions] = useState(null);
-    const [historyO, setHistoryO] = useState(null);
-    const [historyC, setHistoryC] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
+    const { options, optionsError } = useOptions("deposit");
+    const { history: historyO, error: historyOError } = useHistory("depositO", null);
+    const { history: historyC, error: historyCError } = useHistory("depositC", null);
 
     const totalPages = Math.ceil((historyC?.length || 0) / PAGE_SIZE);
     const firstRecordIndex = (currentPage - 1) * PAGE_SIZE;
@@ -174,114 +175,34 @@ export default function DepositPage() {
     }, []);
 
     useEffect(() => {
-        // Fetch options
-        GetOptions()
-            .then(optionsData => {
-                setOptions(optionsData);
-            })
-            .catch(error => {
-                setError('Failed to load options: ' + error.message);
-                console.error('Error loading options:', error);
-            });
-
-        // Fetch history
-        GetHistory(true)
-            .then(historyData => {
-                setHistoryO(historyData);
-                setLoading(false);
-            })
-            .catch(error => {
-                setError('Failed to load history: ' + error.message);
-                setLoading(false);
-                console.error('Error loading history:', error);
-            });
-        GetHistory(false)
-            .then(historyData => {
-                setHistoryC(historyData);
-                setLoading(false);
-            })
-            .catch(error => {
-                setError('Failed to load history: ' + error.message);
-                setLoading(false);
-                console.error('Error loading history:', error);
-            });
-        setCurrentPage(1);
-    }, []);
-
-    const GetOptions = () => {
-        return fetch(`/api/get/options/deposit`)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.success) {
-                    return data.options;
-                } else if (data.redirect) {
-                    alert('Database is missng or corrupted. You will be redirected to the setup page.');
-                    window.location.href = data.redirect;
-                } else {
-                    throw new Error(data.message || 'Failed to load options');
-                }
-            })
-            .catch(error => {
-                console.error('Error fetching options:', error);
-                alert('Unexpected error occurred while fetching options: ' + error.message);
-                throw error;
-            });
-    }
-
-    const GetHistory = (isActive) => {
-        if (isActive) {
-            return fetch(`/api/get/history/depositO`)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! Status: ${response.status}`);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.success) {
-                        return data.history;
-                    } else if (data.redirect) {
-                        alert('Database is missng or corrupted. You will be redirected to the setup page.');
-                        window.location.href = data.redirect;
-                    } else {
-                        throw new Error(data.message || 'Failed to load history');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error fetching history:', error);
-                    alert('Unexpected error occurred while fetching history: ' + error.message);
-                    throw error;
-                });
-        } else {
-            return fetch(`/api/get/history/depositC`)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! Status: ${response.status}`);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.success) {
-                        return data.history;
-                    } else if (data.redirect) {
-                        alert('Database is missng or corrupted. You will be redirected to the setup page.');
-                        window.location.href = data.redirect;
-                    } else {
-                        throw new Error(data.message || 'Failed to load history');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error fetching history:', error);
-                    alert('Unexpected error occurred while fetching history: ' + error.message);
-                    throw error;
-                });
+        // Fetch options error
+        if (optionsError) {
+            setError('Failed to load options: ' + optionsError);
+            setLoading(false);
+            console.error('Error loading options:', optionsError);
+            return;
         }
-    }
+
+        // Fetch history error
+        if (historyOError) {
+            setError('Failed to load history: ' + historyOError);
+            setLoading(false);
+            console.error('Error loading history:', historyOError);
+            return;
+        }
+        if (historyCError) {
+            setError('Failed to load history: ' + historyCError);
+            setLoading(false);
+            console.error('Error loading history:', historyCError);
+            return;
+        }
+
+        // If both options and histories are loaded, set loading to false
+        if (options !== null && historyO !== null && historyC !== null) {
+            setLoading(false);
+        }
+        setCurrentPage(1);
+    }, [historyC, historyCError, historyO, historyOError, options, optionsError]);
 
     const handlePageChange = (page) => {
         setCurrentPage(page);
