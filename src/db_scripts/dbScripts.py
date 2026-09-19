@@ -147,8 +147,9 @@ def CheckDB():
             print(f"Missing tables: {missing_tables}")
             return 2
 
-        if CheckDBLegacy() == -1:
-            return -1
+        # Outdated lagacy no longer supported, until new "Legacy" structure appears
+        # if CheckDBLegacy() == -1:
+        #     return -1
         if CheckDBStructure() == 3:
             return 3
         return 0

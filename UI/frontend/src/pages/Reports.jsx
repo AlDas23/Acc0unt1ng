@@ -49,7 +49,7 @@ export default function ReportsPage() {
     const [loading, setLoading] = useState(true);
     const [reportType, setReportType] = useState("");
     const [reportYear, setReportYear] = useState("");
-    const [reportFormat, setReportFormat] = useState("percent");
+    const [reportFormat, setReportFormat] = useState("ron");
     const [category, setCategory] = useState("all");
     const [isCategoryFilterVisible, setIsCategoryFilterVisible] = useState(false);
     const [tableData, setTableData] = useState(null);
@@ -253,8 +253,8 @@ export default function ReportsPage() {
                             value={reportFormat}
                             onChange={(e) => setReportFormat(e.target.value)}
                         >
-                            <option value="percent">Percent convertion</option>
                             <option value="ron">Main currency convertion</option>
+                            <option value="percent">Percent convertion</option>
                         </select>
                     </Col>
                 </Row>

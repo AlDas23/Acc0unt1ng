@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { HistoryTableWithEdit, YearSelectorOnChange } from "../commonComponents/Common";
+import { useOptions, useHistory } from "../commonComponents/CustomHooks";
 import Header from "../commonComponents/Header";
 import Button from 'react-bootstrap/Button';
 import Col from 'react-bootstrap/Col';
@@ -152,8 +153,6 @@ function Forms({ options, ValidateForm, DeleteRecord, handleInputChange, resetFo
 }
 
 export default function ExpensePage() {
-    const [options, setOptions] = useState(null);
-    const [history, setHistory] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [formData, setFormData] = useState(initialFormData);
@@ -163,6 +162,8 @@ export default function ExpensePage() {
     const [selectedYear, setSelectedYear] = useState(null);
     const [deleteConfirm, setDeleteConfirm] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
+    const { options, error : optionsError } = useOptions("expense");
+    const { history, error : historyError } = useHistory("expense", selectedYear);
 
     const totalPages = Math.ceil((history?.length || 0) / PAGE_SIZE);
     const firstRecordIndex = (currentPage - 1) * PAGE_SIZE;
@@ -174,16 +175,6 @@ export default function ExpensePage() {
 
     useEffect(() => {
         document.title = "Expense Records";
-
-        // Fetch options
-        GetOptions()
-            .then(optionsData => {
-                setOptions(optionsData);
-            })
-            .catch(error => {
-                setError('Failed to load options: ' + error.message);
-                console.error('Error loading options:', error);
-            });
 
         // Fetch years list
         GetYearsList()
@@ -198,21 +189,29 @@ export default function ExpensePage() {
     }, []);
 
     useEffect(() => {
-        // Fetch history
-        GetHistory()
-            .then(historyData => {
-                setHistory(historyData);
-                setLoading(false);
-            })
-            .catch(error => {
-                setError('Failed to load history: ' + error.message);
-                setLoading(false);
-                console.error('Error loading history:', error);
-            });
+
+        // Fetch options error
+        if (optionsError) {
+            setError('Failed to load options: ' + optionsError);
+            setLoading(false);
+            console.error('Error loading options:', optionsError);
+            return;
+        }
+        // Fetch history error
+        if (historyError) {
+            setError('Failed to load history: ' + historyError);
+            setLoading(false);
+            console.error('Error loading history:', historyError);
+            return;
+        }
+
+        // If both options and history are loaded, set loading to false
+        if (options !== null && history !== null) {
+            setLoading(false);
+        }
 
         setCurrentPage(1);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [selectedYear]);
+    }, [optionsError, historyError, selectedYear, options, history]);
 
     const ValidateForm = async (e) => {
         e.preventDefault();
@@ -325,35 +324,6 @@ export default function ExpensePage() {
         });
     }
 
-    const GetOptions = () => {
-        return fetch(`/api/get/options/expense`)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-
-                return response.json();
-            })
-            .then(data => {
-                if (data.redirect) {
-                    alert('Database is missing or corrupted. You will be redirected to the setup page.');
-                    window.location.href = data.redirect;
-                    return Promise.reject('Redirect initiated');
-                }
-
-                if (data.success) {
-                    return data.options;
-                } else {
-                    throw new Error(data.message || 'Failed to load options');
-                }
-            })
-            .catch(error => {
-                console.error('Error fetching options:', error);
-                alert('Unexpected error occurred while fetching options: ' + error.message);
-                throw error;
-            });
-    }
-
     const GetYearsList = () => {
         return fetch(`/api/get/list/exYears`)
             .then(response => {
@@ -378,34 +348,6 @@ export default function ExpensePage() {
             .catch(error => {
                 console.error('Error fetching years list:', error);
                 alert('Unexpected error occurred while fetching years list: ' + error.message);
-            });
-    }
-
-    const GetHistory = () => {
-        return fetch(`/api/get/history/expense/${selectedYear}`)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.redirect) {
-                    alert('Database is missing or corrupted. You will be redirected to the setup page.');
-                    window.location.href = data.redirect;
-                    return Promise.reject('Redirect initiated');
-                }
-
-                if (data.success) {
-                    return data.history;
-                } else {
-                    throw new Error(data.message || 'Failed to load history');
-                }
-            })
-            .catch(error => {
-                console.error('Error fetching history:', error);
-                alert('Unexpected error occurred while fetching history: ' + error.message);
-                throw error;
             });
     }
 
@@ -552,7 +494,7 @@ export default function ExpensePage() {
 
                                     {totalPages > 1 && editMode !== true && (
                                         <Pagination aria-label="Expense history pages"
-                                        className="flex-wrap">
+                                            className="flex-wrap">
                                             <Pagination.First
                                                 disabled={currentPage === 1}
                                                 onClick={() => handlePageChange(1)}

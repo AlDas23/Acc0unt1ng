@@ -1,6 +1,6 @@
 import sqlite3
 from datetime import datetime
-from db_scripts.baseScripts import DelRecord, Read, MarkerRead, ReadLegacy
+from db_scripts.baseScripts import DelRecord, Read, MarkerRead
 import db_scripts.consts as consts
 from db_scripts.SPVScripts import read_spv
 
@@ -183,10 +183,7 @@ def GetTransactionHistory(type, year):
     elif type == "depositC":
         data = Read("closeddep")
     elif type == "currencyrates":
-        if consts.isLegacyCurrencyRates:
-            data = ReadLegacy("currrate")
-        else:
-            data = Read("currrate")
+        data = Read("currrate", year)
 
     if type == "expense":
         for row in data:
@@ -274,28 +271,17 @@ def GetTransactionHistory(type, year):
             )
 
     elif type == "currencyrates":
-        if consts.isLegacyCurrencyRates:
-            for row in data:
-                row_list = list(row)
-                Finalhistory.append(
-                    [
-                        row_list[0],  # date
-                        row_list[1],  # currency
-                        round(row_list[2], 4),  # rate
-                    ]
-                )
-        else:
-            for row in data:
-                row_list = list(row)
-                Finalhistory.append(
-                    [
-                        row_list[0],  # id
-                        row_list[1],  # date
-                        row_list[2],  # currency_M
-                        row_list[3],  # currency_S
-                        round(row_list[4], 4),  # rate
-                    ]
-                )
+        for row in data:
+            row_list = list(row)
+            Finalhistory.append(
+                [
+                    row_list[0],  # id
+                    row_list[1],  # date
+                    row_list[2],  # currency_M
+                    row_list[3],  # currency_S
+                    round(row_list[4], 4),  # rate
+                ]
+            )
 
     return Finalhistory
 
@@ -493,13 +479,11 @@ def GenerateReport(rType, rFormat, categoryFilter, year):
         elif rType == "expcat":
             catList = Read("retcat-")
         elif rType == "subcat" and categoryFilter == "all":
-            c.execute(
-                """
+            c.execute("""
                       SELECT DISTINCT sub_category FROM main
                       WHERE sum < 0
                       ORDER BY sub_category DESC
-                      """
-            )
+                      """)
             catList = [row[0] for row in c.fetchall()]
         else:
             c.execute(
@@ -629,9 +613,7 @@ def ReadAdv(type, month):
             WHERE category IN ({})
             AND strftime("%m", date) = ?
             ORDER BY category DESC
-            """.format(
-                ",".join("?" for _ in categories_list)
-            )
+            """.format(",".join("?" for _ in categories_list))
 
             params = categories_list + [month]
             c.execute(query, params)
@@ -683,9 +665,7 @@ def ReadAdv(type, month):
             WHERE category IN ({})
             AND strftime("%m", date) = ?
             ORDER BY category DESC
-            """.format(
-                ",".join("?" for _ in categories_list)
-            )
+            """.format(",".join("?" for _ in categories_list))
 
             params = categories_list + [month]
             c.execute(query, params)
@@ -753,9 +733,7 @@ def ReadAdv(type, month):
             WHERE sub_category IN ({})
             AND strftime("%m", date) = ?
             ORDER BY sub_category DESC
-            """.format(
-                ",".join("?" for _ in subcatList)
-            )
+            """.format(",".join("?" for _ in subcatList))
 
             params = subcatList + [month]
             c.execute(query, params)
@@ -798,28 +776,25 @@ def ConvertTo(currency, amount, date, c=None):
         conn = sqlite3.connect(consts.dbPath)
         c = conn.cursor()
 
-    if consts.isLegacyCurrencyRates:
-        return ConvertToRON(currency, amount, date, c)
-    else:
-        if currency != consts.mainCurrency:
-            query = """
+    if currency != consts.mainCurrency:
+        query = """
                 SELECT rate 
                 FROM exc_rate 
                 WHERE currency_M = ? AND currency_S = ?
                 ORDER BY ABS(JULIANDAY(date) - JULIANDAY(?))
                 LIMIT 1
-            """
-            c.execute(query, (consts.mainCurrency, currency, date))
-            excRate_row = c.fetchone()
-            if excRate_row != None:
-                excRate = excRate_row[0]  # Extract the exchange rate
-            else:
-                excRate = 1
+        """
+        c.execute(query, (consts.mainCurrency, currency, date))
+        excRate_row = c.fetchone()
+        if excRate_row != None:
+            excRate = excRate_row[0]  # Extract the exchange rate
         else:
             excRate = 1
-        converted_amount = int(amount * excRate)
+    else:
+        excRate = 1
+    converted_amount = int(amount * excRate)
 
-        return converted_amount
+    return converted_amount
 
 
 def ConvertToRON(currency, amount, date, c=None):

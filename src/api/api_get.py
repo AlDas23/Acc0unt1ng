@@ -4,12 +4,12 @@ from flask import (
 )
 from db_scripts import consts
 from db_scripts.SPVScripts import read_spv
-from db_scripts.baseScripts import Re_Calculate_deposit, Read, ReadLegacy
+from db_scripts.baseScripts import Re_Calculate_deposit, Read
 from db_scripts.investScript import ReadInvest
 from db_scripts.script import GetTransactionHistory
 from helpers.configScripts import ReadBackupYears
 from helpers.extras import ParseCurrRatesNames
-from helpers.genPlot import CurrencyRatePlot, GraphStockPrice, plot_to_img_tag_legacy
+from helpers.genPlot import CurrencyRatePlot, GraphStockPrice
 from helpers.decorators import db_required
 
 getEndpoints = Blueprint("getEndpoints", __name__)
@@ -250,20 +250,14 @@ def GetHistory(source, year=consts.currentYear):
 def GetPlot(source, filters=None):
     try:
         if source == "currencyrates":
-            if consts.isLegacyCurrencyRates:
-                data = ReadLegacy("currrate")
-                plot = plot_to_img_tag_legacy(
-                    data, "Currency Rates Over Time", "Date", "Rate"
-                )
-            else:
-                data = Read("currrateplot")
-                data.extend(
-                    ParseCurrRatesNames(Read("currrateplotinv"), consts.mainCurrency)
-                )
-                filterArr = filters.split("|")
-                if filterArr == ["None"]:
-                    filterArr = None
-                plot = CurrencyRatePlot(data, filterArr)
+            data = Read("currrateplot")
+            data.extend(
+                ParseCurrRatesNames(Read("currrateplotinv"), consts.mainCurrency)
+            )
+            filterArr = filters.split("|")
+            if filterArr == ["None"]:
+                filterArr = None
+            plot = CurrencyRatePlot(data, filterArr)
             payload = jsonify({"success": True, "plot": plot})
         if source == "investstockprice":
             data = ReadInvest("graphstock")

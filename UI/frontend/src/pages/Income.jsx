@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { HistoryTableWithEdit, YearSelectorOnChange } from "../commonComponents/Common";
+import { useOptions, useHistory } from "../commonComponents/CustomHooks";
 import Header from "../commonComponents/Header";
 import Button from 'react-bootstrap/Button';
 import Col from 'react-bootstrap/Col';
@@ -135,8 +136,6 @@ function Forms({ options, ValidateForm, handleInputChange, resetForm, editMode, 
 }
 
 export default function IncomePage() {
-    const [options, setOptions] = useState(null);
-    const [history, setHistory] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [formData, setFormData] = useState(initialFormData);
@@ -146,6 +145,8 @@ export default function IncomePage() {
     const [selectedYear, setSelectedYear] = useState(null);
     const [deleteConfirm, setDeleteConfirm] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
+    const { options, error : optionsError } = useOptions("income");
+    const { history, historyError } = useHistory("income", selectedYear);
 
     const totalPages = Math.ceil((history?.length || 0) / PAGE_SIZE);
     const firstRecordIndex = (currentPage - 1) * PAGE_SIZE;
@@ -156,16 +157,6 @@ export default function IncomePage() {
 
     useEffect(() => {
         document.title = "Income Records";
-
-        // Fetch options
-        GetOptions()
-            .then(optionsData => {
-                setOptions(optionsData);
-            })
-            .catch(error => {
-                setError('Failed to load options: ' + error.message);
-                console.error('Error loading options:', error);
-            });
 
         // Fetch years list
         GetYearsList()
@@ -180,75 +171,31 @@ export default function IncomePage() {
     }, []);
 
     useEffect(() => {
-        // Fetch history
-        GetHistory()
-            .then(historyData => {
-                setHistory(historyData);
-                setLoading(false);
-            })
-            .catch(error => {
-                setError('Failed to load history: ' + error.message);
-                setLoading(false);
-                console.error('Error loading history:', error);
-            });
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [selectedYear]);
 
-    const GetOptions = () => {
-        return fetch(`/api/get/options/income`)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.redirect) {
-                    alert('Database is missing or corrupted. You will be redirected to the setup page.');
-                    window.location.href = data.redirect;
-                    return Promise.reject('Redirect initiated');
-                }
+        // Fetch options error
+        if (optionsError) {
+            setError('Failed to load options: ' + optionsError);
+            setLoading(false);
+            console.error('Error loading options:', optionsError);
+            return;
+        }
+        // Fetch history error
+        if (historyError) {
+            setError('Failed to load history: ' + historyError);
+            setLoading(false);
+            console.error('Error loading history:', historyError);
+            return;
+        }
 
-                if (data.success) {
-                    return data.options;
-                } else {
-                    throw new Error(data.message || 'Failed to load options');
-                }
-            })
-            .catch(error => {
-                console.error('Error fetching options:', error);
-                alert('Unexpected error occurred while fetching options: ' + error.message);
-                throw error;
-            });
-    }
+        // If both options and history are loaded, set loading to false
+        if (options !== null && history !== null) {
+            setLoading(false);
+        }
 
-    const GetHistory = () => {
-        return fetch(`/api/get/history/income/${selectedYear}`)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.redirect) {
-                    alert('Database is missing or corrupted. You will be redirected to the setup page.');
-                    window.location.href = data.redirect;
-                    return Promise.reject('Redirect initiated');
-                }
+        setCurrentPage(1);
+    }, [optionsError, historyError, selectedYear, options, history]);
 
-                if (data.success) {
-                    return data.history;
-                } else {
-                    throw new Error(data.message || 'Failed to load history');
-                }
-            })
-            .catch(error => {
-                console.error('Error fetching history:', error);
-                alert('Unexpected error occurred while fetching history: ' + error.message);
-                throw error;
-            });
-    }
+
 
     const ValidateForm = async (e) => {
         e.preventDefault();

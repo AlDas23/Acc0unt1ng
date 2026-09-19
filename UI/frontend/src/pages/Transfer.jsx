@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { HistoryTableWithEdit, YearSelectorOnChange } from "../commonComponents/Common";
+import { useOptions, useHistory } from "../commonComponents/CustomHooks";
 import Header from "../commonComponents/Header";
 import Button from 'react-bootstrap/Button';
 import Col from 'react-bootstrap/Col';
@@ -475,9 +476,6 @@ function Forms({ options, formDataSTD, formDataADV, handleInputChangeSTD, handle
 
 
 export default function TransferPage() {
-    const [options, setOptions] = useState(null);
-    const [history, setHistory] = useState(null);
-    const [historyADV, setHistoryADV] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [formDataSTD, setFormDataSTD] = useState(initialFormDataSTD);
@@ -489,6 +487,9 @@ export default function TransferPage() {
     const [deleteConfirm, setDeleteConfirm] = useState(false);
     const [currentPageS, setCurrentPageS] = useState(1);
     const [currentPageADV, setCurrentPageADV] = useState(1);
+    const { options, optionsError } = useOptions("transfer");
+    const { history, error : historyError } = useHistory("transfer", selectedYear);
+    const { history : historyADV, error : historyADVError } = useHistory("transferADV", selectedYear);
 
     const totalPages = Math.ceil((history?.length || 0) / PAGE_SIZE);
     const firstRecordIndex = (currentPageS - 1) * PAGE_SIZE;
@@ -508,16 +509,6 @@ export default function TransferPage() {
     useEffect(() => {
         document.title = "Transfer Records";
 
-        // Fetch options
-        GetOptions()
-            .then(optionsData => {
-                setOptions(optionsData);
-            })
-            .catch(error => {
-                setError('Failed to load options: ' + error.message);
-                console.error('Error loading options:', error);
-            });
-
         // Fetch years list
         GetYearsList()
             .then(yearsData => {
@@ -531,32 +522,36 @@ export default function TransferPage() {
     }, []);
 
     useEffect(() => {
-        // Fetch history
-        GetHistory('standard')
-            .then(historyData => {
-                setHistory(historyData);
-                setLoading(false);
-            })
-            .catch(error => {
-                setError('Failed to load history: ' + error.message);
-                setLoading(false);
-                console.error('Error loading history:', error);
-            });
-        GetHistory('advanced')
-            .then(historyData => {
-                setHistoryADV(historyData);
-                setLoading(false);
-            })
-            .catch(error => {
-                setError('Failed to load advanced history: ' + error.message);
-                setLoading(false);
-                console.error('Error loading advanced history:', error);
-            });
+        // Fetch options error
+        if (optionsError) {
+            setError('Failed to load options: ' + optionsError);
+            setLoading(false);
+            console.error('Error loading options:', optionsError);
+            return;
+        }
 
+        // Fetch history error
+        if (historyError) {
+            setError('Failed to load history: ' + historyError);
+            setLoading(false);
+            console.error('Error loading history:', historyError);
+            return;
+        }
+        if (historyADVError) {
+            setError('Failed to load advanced history: ' + historyADVError);
+            setLoading(false);
+            console.error('Error loading advanced history:', historyADVError);
+            return;
+        }
+
+        // If both options and histories are loaded, set loading to false
+        if (options !== null && history !== null && historyADV !== null) {
+            setLoading(false);
+        }
         setCurrentPageS(1);
         setCurrentPageADV(1);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [selectedYear]);
+
+    }, [history, historyADV, historyADVError, historyError, options, optionsError]);
 
     const handleInputChangeSTD = (e) => {
         const { name, value } = e.target;
@@ -731,34 +726,6 @@ export default function TransferPage() {
             });
     }
 
-    const GetOptions = () => {
-        return fetch(`/api/get/options/transfer`)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.redirect) {
-                    alert('Database is missing or corrupted. You will be redirected to the setup page.');
-                    window.location.href = data.redirect;
-                    return Promise.reject('Redirect initiated');
-                }
-
-                if (data.success) {
-                    return data.options;
-                } else {
-                    throw new Error(data.message || 'Failed to load options');
-                }
-            })
-            .catch(error => {
-                console.error('Error fetching options:', error);
-                alert('Unexpected error occurred while fetching options: ' + error.message);
-                throw error;
-            });
-    }
-
     function getPageItems(currentPage, totalPages) {
         if (totalPages <= 7) {
             return Array.from({ length: totalPages }, (_, index) => index + 1);
@@ -796,40 +763,6 @@ export default function TransferPage() {
     const OnYearChange = (event) => {
         const selectedYear = event.target.value;
         setSelectedYear(selectedYear);
-    }
-
-    const GetHistory = (type) => {
-        let endpoint;
-        if (type === 'standard') {
-            endpoint = `/api/get/history/transfer/${selectedYear}`;
-        } else if (type === 'advanced') {
-            endpoint = `/api/get/history/transferADV/${selectedYear}`;
-        }
-        return fetch(endpoint)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.redirect) {
-                    alert('Database is missing or corrupted. You will be redirected to the setup page.');
-                    window.location.href = data.redirect;
-                    return Promise.reject('Redirect initiated');
-                }
-
-                if (data.success) {
-                    return data.history;
-                } else {
-                    throw new Error(data.message || 'Failed to load history');
-                }
-            })
-            .catch(error => {
-                console.error('Error fetching history:', error);
-                alert('Unexpected error occurred while fetching history: ' + error.message);
-                throw error;
-            });
     }
 
     if (loading) {
@@ -930,7 +863,7 @@ export default function TransferPage() {
                                 tableId={"StandardTransferTable"}
                                 numberColumns={["4-2"]}
                             />
-                            {totalPages > 1 && editMode.isEditing !== true &&(
+                            {totalPages > 1 && editMode.isEditing !== true && (
                                 <Pagination aria-label="Transfer standard history pages"
                                     className="flex-wrap">
                                     <Pagination.First
@@ -979,7 +912,7 @@ export default function TransferPage() {
                                     numberColumns={["3-2", "6-2", "8-4"]}
                                 />
 
-                                {totalPagesADV > 1 && editMode.isEditing !== true &&(
+                                {totalPagesADV > 1 && editMode.isEditing !== true && (
                                     <Pagination aria-label="Transfer advanced history pages"
                                         className="flex-wrap">
                                         <Pagination.First
