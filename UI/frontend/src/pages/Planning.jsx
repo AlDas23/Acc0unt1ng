@@ -191,14 +191,12 @@ export default function PlanningPage() {
     const [editingId, setEditingId] = useState(null);
     const [deleteConfirm, setDeleteConfirm] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
-
     const { options, error: optionsError } = useOptions("");
     const { history, error: historyError } = useHistory("", null);
-    const { history: expiredHistory, error: expiredHistoryError } = useHistory("", null);
 
-    const totalPages = Math.ceil((expiredHistory?.length || 0) / PAGE_SIZE);
+    const totalPages = Math.ceil((history.expiredPlans?.length || 0) / PAGE_SIZE);
     const firstRecordIndex = (currentPage - 1) * PAGE_SIZE;
-    const visibleExpiredHistory = expiredHistory?.slice(
+    const visibleExpiredHistory = history.expiredPlans?.slice(
         firstRecordIndex,
         firstRecordIndex + PAGE_SIZE
     ) || [];
@@ -223,24 +221,19 @@ export default function PlanningPage() {
             console.error('Error loading history:', historyError);
             return;
         }
-        if (expiredHistoryError) {
-            setError('Failed to load expired history: ' + expiredHistoryError);
-            setLoading(false);
-            console.error('Error loading expired history:', expiredHistoryError);
-            return;
-        }
+
 
         // If both options and histories are loaded, set loading to false
-        if (options !== null && history !== null && expiredHistory !== null) {
+        if (options !== null && history !== null) {
             setLoading(false);
         }
         setCurrentPage(1);
-    }, [history, historyError, expiredHistory, expiredHistoryError, options, optionsError]);
+    }, [history, historyError, options, optionsError]);
 
     const ValidateForm = async (e) => {
         e.preventDefault();
 
-        const { month, year, day, comment,  personBank, sum, currency } = formData;
+        const { month, year, day, comment, personBank, sum, currency } = formData;
 
         if (!year || !month || !comment || !sum || !currency) {
             alert("Please fill in all required fields. Timeframe, Comment, Amount and Currency are required.");
@@ -329,17 +322,12 @@ export default function PlanningPage() {
             return;
         }
 
-        const requestData = {
-            toDelete: true,
-        };
-
         // Send POST request
         fetch(`/api/edit/planning/${editingId}`, {
-            method: 'POST',
+            method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(requestData)
+            }
         })
             .then(response => response.json())
             .then(data => {
@@ -471,12 +459,12 @@ export default function PlanningPage() {
                                             "Person-Bank", "Amount", "Currency",
                                             "Converted to Main Currency"]
                                     }
-                                    history={history.data}
+                                    history={history.activePlans}
                                     EditRecord={EditRecord}
                                     tableId={"active-plans-table"}
                                     numberColumns={["5-2", "7-2"]}
                                 />
-                                <h5>Total converted amount: {(history.total).toFixed(2)}</h5>
+                                <h5>Total converted amount: {(history.totalConverted).toFixed(2)}</h5>
                             </>
                         )}
                     </Col>

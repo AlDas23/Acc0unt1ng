@@ -2,6 +2,7 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 from db_scripts.script import (
     DeleteRecord,
+    NewUpdateRecord,
     UpdateRecord,
     GenerateReport,
     GetYearlyData,
@@ -14,6 +15,7 @@ from db_scripts.baseScripts import (
     InitPB,
     Mark,
     MarkerRead,
+    NewAdd,
     Re_Calculate_deposit,
     Read,
 )
@@ -318,7 +320,7 @@ def AddDeposit():
 
 @app.route("/edit/deposit/<string:id>", methods=["POST"])
 def EditDeposit(id):
-    
+
     try:
         DeleteRecord(id, "deposit")
         return jsonify({"success": True})
@@ -343,7 +345,7 @@ def AddCurrencyRate():
         return "Error: No JSON data received", 400
 
     try:
-        
+
         Add(content, "currrate")
         return jsonify({"success": True})
     except Exception as e:
@@ -514,6 +516,70 @@ def Balance(source):
         )
 
     return payload
+
+
+@app.route("/add/planning", methods=["POST"])
+@db_required
+def AddPlanning():
+    content = request.get_json()
+    if content is None:
+        return "Error: No JSON data received", 400
+
+    try:
+        NewAdd(content, "planning")
+        return jsonify({"success": True})
+    except Exception as e:
+        print(f"Error occurred: {str(e)}")
+        error_message = str(e)
+        return (
+            jsonify(
+                {
+                    "success": False,
+                    "message": error_message,
+                }
+            ),
+            400,
+        )
+
+
+@app.route("/edit/planning/<int:id>", methods=["POST", "DELETE"])
+@db_required
+def EditPlanning(id):
+    if request.method == "POST":
+        content = request.get_json()
+
+        try:
+            NewUpdateRecord(content, id, "planning")
+            return jsonify({"success": True})
+        except Exception as e:
+            print(f"Error occurred: {str(e)}")
+            error_message = str(e)
+            return (
+                jsonify(
+                    {
+                        "success": False,
+                        "message": error_message,
+                    }
+                ),
+                400,
+            )
+
+    elif request.method == "DELETE":
+        try:
+            DeleteRecord(str(id), "plan")
+            return jsonify({"success": True})
+        except Exception as e:
+            print(f"Error occurred while deleting: {str(e)}")
+            error_message = str(e)
+            return (
+                jsonify(
+                    {
+                        "success": False,
+                        "message": error_message,
+                    }
+                ),
+                400,
+            )
 
 
 @app.route("/get/report", methods=["POST"])

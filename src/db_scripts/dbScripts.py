@@ -17,8 +17,7 @@ def NewDBase():
     with sqlite3.connect(consts.dbPath) as conn:
         c = conn.cursor()
 
-        c.execute(
-            """CREATE TABLE main (
+        c.execute("""CREATE TABLE main (
                     id integer PRIMARY KEY,
                     date text,
                     category text,
@@ -27,19 +26,15 @@ def NewDBase():
                     sum real,
                     currency text,
                     comment text
-                )"""
-        )
-        c.execute(
-            """CREATE TABLE exc_rate (
+                )""")
+        c.execute("""CREATE TABLE exc_rate (
                     id integer PRIMARY KEY,
                     date text,
                     currency_M text,
                     currency_S text,
                     rate real
-                )"""
-        )
-        c.execute(
-            """CREATE TABLE deposit (
+                )""")
+        c.execute("""CREATE TABLE deposit (
                     date_in text,
                     name text,
                     owner text,
@@ -52,10 +47,8 @@ def NewDBase():
                     expect real,
                     comment text,
                     isOpen integer
-                )"""
-        )
-        c.execute(
-            """CREATE TABLE transfer (
+                )""")
+        c.execute("""CREATE TABLE transfer (
                     id integer,
                     date text,
                     person_bank_from text,
@@ -63,10 +56,8 @@ def NewDBase():
                     sum real,
                     currency text,
                     comment text
-                )"""
-        )
-        c.execute(
-            """CREATE TABLE advtransfer (
+                )""")
+        c.execute("""CREATE TABLE advtransfer (
                     id integer,
                     date text,
                     person_bank_from text,
@@ -77,30 +68,30 @@ def NewDBase():
                     currency_to text,
                     currency_rate real,
                     comment text
-                )"""
-        )
-        c.execute(
-            """CREATE TABLE Init_PB (
+                )""")
+        c.execute("""CREATE TABLE Init_PB (
                     person_bank text,
                     sum real,
                     currency text
-                )"""
-        )
-        c.execute(
-            """CREATE TABLE Marker_owner (
+                )""")
+        c.execute("""CREATE TABLE Marker_owner (
                     bank_rec text,
                     owner text
-                )"""
-        )
-        c.execute(
-            """CREATE TABLE Marker_type (
+                )""")
+        c.execute("""CREATE TABLE Marker_type (
                     bank_rec text,
                     type text
-                )"""
-        )
+                )""")
+        c.execute("""CREATE TABLE Planning (
+                    id integer PRIMARY KEY,
+                    date text,
+                    comment text,
+                    person_bank text,
+                    sum real,
+                    currency text      
+                )""")
         # Invest tables
-        c.execute(
-            """CREATE TABLE investTransaction (
+        c.execute("""CREATE TABLE investTransaction (
                     id integer PRIMARY KEY,
                     date text,
                     PB text,
@@ -110,23 +101,18 @@ def NewDBase():
                     investAmount real,
                     stock text, 
                     fee real
-                )"""
-        )
-        c.execute(
-            """CREATE TABLE investPB (
+                )""")
+        c.execute("""CREATE TABLE investPB (
                     name text,
                     stock text
-                )"""
-        )
-        c.execute(
-            """CREATE TABLE investStockPrice (
+                )""")
+        c.execute("""CREATE TABLE investStockPrice (
                     id integer PRIMARY KEY,
                     date text,
                     stock text,
                     price real,
                     currency text
-                )"""
-        )
+                )""")
 
         conn.commit()
 
@@ -144,12 +130,14 @@ def CheckDB():
             if table not in existing_tables:
                 missing_tables.append(table)
         if missing_tables:
+            if "planning" in missing_tables:
+                UpdateDB("planning")
+                missing_tables.remove("planning")
             print(f"Missing tables: {missing_tables}")
             return 2
 
-        # Outdated lagacy no longer supported, until new "Legacy" structure appears
-        # if CheckDBLegacy() == -1:
-        #     return -1
+        if CheckDBLegacy() == -1:
+            return -1
         if CheckDBStructure() == 3:
             return 3
         return 0
@@ -184,10 +172,6 @@ def CheckDBLegacy():
                 print(f"Legacy table {table} found!")
                 legacy_tables_found.append(table)
 
-        if "exc_rate" in legacy_tables_found:
-            consts.isLegacyCurrencyRates = True
-            print("Switiching to legacy currency rates mode")
-
         if "investStockPrice" in legacy_tables_found:
             UpdateDB("investStockPrice")
             return 0
@@ -201,60 +185,22 @@ def UpdateDB(mode):
     if consts.mainCurrency == None:
         raise Exception("Main currency not set! Can't update DB")
 
-    if mode == "exc_rate":
-        if consts.isLegacyCurrencyRates == False:
-            raise Exception("DB is already up to date! Can't update DB")
-        else:
-            print("Initiate DB update...\n")
-            with sqlite3.connect(consts.dbPath) as conn:
-                c = conn.cursor()
+    if mode == "planning":
+        with sqlite3.connect(consts.dbPath) as conn:
+            c = conn.cursor()
 
-                # Collect all data from old exc_rate table
-                c.execute("SELECT * FROM exc_rate")
-                old_rates = c.fetchall()
-                print("Saved old exhange rates")
-
-                # Drop old exc_rate table
-                c.execute("DROP TABLE IF EXISTS exc_rate")
-                conn.commit()
-                print("Removed old table")
-
-                # Create new exc_rate table
-                c.execute(
-                    """CREATE TABLE exc_rate (
-                            id integer PRIMARY KEY,
-                            date text,
-                            currency_M text,
-                            currency_S text,
-                            rate real
-                        )"""
-                )
-                conn.commit()
-                print("Created new table")
-
-                # Migrate old data to new exc_rate table
-                new_rates = []
-                for rate in old_rates:
-                    date, currency_S, curr_rate = rate
-                    if currency_S == consts.mainCurrency:
-                        continue  # Skip rates that are already in main currency
-                    new_rates.append((date, consts.mainCurrency, currency_S, curr_rate))
-
-                c.executemany(
-                    "INSERT INTO exc_rate (id, date, currency_M, currency_S, rate) VALUES (NULL, ?, ?, ?, ?)",
-                    new_rates,
-                )
-                conn.commit()
-                print("Migrated old data to new table")
-
-                # Read new exc_rate table
-                c.execute("SELECT * FROM exc_rate")
-                all_rates = c.fetchall()
-                print(f"Total {len(all_rates)} exchange rates in new table")
-                print("DB update completed successfully")
-                consts.isLegacyCurrencyRates = False
-
-                return 0
+            # Add new Planning table
+            c.execute("""CREATE TABLE Planning (
+                        id integer PRIMARY KEY,
+                        date text,
+                        comment text,
+                        person_bank text,
+                        sum real,
+                        currency text      
+                    )""")
+            conn.commit()
+            print("Created new Planning table")
+            return 0
 
     elif mode == "investStockPrice":
         with sqlite3.connect(consts.dbPath) as conn:
@@ -266,15 +212,13 @@ def UpdateDB(mode):
             print("Removed old investStockPrice table")
 
             # Add new investStockPrice table
-            c.execute(
-                """CREATE TABLE investStockPrice (
+            c.execute("""CREATE TABLE investStockPrice (
                         id integer PRIMARY KEY,
                         date text,
                         stock text,
                         price real,
                         currency text
-                    )"""
-            )
+                    )""")
             conn.commit()
             print("Created new investStockPrice table")
             return 0
