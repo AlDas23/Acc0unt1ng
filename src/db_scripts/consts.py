@@ -103,6 +103,7 @@ expected_tables = {
     "Init_PB": ["person_bank", "sum", "currency"],
     "Marker_owner": ["bank_rec", "owner"],
     "Marker_type": ["bank_rec", "type"],
+    "Planning": ["id", "date", "comment", "person_bank", "sum", "currency"],
     "investTransaction": [
         "id",
         "date",

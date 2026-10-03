@@ -6,7 +6,7 @@ from db_scripts import consts
 from db_scripts.SPVScripts import read_spv
 from db_scripts.baseScripts import Re_Calculate_deposit, Read
 from db_scripts.investScript import ReadInvest
-from db_scripts.script import GetTransactionHistory
+from db_scripts.script import GetPlanningData, GetTransactionHistory
 from helpers.configScripts import ReadBackupYears
 from helpers.extras import ParseCurrRatesNames
 from helpers.genPlot import CurrencyRatePlot, GraphStockPrice
@@ -162,6 +162,14 @@ def GetOptions(source):
             ownersList = Read("retmowner")
             typesList = Read("retmtype")
             options = {"owner": ownersList, "type": typesList}
+            
+        elif source == "planning":
+            currencies = read_spv(consts.SPVcurrPath)
+            person_banks = Read("retacc")
+            options = {
+                "currencies": currencies,
+                "pb": person_banks,
+            }
 
         elif source == "invest-transaction":
             stocks = read_spv(consts.SPVstockPath)
@@ -220,6 +228,9 @@ def GetHistory(source, year=consts.currentYear):
             history = GetTransactionHistory("depositC", year)
         elif source == "currencyrates":
             history = GetTransactionHistory("currencyrates", year)
+        elif source == "planning":
+            history = GetPlanningData()
+        
 
         payload = jsonify(
             {

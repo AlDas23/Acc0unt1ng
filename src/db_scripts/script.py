@@ -1,3 +1,4 @@
+import calendar
 import sqlite3
 from datetime import datetime
 from db_scripts.baseScripts import DelRecord, Read, MarkerRead
@@ -41,6 +42,33 @@ def UpdateRecord(inp, mode):
             c.execute(
                 "UPDATE exc_rate SET date = ?, currency_M = ?, currency_S = ?, rate = ? WHERE id = ?",
                 (inp[1], inp[2], inp[3], inp[4], int(inp[0])),
+            )
+
+        conn.commit()
+
+
+def NewUpdateRecord(recordDict, id, type):
+    """Upgraded version of UpdateRecord(inp, mode).
+
+    Args:
+        recordDict (dict): Dictionary containing record to update.
+        id (int): Id of a record to edit.
+        type (str): String for specifing type of record to update.
+    """
+    with sqlite3.connect(consts.dbPath) as conn:
+        c = conn.cursor()
+
+        if type == "planning":
+            c.execute(
+                "UPDATE planning SET date = ?, comment = ?, person_bank = ?, currency = ? WHERE id = ?",
+                (
+                    recordDict["date"],
+                    recordDict["comment"],
+                    recordDict["person_bank"],
+                    recordDict["sum"],
+                    recordDict["currency"],
+                    str(id)
+                ),
             )
 
         conn.commit()
@@ -284,6 +312,59 @@ def GetTransactionHistory(type, year):
             )
 
     return Finalhistory
+
+
+def GetPlanningData():
+    data = Read("planning")
+    today = datetime.today()
+    totalConverted = 0
+    activePlans = []
+    expiredPlans = []
+
+    for row in data:
+        row_list = list(row)
+        planDate = row_list[1]
+        
+        # Check if date is in YYYY-MM format
+        if len(planDate) == 7:
+            year, month = map(int, planDate.split('-'))
+            # Get the last day of that month
+            last_day = calendar.monthrange(year, month)[1]
+            planDate = f"{year}-{month:02d}-{last_day}"
+        
+        planDateObj = datetime.strptime(planDate, "%Y-%m-%d")
+        
+        if planDateObj >= today:
+            converted_amount = ConvertTo(row_list[5], row_list[4], planDate)
+            activePlans.append(
+                [
+                    row_list[0],  # id
+                    row_list[1],  # date
+                    row_list[2],  # comment
+                    row_list[3],  # person_bank
+                    round(row_list[4], 2),  # sum
+                    row_list[5],  # currency
+                    converted_amount,  # converted_amount
+                ]
+            )
+            totalConverted += converted_amount
+        else:
+            expiredPlans.append(
+                [
+                    row_list[0],  # id
+                    row_list[1],  # date
+                    row_list[2],  # comment
+                    row_list[3],  # person_bank
+                    round(row_list[4], 2),  # sum
+                    row_list[5],  # currency
+                ]
+            )
+
+    return {
+        "activePlans": activePlans,
+        "expiredPlans": expiredPlans,
+        "totalConverted": totalConverted,
+    }
 
 
 def GenerateTable(flag):
@@ -840,6 +921,8 @@ def DeleteRecord(id, type):
         table = "investTransaction"
     elif type == "isp":
         table = "investStockPrice"
+    elif type == "plan":
+        table == "planning"
     else:
         raise ValueError("Invalid type for deletion")
 

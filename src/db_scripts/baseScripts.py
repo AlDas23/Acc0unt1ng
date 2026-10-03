@@ -196,6 +196,42 @@ def Add(input_field, mode):
     Re_Calculate_deposit()
 
 
+def NewAdd(recordDict, type):
+    """Upgraded version of Add(input_field, mode).
+
+    Args:
+        recordDict (dict): Dictionary with all values to add
+        type (str): String parameter for selecting into which table to add the record.
+    """
+    with sqlite3.connect(dbPath) as conn:
+        c = conn.cursor()
+
+        if type == "planning":
+            if recordDict["personBank"] != "":
+                c.execute(
+                    "SELECT 1 FROM Init_PB WHERE person_bank = ? AND currency = ?",
+                    (recordDict["personBank"], recordDict["currency"]),
+                )
+                exists = c.fetchone()
+                if exists is None:
+                    raise Exception("Person_bank-currency pair does not exist!")
+
+            recordDict["sum"] = round(float(recordDict["sum"]), 2)
+
+            c.execute(
+                "INSERT INTO planning VALUES (NULL, ?, ?, ?, ?, ?)",
+                (
+                    recordDict["date"],
+                    recordDict["comment"],
+                    recordDict["personBank"],
+                    recordDict["sum"],
+                    recordDict["currency"],
+                ),
+            )
+
+        conn.commit()
+
+
 def Read(x, year=None):
     # Big collection of queries for returning different data from DB
     with sqlite3.connect(dbPath) as conn:
@@ -267,6 +303,9 @@ def Read(x, year=None):
                 "SELECT * FROM advtransfer WHERE strftime('%Y', date) = ? ORDER BY date DESC",
                 (year,),
             )
+            return c.fetchall()
+        elif x == "planning":
+            c.execute("SELECT * FROM planning ORDER BY date, id DESC")
             return c.fetchall()
         elif x == "allcurr":
             c.execute(

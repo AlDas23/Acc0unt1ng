@@ -16,6 +16,7 @@ function NavBar() {
                     <Nav.Link href="/add/deposit">Add Deposit</Nav.Link>
                     <Nav.Link href="/add/currencyrates">Currency Rates</Nav.Link>
                     <Nav.Link href="/view/acc">View Accounts</Nav.Link>
+                    <Nav.Link href="/add/planning">Planning</Nav.Link>
                     <NavDropdown title="Reports" id="nav-dropdown-reports">
                         <NavDropdown.Item href="/view/reports/table">View Reports Table</NavDropdown.Item>
                         <NavDropdown.Item href="/view/reports/year">View Year Report</NavDropdown.Item>
