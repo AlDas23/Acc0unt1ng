@@ -216,10 +216,19 @@ def NewAdd(recordDict, type):
                 if exists is None:
                     raise Exception("Person_bank-currency pair does not exist!")
 
-            recordDict["sum"] = round(recordDict["sum"], 2)
-            
-            c.execute("INSERT INTO planning VALUES (NULL, ?, ?, ?, ?, ?)", (recordDict,))
-            
+            recordDict["sum"] = round(float(recordDict["sum"]), 2)
+
+            c.execute(
+                "INSERT INTO planning VALUES (NULL, ?, ?, ?, ?, ?)",
+                (
+                    recordDict["date"],
+                    recordDict["comment"],
+                    recordDict["personBank"],
+                    recordDict["sum"],
+                    recordDict["currency"],
+                ),
+            )
+
         conn.commit()
 
 

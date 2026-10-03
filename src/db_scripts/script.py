@@ -1,3 +1,4 @@
+import calendar
 import sqlite3
 from datetime import datetime
 from db_scripts.baseScripts import DelRecord, Read, MarkerRead
@@ -323,11 +324,16 @@ def GetPlanningData():
     for row in data:
         row_list = list(row)
         planDate = row_list[1]
+        
+        # Check if date is in YYYY-MM format
         if len(planDate) == 7:
-            planDate = planDate + "-01"
-
+            year, month = map(int, planDate.split('-'))
+            # Get the last day of that month
+            last_day = calendar.monthrange(year, month)[1]
+            planDate = f"{year}-{month:02d}-{last_day}"
+        
         planDateObj = datetime.strptime(planDate, "%Y-%m-%d")
-
+        
         if planDateObj >= today:
             converted_amount = ConvertTo(row_list[5], row_list[4], planDate)
             activePlans.append(

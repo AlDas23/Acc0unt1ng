@@ -130,7 +130,7 @@ def CheckDB():
             if table not in existing_tables:
                 missing_tables.append(table)
         if missing_tables:
-            if "planning" in missing_tables:
+            if "Planning" in missing_tables:
                 UpdateDB("planning")
                 missing_tables.remove("planning")
             print(f"Missing tables: {missing_tables}")

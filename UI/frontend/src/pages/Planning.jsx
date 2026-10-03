@@ -7,6 +7,7 @@ import Col from 'react-bootstrap/Col';
 import Form from 'react-bootstrap/Form';
 import Row from 'react-bootstrap/Row';
 import Pagination from "react-bootstrap/Pagination";
+import "../assets/styles/PlanningPageStyles.css"
 
 
 const PAGE_SIZE = 30;
@@ -98,6 +99,7 @@ function Forms({ options, ValidateForm, DeleteRecord, handleInputChange, resetFo
                         name="Comment"
                         value={formData.comment}
                         onChange={handleInputChange}
+                        autoComplete="off"
                     />
                 </Col>
                 <Col md={2}>
@@ -116,13 +118,14 @@ function Forms({ options, ValidateForm, DeleteRecord, handleInputChange, resetFo
                         ))}
                     </Form.Select>
                 </Col>
-                <Col md={2}>
+                <Col md={1}>
                     <Form.Label htmlFor="inputSum">Sum</Form.Label>
                     <Form.Control
                         id="inputSum"
                         name="Sum"
                         value={formData.sum}
                         onChange={handleInputChange}
+                        autoComplete="off"
                     />
                 </Col>
                 <Col md={2}>
@@ -136,12 +139,12 @@ function Forms({ options, ValidateForm, DeleteRecord, handleInputChange, resetFo
                         onChange={handleInputChange}
                     >
                         <option value="" disabled></option>
-                        {options.currency.map((currency, index) => (
+                        {options.currencies.map((currency, index) => (
                             <option value={currency} key={index}>{currency}</option>
                         ))}
                     </Form.Select>
                 </Col>
-                <Col md={2}>
+                <Col md={1}>
                     <Form.Label htmlFor="ToggleSpecificDate">Specific Date?</Form.Label>
                     <Form.Check
                         type="switch"
@@ -191,12 +194,12 @@ export default function PlanningPage() {
     const [editingId, setEditingId] = useState(null);
     const [deleteConfirm, setDeleteConfirm] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
-    const { options, error: optionsError } = useOptions("");
-    const { history, error: historyError } = useHistory("", null);
+    const { options, error: optionsError } = useOptions("planning");
+    const { history, error: historyError } = useHistory("planning", null);
 
-    const totalPages = Math.ceil((history.expiredPlans?.length || 0) / PAGE_SIZE);
+    const totalPages = Math.ceil((history?.expiredPlans.length || 0) / PAGE_SIZE);
     const firstRecordIndex = (currentPage - 1) * PAGE_SIZE;
-    const visibleExpiredHistory = history.expiredPlans?.slice(
+    const visibleExpiredHistory = history?.expiredPlans.slice(
         firstRecordIndex,
         firstRecordIndex + PAGE_SIZE
     ) || [];
@@ -459,11 +462,12 @@ export default function PlanningPage() {
                                             "Person-Bank", "Amount", "Currency",
                                             "Converted to Main Currency"]
                                     }
-                                    history={history.activePlans}
+                                    data={history.activePlans}
                                     EditRecord={EditRecord}
                                     tableId={"active-plans-table"}
                                     numberColumns={["5-2", "7-2"]}
                                 />
+                                <br />  
                                 <h5>Total converted amount: {(history.totalConverted).toFixed(2)}</h5>
                             </>
                         )}
@@ -480,7 +484,7 @@ export default function PlanningPage() {
                                         ["ID", "Timeframe", "Comment",
                                             "Person-Bank", "Amount", "Currency"]
                                     }
-                                    history={visibleExpiredHistory}
+                                    data={visibleExpiredHistory}
                                     EditRecord={EditRecord}
                                     tableId={"expired-plans-table"}
                                     numberColumns={["5-2"]}

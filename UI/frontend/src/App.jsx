@@ -11,6 +11,7 @@ import CurrencyPage from "./pages/CurrencyRates";
 import BalancePage from "./pages/Balance";
 import ReportsPage from "./pages/Reports";
 import YearPage from "./pages/YearReport";
+import PlanningPage from "./pages/Planning";
 import InvestTransactionsPage from "./pages/invest/InvestTransactions";
 import InvestStockPricePage from "./pages/invest/InvestStockPrice";
 import InvestBalancePage from "./pages/invest/InvestBalance";
@@ -26,6 +27,7 @@ export default function RoutesMap() {
         <Route path='/add/transfer' element={<TransferPage />} />
         <Route path='/add/deposit' element={<DepositPage />} />
         <Route path='/add/currencyrates' element={<CurrencyPage />} />
+        <Route path='/add/planning' element={<PlanningPage />} />
         <Route path='/view/acc' element={<BalancePage />} />
         <Route path='/view/reports/table' element={<ReportsPage />} />
         <Route path='/view/reports/year' element={<YearPage />} />
