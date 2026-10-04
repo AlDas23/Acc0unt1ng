@@ -1,6 +1,6 @@
 import calendar
 import sqlite3
-from datetime import datetime
+from datetime import date, datetime
 from db_scripts.baseScripts import DelRecord, Read, MarkerRead
 import db_scripts.consts as consts
 from db_scripts.SPVScripts import read_spv
@@ -60,11 +60,11 @@ def NewUpdateRecord(recordDict, id, type):
 
         if type == "planning":
             c.execute(
-                "UPDATE planning SET date = ?, comment = ?, person_bank = ?, currency = ? WHERE id = ?",
+                "UPDATE planning SET date = ?, comment = ?, person_bank = ?, sum = ?,  currency = ? WHERE id = ?",
                 (
                     recordDict["date"],
                     recordDict["comment"],
-                    recordDict["person_bank"],
+                    recordDict["personBank"],
                     recordDict["sum"],
                     recordDict["currency"],
                     str(id)
@@ -316,7 +316,7 @@ def GetTransactionHistory(type, year):
 
 def GetPlanningData():
     data = Read("planning")
-    today = datetime.today()
+    today = date.today()
     totalConverted = 0
     activePlans = []
     expiredPlans = []
@@ -325,14 +325,14 @@ def GetPlanningData():
         row_list = list(row)
         planDate = row_list[1]
         
-        # Check if date is in YYYY-MM format
-        if len(planDate) == 7:
+        # Check if date is in YYYY-MM format (or short YYYY-M)
+        if len(planDate) == 7 or len(planDate) == 6:
             year, month = map(int, planDate.split('-'))
             # Get the last day of that month
             last_day = calendar.monthrange(year, month)[1]
             planDate = f"{year}-{month:02d}-{last_day}"
         
-        planDateObj = datetime.strptime(planDate, "%Y-%m-%d")
+        planDateObj = date.strptime(planDate, "%Y-%m-%d")
         
         if planDateObj >= today:
             converted_amount = ConvertTo(row_list[5], row_list[4], planDate)
@@ -873,38 +873,9 @@ def ConvertTo(currency, amount, date, c=None):
             excRate = 1
     else:
         excRate = 1
-    converted_amount = int(amount * excRate)
+    converted_amount = int(round(amount * excRate))
 
     return converted_amount
-
-
-def ConvertToRON(currency, amount, date, c=None):
-    # Converting to RON
-
-    if c is None:
-        conn = sqlite3.connect(consts.dbPath)
-        c = conn.cursor()
-
-    if currency != "RON":
-        query = """
-            SELECT rate 
-            FROM exc_rate 
-            WHERE currency = ?
-            ORDER BY ABS(JULIANDAY(date) - JULIANDAY(?))
-            LIMIT 1
-        """
-        c.execute(query, (currency, date))
-        excRate_row = c.fetchone()
-        if excRate_row != None:
-            excRate = excRate_row[0]  # Extract the exchange rate
-        else:
-            excRate = 1
-    else:
-        excRate = 1
-    converted_amount = int(amount * excRate)
-
-    return converted_amount
-
 
 def DeleteRecord(id, type):
     if type == "main":
