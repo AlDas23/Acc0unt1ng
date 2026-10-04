@@ -309,10 +309,10 @@ export default function PlanningPage() {
             month: month,
             day: day,
             isSpecificDate: isSpecificDate,
-            personBank: cells[4].innerText,
-            sum: Math.abs(parseFloat(cells[5].innerText)).toFixed(2),
-            currency: cells[6].innerText,
-            comment: cells[7].innerText
+            comment: cells[2].innerText,
+            personBank: cells[3].innerText,
+            sum: Math.abs(parseFloat(cells[4].innerText)).toFixed(2),
+            currency: cells[5].innerText,
         });
 
         setEditMode(true);
@@ -468,7 +468,7 @@ export default function PlanningPage() {
                                     numberColumns={["5-2", "7-2"]}
                                 />
                                 <br />  
-                                <h5>Total converted amount: {(history.totalConverted).toFixed(2)}</h5>
+                                <h5>Total converted amount in Main currency: {(history.totalConverted).toFixed(0)}</h5>
                             </>
                         )}
                     </Col>
