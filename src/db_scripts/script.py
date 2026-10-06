@@ -893,7 +893,7 @@ def DeleteRecord(id, type):
     elif type == "isp":
         table = "investStockPrice"
     elif type == "plan":
-        table == "planning"
+        table = "Planning"
     else:
         raise ValueError("Invalid type for deletion")
 
