@@ -3,7 +3,7 @@ import os
 import db_scripts.consts as consts
 
 configPath = "./config/config.toml"
-currentVersion = "0.3"
+currentVersion = "0.4"
 
 defaultConfig = {
     "version": currentVersion,
@@ -14,9 +14,10 @@ defaultConfig = {
         "inc-categories": [],
         "sub-categories": [],
         "currencies": [],
-        "stocks": [],
+        "stocks": []
     },
     "backup_years": [],
+    "archived_pbs": []
 }
 
 
@@ -33,7 +34,7 @@ def UpdateConfigToNewVersion():
     updatedConfig["lists"].update(currentConfig.get("lists", {}))
     updatedConfig["backup_years"] = currentConfig.get("backup_years", [])
     updatedConfig["current_year"] = currentConfig.get("current_year", consts.currentYear)
-
+    updatedConfig["archived_pbs"] = currentConfig.get("archived_pbs", [])
     # Update the version
     updatedConfig["version"] = currentVersion
 
@@ -144,6 +145,31 @@ def ReadCurrentYear(year = None):
             return configYear == year
         else:
             return configYear
+        
+def ModifyArchivedPBs(archivedPBs):
+    if not os.path.exists(configPath):
+        raise FileNotFoundError("Config file does not exist.")
+    else:
+        CheckVersion()
+        with open(configPath, "r") as cf:
+            configData = toml.load(cf)
+
+        configData["archived_pbs"] = archivedPBs
+
+        with open(configPath, "w") as cf:
+            toml.dump(configData, cf)
+        print(f"Archived PBs updated successfully.")
+        LoadConfig()
+        
+def ReadArchivedPBs():
+    if not os.path.exists(configPath):
+        raise FileNotFoundError("Config file does not exist.")
+    else:
+        CheckVersion()
+        with open(configPath, "r") as cf:
+            configData = toml.load(cf)
+
+        return configData.get("archivedPBList", [])
 
 def LoadConfig():
     if not os.path.exists(configPath):
@@ -165,3 +191,4 @@ def AssignGlobalConstants(configData):
     consts.subCategories = configData["lists"].get("sub-categories", [])
     consts.currencies = configData["lists"].get("currencies", [])
     consts.stocks = configData["lists"].get("stocks", [])
+    consts.archivedPBs = configData.get("archived_pbs", [])

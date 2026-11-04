@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 import sqlite3
 from db_scripts.consts import *
 import db_scripts.consts as consts
+from db_scripts.enums import ReadType
 
 
 def Add(input_field, mode):
@@ -230,6 +231,41 @@ def NewAdd(recordDict, type):
             )
 
         conn.commit()
+        
+def ReadNew(x, year=None, skipArchivedPBs=True):
+    """Upgraded version of Read(x, year=None).
+    
+        Args:
+            x ReadType (enum): Type of data to read
+            year (int, optional): Year to filter by
+            skipArchivedPBs (bool): Whether to skip archived person banks
+        """
+    data = []
+    with sqlite3.connect(dbPath) as conn:
+        c = conn.cursor()
+
+        if x == ReadType.INITPB:
+            c.execute("SELECT * FROM Init_PB ORDER BY person_bank DESC")
+            data = c.fetchall()
+        elif x == ReadType.DINITPB:
+            c.execute("SELECT DISTINCT person_bank FROM Init_PB ORDER BY person_bank DESC")
+            if skipArchivedPBs:
+                for row in c.fetchall():
+                    if row[0] not in consts.archivedPBs:
+                        data.append(row[0])
+            data = [row[0] for row in c.fetchall()]
+        elif x == ReadType.CAT:
+            c.execute("SELECT DISTINCT category FROM main ORDER BY category DESC")
+            data = [row[0] for row in c.fetchall()]
+        elif x == ReadType.CATINC:
+            c.execute("SELECT DISTINCT category FROM main WHERE sum > 0 ORDER BY category DESC")
+            data = [row[0] for row in c.fetchall()]
+        elif x == ReadType.CATEXP:
+            c.execute("SELECT DISTINCT category FROM main WHERE sum < 0 ORDER BY category DESC")
+            data = [row[0] for row in c.fetchall()]
+        
+            
+    return data
 
 
 def Read(x, year=None):
@@ -253,13 +289,9 @@ def Read(x, year=None):
             )
             return c.fetchall()
         elif x == "initpb":
-            c.execute("SELECT * FROM Init_PB ORDER BY person_bank DESC")
-            return c.fetchall()
+            raise Exception("Obsolete query. Use ReadNew().")
         elif x == "initpbnames":
-            c.execute(
-                "SELECT DISTINCT person_bank FROM Init_PB ORDER BY person_bank DESC"
-            )
-            return c.fetchall()
+            raise Exception("Obsolete query. Use ReadNew().")
         elif x == "allacc":
             c.execute("""
                     SELECT person_bank, currency, SUM(sum) 
@@ -625,11 +657,7 @@ def Read(x, year=None):
             return c.fetchall()
 
         elif x == "retacc":  # Return list of all accounts
-            c.execute(
-                "SELECT DISTINCT person_bank FROM Init_PB ORDER BY person_bank ASC"
-            )
-            result = [row[0] for row in c.fetchall()]
-            return result
+            raise Exception("Obsolete query. Use ReadNew().")
 
         elif x == "retmowner":  # Return list of all owners
             c.execute("SELECT DISTINCT owner FROM Marker_owner")
@@ -674,23 +702,13 @@ def Read(x, year=None):
             return [row[0] for row in c.fetchall()]
 
         elif x == "retcat":
-            c.execute("SELECT DISTINCT category FROM main ORDER BY category DESC")
-            result = [row[0] for row in c.fetchall()]
-            return result
+            raise Exception("Obsolete query. Use ReadNew().")
 
         elif x == "retcat+":
-            c.execute(
-                "SELECT DISTINCT category FROM main WHERE sum > 0 ORDER BY category DESC"
-            )
-            result = [row[0] for row in c.fetchall()]
-            return result
+            raise Exception("Obsolete query. Use ReadNew().")
 
         elif x == "retcat-":
-            c.execute(
-                "SELECT DISTINCT category FROM main WHERE sum < 0 ORDER BY category DESC"
-            )
-            result = [row[0] for row in c.fetchall()]
-            return result
+            raise Exception("Obsolete query. Use ReadNew().")
 
 
 def MarkerRead(mode, markers=None):
