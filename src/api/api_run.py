@@ -22,7 +22,7 @@ from db_scripts.baseScripts import (
 from db_scripts.dbScripts import CheckDB, NewDBase, UpdateDB as UDB, UpdateDBYear
 from db_scripts.SPVScripts import SPVconf, read_spv
 import db_scripts.consts as consts
-from helpers.configScripts import ModifyConfigSettings, ReadArchivedPBs, ReadCurrentYear
+from helpers.configScripts import ModifyArchivedPBs, ModifyConfigSettings, ReadArchivedPBs, ReadCurrentYear
 from helpers.decorators import db_required
 from helpers.extras import GetCurrentYear
 from api.api_invest import investEndpoints
@@ -753,7 +753,7 @@ def SPVArchivedPBs():
             return "Error: No JSON data received", 400
         
         try:
-            ModifyConfigSettings(content["archivedPBList"])
+            ModifyArchivedPBs(content["PB"])
             return jsonify({"success": True})
         except Exception as e:
             print(f"Error occurred: {str(e)}")

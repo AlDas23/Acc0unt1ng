@@ -77,7 +77,7 @@ def GetList(source):
                 }
             )
         elif source == "pb":
-            pb = Read("initpbnames")
+            pb = ReadNew(ReadType.DINITPB, skipArchivedPBs=False)
             payload = jsonify(
                 {
                     "success": True,

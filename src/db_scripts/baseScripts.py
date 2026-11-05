@@ -253,7 +253,8 @@ def ReadNew(x, year=None, skipArchivedPBs=True):
                 for row in c.fetchall():
                     if row[0] not in consts.archivedPBs:
                         data.append(row[0])
-            data = [row[0] for row in c.fetchall()]
+            else:
+                data = [row[0] for row in c.fetchall()]
         elif x == ReadType.CAT:
             c.execute("SELECT DISTINCT category FROM main ORDER BY category DESC")
             data = [row[0] for row in c.fetchall()]
@@ -731,7 +732,7 @@ def MarkerRead(mode, markers=None):
                     """,
                 (markers,),
             )
-            person_banks = c.fetchall()
+            person_banks = [row[0] for row in c.fetchall()]
 
         elif mode == "bytype":
             c.execute(
@@ -745,7 +746,7 @@ def MarkerRead(mode, markers=None):
                     """,
                 (markers,),
             )
-            person_banks = c.fetchall()
+            person_banks = [row[0] for row in c.fetchall()]
 
         elif mode == "byall":
             values = markers.split(",")
@@ -764,15 +765,13 @@ def MarkerRead(mode, markers=None):
                     """,
                 (values[0], values[1]),
             )
-            person_banks = c.fetchall()
-
+            person_banks = [row[0] for row in c.fetchall()]
+            
         elif mode == "none":
             # If no markers are provided, return all person banks
-            c.execute("SELECT DISTINCT person_bank FROM Init_PB")
-            person_banks = c.fetchall()
+            person_banks = ReadNew(ReadType.DINITPB, skipArchivedPBs=False)
 
         if person_banks:
-            person_banks = [pb[0] for pb in person_banks]
             # Prepare dynamic query to calculate balances using person_banks
             seq = ",".join(["?"] * len(person_banks))
 

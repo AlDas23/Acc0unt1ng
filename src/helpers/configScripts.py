@@ -146,7 +146,7 @@ def ReadCurrentYear(year = None):
         else:
             return configYear
         
-def ModifyArchivedPBs(archivedPBs):
+def ModifyArchivedPBs(PB):
     if not os.path.exists(configPath):
         raise FileNotFoundError("Config file does not exist.")
     else:
@@ -154,7 +154,12 @@ def ModifyArchivedPBs(archivedPBs):
         with open(configPath, "r") as cf:
             configData = toml.load(cf)
 
-        configData["archived_pbs"] = archivedPBs
+        if PB in configData.get("archived_pbs", []):
+            configData["archived_pbs"].remove(PB)
+        else:
+            if "archived_pbs" not in configData:
+                configData["archived_pbs"] = []
+            configData["archived_pbs"].append(PB)
 
         with open(configPath, "w") as cf:
             toml.dump(configData, cf)
@@ -169,7 +174,7 @@ def ReadArchivedPBs():
         with open(configPath, "r") as cf:
             configData = toml.load(cf)
 
-        return configData.get("archivedPBList", [])
+        return configData.get("archived_pbs", [])
 
 def LoadConfig():
     if not os.path.exists(configPath):
