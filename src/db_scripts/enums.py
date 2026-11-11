@@ -4,6 +4,17 @@ from enum import Enum
     and classes to remove string udentifiers from code and replace with enums.
 """
 
+class TransactionType(Enum):
+    """
+    Enum for classifying transaction types.
+    """
+    MAIN = 1
+    TRANSFER = 2
+    ADVTRANSFER = 3
+    DEPOSIT = 4
+    CURRRATE = 5
+    PLANNING = 6
+
 class ReadType(Enum):
     """
     Enum for calssifying read queries for ReadNew().

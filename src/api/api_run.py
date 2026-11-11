@@ -1,5 +1,6 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
+from db_scripts.enums import TransactionType
 from db_scripts.script import (
     DeleteRecord,
     NewUpdateRecord,
@@ -11,7 +12,6 @@ from db_scripts.script import (
     ConvReadPlus,
 )
 from db_scripts.baseScripts import (
-    Add,
     InitPB,
     Mark,
     MarkerRead,
@@ -49,11 +49,8 @@ def AddExpense():
     if content is None:
         return "Error: No JSON data received", 400
 
-    # Parse JSON data into string line
-    line = ",".join([str(content[key]) for key in content.keys()])
-
     try:
-        Add(line, "main")
+        NewAdd(content, TransactionType.MAIN)
         return jsonify({"success": True})
     except Exception as e:
         print(f"Error occurred: {str(e)}")
@@ -119,11 +116,8 @@ def AddIncome():
     if content is None:
         return "Error: No JSON data received", 400
 
-    # Parse JSON data into string line
-    line = ",".join([str(content[key]) for key in content.keys()])
-
     try:
-        Add(line, "main")
+        NewAdd(content, TransactionType.MAIN)
         return jsonify({"success": True})
     except Exception as e:
         print(f"Error occurred: {str(e)}")
@@ -192,10 +186,9 @@ def AddTransfer():
 
     transferType = content.pop("transferType", "")
     # Parse JSON data into string line
-    line = ",".join([str(content[key]) for key in content.keys()])
     if transferType == "standard":
         try:
-            Add(line, "transfer")
+            NewAdd(content, TransactionType.TRANSFER)
             return jsonify({"success": True})
         except Exception as e:
             print(f"Error occurred: {str(e)}")
@@ -212,7 +205,7 @@ def AddTransfer():
 
     elif transferType == "advanced":
         try:
-            Add(line, "advtransfer")
+            NewAdd(content, TransactionType.ADVTRANSFER)
             return jsonify({"success": True})
         except Exception as e:
             print(f"Error occurred: {str(e)}")
@@ -298,11 +291,9 @@ def AddDeposit():
     if content is None:
         return "Error: No JSON data received", 400
 
-    # Parse JSON data into string line
-    line = ",".join([str(content[key]) for key in content.keys()])
 
     try:
-        Add(line, "deposit")
+        NewAdd(content, TransactionType.DEPOSIT)
         return jsonify({"success": True})
     except Exception as e:
         print(f"Error occurred: {str(e)}")
@@ -345,8 +336,7 @@ def AddCurrencyRate():
         return "Error: No JSON data received", 400
 
     try:
-
-        Add(content, "currrate")
+        NewAdd(content, TransactionType.CURRRATE)
         return jsonify({"success": True})
     except Exception as e:
         print(f"Error occurred: {str(e)}")
