@@ -4,7 +4,8 @@ from flask import (
 )
 from db_scripts import consts
 from db_scripts.SPVScripts import read_spv
-from db_scripts.baseScripts import Re_Calculate_deposit, Read
+from db_scripts.baseScripts import Re_Calculate_deposit, Read, ReadNew
+from db_scripts.enums import ReadType
 from db_scripts.investScript import ReadInvest
 from db_scripts.script import GetPlanningData, GetTransactionHistory
 from helpers.configScripts import ReadBackupYears
@@ -76,7 +77,7 @@ def GetList(source):
                 }
             )
         elif source == "pb":
-            pb = Read("initpbnames")
+            pb = ReadNew(ReadType.DINITPB, skipArchivedPBs=False)
             payload = jsonify(
                 {
                     "success": True,
@@ -118,7 +119,7 @@ def GetOptions(source):
             categories = read_spv(consts.SPVcatExpPath)
             sub_categories = read_spv(consts.SPVsubcatPath)
             currencies = read_spv(consts.SPVcurrPath)
-            person_banks = Read("retacc")
+            person_banks = ReadNew(ReadType.DINITPB)
             options = {
                 "categories": categories,
                 "subcategories": sub_categories,
@@ -129,7 +130,7 @@ def GetOptions(source):
         elif source == "income":
             categories = read_spv(consts.SPVcatIncPath)
             currencies = read_spv(consts.SPVcurrPath)
-            person_banks = Read("retacc")
+            person_banks = ReadNew(ReadType.DINITPB)
             options = {
                 "categories": categories,
                 "currency": currencies,
@@ -138,7 +139,7 @@ def GetOptions(source):
 
         elif source == "transfer":
             currencies = read_spv(consts.SPVcurrPath)
-            person_banks = Read("retacc")
+            person_banks = ReadNew(ReadType.DINITPB)
             options = {
                 "currency": currencies,
                 "pb": person_banks,
@@ -146,7 +147,7 @@ def GetOptions(source):
 
         elif source == "deposit":
             currencies = read_spv(consts.SPVcurrPath)
-            person_banks = Read("retacc")
+            person_banks = ReadNew(ReadType.DINITPB)
             options = {
                 "currencies": currencies,
                 "pb": person_banks,
@@ -165,7 +166,7 @@ def GetOptions(source):
             
         elif source == "planning":
             currencies = read_spv(consts.SPVcurrPath)
-            person_banks = Read("retacc")
+            person_banks = ReadNew(ReadType.DINITPB)
             options = {
                 "currencies": currencies,
                 "pb": person_banks,

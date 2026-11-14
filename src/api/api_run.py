@@ -1,5 +1,6 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
+from db_scripts.enums import TransactionType
 from db_scripts.script import (
     DeleteRecord,
     NewUpdateRecord,
@@ -11,7 +12,6 @@ from db_scripts.script import (
     ConvReadPlus,
 )
 from db_scripts.baseScripts import (
-    Add,
     InitPB,
     Mark,
     MarkerRead,
@@ -22,7 +22,7 @@ from db_scripts.baseScripts import (
 from db_scripts.dbScripts import CheckDB, NewDBase, UpdateDB as UDB, UpdateDBYear
 from db_scripts.SPVScripts import SPVconf, read_spv
 import db_scripts.consts as consts
-from helpers.configScripts import ModifyConfigSettings, ReadCurrentYear
+from helpers.configScripts import ModifyArchivedPBs, ModifyConfigSettings, ReadArchivedPBs, ReadCurrentYear
 from helpers.decorators import db_required
 from helpers.extras import GetCurrentYear
 from api.api_invest import investEndpoints
@@ -49,11 +49,8 @@ def AddExpense():
     if content is None:
         return "Error: No JSON data received", 400
 
-    # Parse JSON data into string line
-    line = ",".join([str(content[key]) for key in content.keys()])
-
     try:
-        Add(line, "main")
+        NewAdd(content, TransactionType.MAIN)
         return jsonify({"success": True})
     except Exception as e:
         print(f"Error occurred: {str(e)}")
@@ -119,11 +116,8 @@ def AddIncome():
     if content is None:
         return "Error: No JSON data received", 400
 
-    # Parse JSON data into string line
-    line = ",".join([str(content[key]) for key in content.keys()])
-
     try:
-        Add(line, "main")
+        NewAdd(content, TransactionType.MAIN)
         return jsonify({"success": True})
     except Exception as e:
         print(f"Error occurred: {str(e)}")
@@ -192,10 +186,9 @@ def AddTransfer():
 
     transferType = content.pop("transferType", "")
     # Parse JSON data into string line
-    line = ",".join([str(content[key]) for key in content.keys()])
     if transferType == "standard":
         try:
-            Add(line, "transfer")
+            NewAdd(content, TransactionType.TRANSFER)
             return jsonify({"success": True})
         except Exception as e:
             print(f"Error occurred: {str(e)}")
@@ -212,7 +205,7 @@ def AddTransfer():
 
     elif transferType == "advanced":
         try:
-            Add(line, "advtransfer")
+            NewAdd(content, TransactionType.ADVTRANSFER)
             return jsonify({"success": True})
         except Exception as e:
             print(f"Error occurred: {str(e)}")
@@ -298,11 +291,9 @@ def AddDeposit():
     if content is None:
         return "Error: No JSON data received", 400
 
-    # Parse JSON data into string line
-    line = ",".join([str(content[key]) for key in content.keys()])
 
     try:
-        Add(line, "deposit")
+        NewAdd(content, TransactionType.DEPOSIT)
         return jsonify({"success": True})
     except Exception as e:
         print(f"Error occurred: {str(e)}")
@@ -345,8 +336,7 @@ def AddCurrencyRate():
         return "Error: No JSON data received", 400
 
     try:
-
-        Add(content, "currrate")
+        NewAdd(content, TransactionType.CURRRATE)
         return jsonify({"success": True})
     except Exception as e:
         print(f"Error occurred: {str(e)}")
@@ -482,19 +472,20 @@ def Balance(source):
             if isinstance(content, dict):
                 owner = content.get("owner", "None")
                 type_val = content.get("type", "None")
+                showArchived = content.get("showArchived", False)
             else:
                 # Handle case where content might be sent as a string
                 owner = "None"
                 type_val = "None"
 
             if owner == "None" and type_val == "None":
-                data = MarkerRead("none")
+                data = MarkerRead("none", showArchived=showArchived)
             elif owner != "None" and type_val == "None":
-                data = MarkerRead("byowner", owner)
+                data = MarkerRead("byowner", owner, showArchived=showArchived)
             elif owner == "None" and type_val != "None":
-                data = MarkerRead("bytype", type_val)
+                data = MarkerRead("bytype", type_val, showArchived=showArchived)
             elif owner != "None" and type_val != "None":
-                data = MarkerRead("byall", owner + "," + type_val)
+                data = MarkerRead("byall", owner + "," + type_val, showArchived=showArchived)
 
             payload = jsonify(
                 {
@@ -727,6 +718,46 @@ def SPVMainCurrency():
             ),
             400,
         )
+        
+        
+@app.route("/spv/archivedpbs", methods=["POST", "GET"])
+def SPVArchivedPBs():
+    if request.method == "GET":
+        try:
+            archivedPBs = ReadArchivedPBs()
+            return jsonify({"success": True, "data": archivedPBs})
+        except Exception as e:
+            print(f"Error occurred: {str(e)}")
+            error_message = str(e)
+            return (
+                jsonify(
+                    {
+                        "success": False,
+                        "message": error_message,
+                    }
+                ),
+                400,
+            )
+    elif request.method == "POST":
+        content = request.get_json()
+        if content is None:
+            return "Error: No JSON data received", 400
+        
+        try:
+            ModifyArchivedPBs(content["PB"])
+            return jsonify({"success": True})
+        except Exception as e:
+            print(f"Error occurred: {str(e)}")
+            error_message = str(e)
+            return (
+                jsonify(
+                    {
+                        "success": False,
+                        "message": error_message,
+                    }
+                ),
+                400,
+            )
 
 
 @app.route("/spv/pb/add", methods=["POST"])

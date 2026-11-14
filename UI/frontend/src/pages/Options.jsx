@@ -18,6 +18,8 @@ export function OptionsPBPage() {
     const [personBankName, setPersonBankName] = useState('');
     const [submitStatusPB, setSubmitStatusPB] = useState('idle');
     const [submitStatusMARK, setSubmitStatusMARK] = useState('idle');
+    const [archivedPBs, setArchivedPBs] = useState([]);
+    const [selectedPB, setSelectedPB] = useState('');
     // const [showMobileModal, setShowMobileModal] = useState(false);
 
     useEffect(() => {
@@ -83,11 +85,32 @@ export function OptionsPBPage() {
                 console.error('Error fetching markers:', error);
             });
 
+        fetch('/api/spv/archivedpbs')
+            .then(response => response.json())
+            .then(data => {
+                if (data.redirect) {
+                    alert('Database is missing or corrupted. You will be redirected to the setup page.');
+                    window.location.href = data.redirect;
+                    return Promise.reject('Redirect initiated');
+                }
+
+                if (data.success) {
+                    setArchivedPBs(data.data);
+                } else {
+                    console.error('Failed to fetch archived Person-banks:', data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching archived Person-banks:', error);
+            });
+
         // Check if mobile and show modal if true
         // if (useIsMobile()) {
         //     setShowMobileModal(true);
         // }
     }, []);
+
+    const allPersonBanks = [...new Set([...personBanks, ...archivedPBs])];
 
     const markPB = (e) => {
         e.preventDefault();
@@ -164,6 +187,38 @@ export function OptionsPBPage() {
                     }, 3000);
                 } else {
                     alert('Error: ' + (data.message || 'Failed to add Person-bank'));
+                }
+            })
+            .catch(error => {
+                console.error('Unexpected error:', error);
+                alert('Unexpected error occurred');
+            });
+    };
+
+    const UpdateArchivedPB = (e) => {
+        e.preventDefault();
+
+        if (!selectedPB) {
+            alert("Please select a Person-Bank to archive/de-archive.");
+            return;
+        }
+
+        const action = archivedPBs.includes(selectedPB) ? 'dearchive' : 'archive';
+
+        fetch(`/api/spv/archivedpbs`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ PB: selectedPB })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(`Person-Bank ${action === 'archive' ? 'archived' : 'de-archived'} successfully!`);
+                    window.location.reload();
+                } else {
+                    alert('Error: ' + (data.message || `Failed to ${action} Person-bank`));
                 }
             })
             .catch(error => {
@@ -298,6 +353,44 @@ export function OptionsPBPage() {
                                     : 'Add Person-Bank'}
                             {/* BUG: Button does not render "Update Person-Bank" when adding existing person-bank */}
                         </Button>
+                    </Form>
+                </div>
+                <br />
+                <div className="row">
+                    <h3>Archived Person-Banks</h3>
+                    <p>
+                        Archived Person-Banks are accounts that have been marked as inactive or no longer in use.
+                        They will not appear in forms on pages, but their data is still preserved and used in calculations.
+                    </p>
+                    <br />
+                    <Form noValidate id="archived-pb-form" onSubmit={UpdateArchivedPB}>
+                        <Row>
+                            <Col xl="3">
+                                <Form.Label htmlFor="select-archived-pb">Person-Bank</Form.Label>
+                                <Form.Select
+                                    id="select-archived-pb"
+                                    name="PersonBank"
+                                    value={selectedPB}
+                                    onChange={(e) => setSelectedPB(e.target.value)}
+                                >
+                                    <option value="" disabled>Select a Person-Bank</option>
+                                    {allPersonBanks.map((pb) => (
+                                        <option
+                                            key={pb}
+                                            value={pb}
+                                            style={{ color: archivedPBs.includes(pb) ? 'gray' : 'blue' }}
+                                        >
+                                            {archivedPBs.includes(pb) ? `${pb} (Archived)` : pb}
+                                        </option>
+                                    ))}
+                                </Form.Select>
+                            </Col>
+                            <Col className="d-flex align-items-end">
+                                <Button type="button" disabled={!selectedPB} onClick={UpdateArchivedPB}>
+                                    {archivedPBs.includes(selectedPB) ? 'De-Archive' : 'Archive'}
+                                </Button>
+                            </Col>
+                        </Row>
                     </Form>
                 </div>
             </div>

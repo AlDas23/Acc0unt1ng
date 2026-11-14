@@ -43,12 +43,25 @@ function FilterBalance({ options, filters, handleFilterChange }) {
                     ))}
                 </select>
             </Col>
+            <Row>
+                <Col md={5} xs={6}>
+
+                    <input
+                        type="checkbox"
+                        id="show-archived"
+                        name="showArchived"
+                        onChange={handleFilterChange}
+                        checked={filters.showArchived}
+                    />
+                    <label htmlFor="show-archived">Show Archived</label>
+                </Col>
+            </Row>
         </Row>)
 };
 
 export default function BalancePage() {
     const [balanceData, setBalanceData] = useState([]);
-    const [filters, setFilters] = useState({ owner: "None", type: "None" });
+    const [filters, setFilters] = useState({ owner: "None", type: "None", showArchived: false });
     const [options, setOptions] = useState(null);
     const [groupedData, setGroupedData] = useState({ currTable: [], ownerTable: [], typeTable: [], currTypeTable: [] });
     const [loading, setLoading] = useState(true);
@@ -225,10 +238,10 @@ export default function BalancePage() {
 
     // Handle filter changes
     const handleFilterChange = (e) => {
-        const { name, value } = e.target;
+        const { name, value, type, checked } = e.target;
         setFilters((prevFilters) => ({
             ...prevFilters,
-            [name]: value,
+            [name]: type === "checkbox" ? checked : value,
         }));
     };
 

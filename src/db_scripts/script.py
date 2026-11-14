@@ -1,9 +1,10 @@
 import calendar
 import sqlite3
 from datetime import date, datetime
-from db_scripts.baseScripts import DelRecord, Read, MarkerRead
+from db_scripts.baseScripts import DelRecord, Read, MarkerRead, ReadNew
 import db_scripts.consts as consts
 from db_scripts.SPVScripts import read_spv
+from db_scripts.enums import ReadType
 
 
 def UpdateRecord(inp, mode):
@@ -556,9 +557,9 @@ def GenerateReport(rType, rFormat, categoryFilter, year):
         table_data["report_format"] = rFormat
 
         if rType == "inccat":
-            catList = Read("retcat+")
+            catList = ReadNew(ReadType.CATINC)
         elif rType == "expcat":
-            catList = Read("retcat-")
+            catList = ReadNew(ReadType.CATEXP)
         elif rType == "subcat" and categoryFilter == "all":
             c.execute("""
                       SELECT DISTINCT sub_category FROM main

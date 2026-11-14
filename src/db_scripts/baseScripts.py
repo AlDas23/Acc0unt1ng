@@ -2,198 +2,7 @@ from datetime import datetime, timedelta
 import sqlite3
 from db_scripts.consts import *
 import db_scripts.consts as consts
-
-
-def Add(input_field, mode):
-    # Function for adding main, transfer, advtransfer, deposit records and currency rates
-    with sqlite3.connect(dbPath) as conn:
-        c = conn.cursor()
-
-        if mode == "main":
-            values = input_field.split(",")
-            values[4] = round(float(values[4]), 2)
-
-            c.execute(
-                "SELECT 1 FROM Init_PB WHERE person_bank = ? AND currency = ?",
-                (values[3], values[5]),
-            )  # Check if person_bank - currency pair exists
-            exists = c.fetchone()
-            if exists == None:
-                raise Exception("Person_bank-currency pair does not exist!")
-
-            records = {
-                keys[i]: values[i] for i in range(len(keys))
-            }  # Make dictionary with all values to add
-
-            c.execute(
-                "INSERT INTO main VALUES (NULL, :date, :category, :sub_category, :person_bank, :sum, :currency, :comment)",
-                records,
-            )
-
-        elif mode == "transfer":
-            values = input_field.split(",")
-            values[3] = round(float(values[3]), 2)
-            if values[3] < 0:  # Make sum positive if not
-                values[3] = values[3] * -1
-            c.execute(
-                "SELECT 1 FROM Init_PB WHERE person_bank = ? AND currency = ?",
-                (values[1], values[4]),
-            )
-            # Check if person_bank - currency pair exists
-            exists = c.fetchone()
-            if exists == None:
-                raise Exception("Person_bank-currency pair does not exist!")
-
-            c.execute("SELECT MAX(id) FROM transfer")
-            max_id = c.fetchone()
-            max_id = max_id[0]
-            if max_id == None:  # Check if it is exist and change to 0 if not
-                max_id = 0
-            max_id = (
-                max_id + 1
-            )  # Change so that inserted number is +1 from biggest existing id in DB
-            values.insert(0, max_id)
-
-            records = {
-                tr_keys[i]: values[i] for i in range(len(tr_keys))
-            }  # Make dictionary with all values to add
-
-            c.execute(
-                "INSERT INTO transfer VALUES (:id, :date, :person_bank_from, :person_bank_to, :sum, :currency, :comment)",
-                records,
-            )
-
-        elif mode == "advtransfer":
-            values = input_field.split(",")
-            values[2] = round(float(values[2]), 2)
-            values[5] = round(float(values[5]), 2)
-
-            if values[2] < 0:  # Make sum positive if not
-                values[2] = values[2] * -1
-            if values[5] < 0:
-                values[5] = values[5] * -1
-
-            c.execute(
-                "SELECT 1 FROM Init_PB WHERE person_bank = ? AND currency = ?",
-                (values[1], values[3]),
-            )  # Check if sending person_bank - currency pair exists
-            exists = c.fetchone()
-            if exists == None:
-                raise Exception("Person_bank-currency pair does not exist!")
-
-            c.execute(
-                "SELECT 1 FROM Init_PB WHERE person_bank = ? AND currency = ?",
-                (values[4], values[6]),
-            )  # Check if receiving person_bank - currency pair exists
-            exists = c.fetchone()
-            if exists == None:
-                raise Exception("Person_bank-currency pair does not exist!")
-
-            c.execute("SELECT MAX(id) FROM advtransfer")
-            max_id = c.fetchone()
-            max_id = max_id[0]
-            if max_id == None:  # Check if it is exist and change to 0 if not
-                max_id = 0
-            max_id = (
-                max_id + 1
-            )  # Change so that inserted number is +1 from biggest existing id in DB
-            values.insert(0, max_id)
-
-            records = {
-                advtr_keys[i]: values[i] for i in range(len(advtr_keys))
-            }  # Make dictionary with all values to add
-
-            c.execute(
-                "INSERT INTO advtransfer VALUES (:id, :date, :person_bank_from, :sum_from, :currency_from, :person_bank_to, :sum_to, :currency_to, :currency_rate, :comment)",
-                records,
-            )
-
-        elif mode == "deposit":
-            values = input_field.split(",")
-
-            c.execute(
-                "SELECT 1 FROM deposit WHERE name = ?", (values[1],)
-            )  # Check if name already exists
-            exists = c.fetchone()
-            if exists != None:
-                raise Exception("Deposit name already exists!")
-
-            c.execute(
-                "SELECT 1 FROM Init_PB WHERE person_bank = ? AND currency = ?",
-                (values[2], values[4]),
-            )  # Check if sending person_bank - currency pair exists
-            exists = c.fetchone()
-            if exists == None:
-                raise Exception("Person_bank-currency pair does not exist!")
-            values[3] = round(float(values[3]), 2)
-            if values[5] == "":
-                values[5] = 0
-            else:
-                values[5] = int(values[5])
-            values[7] = float(values[7])
-            if values[8] == "":
-                values[8] = 0
-            else:
-                values[8] = float(values[8])
-
-            if values[5] == 0 or values[6] == "":
-                values.insert(9, 0)
-            else:
-                # Provided formula to calculate deposit return
-                percent = values[7] / 100
-                expSum = values[3] + (values[3] * (percent / 12) * values[5])
-                values.insert(9, round(expSum, 2))
-                values.insert(11, 1)
-
-            records = {
-                dp_keys[i]: values[i] for i in range(len(dp_keys))
-            }  # Make dictionary with all values to add
-
-            c.execute(
-                "INSERT INTO deposit VALUES (:date_in, :name, :owner, :sum, :currency, :months, :date_out, :percent, :currency_rate, :expect, :comment, :isOpen)",
-                records,
-            )
-
-            # Automatically mark deposit as type 'deposit'
-            c.execute("INSERT INTO Marker_type VALUES(?, ?)", (values[1], "deposit"))
-
-        elif mode == "currrate":
-            values = [
-                input_field["date"],
-                input_field["currency_M"],
-                input_field["currency_S"],
-                round(float(input_field["rate"]), 4),
-            ]
-            if input_field["isReverse"] == True:
-                reverseValues = [
-                    input_field["date"],
-                    input_field["currency_S"],
-                    input_field["currency_M"],
-                    round(1 / float(input_field["rate"]), 4),
-                ]
-
-            records = {
-                curr_keys[i]: values[i] for i in range(len(curr_keys))
-            }  # Make dictionary with all values to add
-            if input_field["isReverse"] == True:
-                reverseRecords = {
-                    curr_keys[i]: reverseValues[i] for i in range(len(curr_keys))
-                }
-
-            c.execute(
-                "INSERT INTO exc_rate VALUES (NULL, :date, :currency_M, :currency_S, :rate)",
-                records,
-            )
-
-            if input_field["isReverse"] == True:
-                c.execute(
-                    "INSERT INTO exc_rate VALUES (NULL, :date, :currency_M, :currency_S, :rate)",
-                    reverseRecords,
-                )
-
-        conn.commit()
-
-    Re_Calculate_deposit()
+from db_scripts.enums import ReadType, TransactionType
 
 
 def NewAdd(recordDict, type):
@@ -201,12 +10,190 @@ def NewAdd(recordDict, type):
 
     Args:
         recordDict (dict): Dictionary with all values to add
-        type (str): String parameter for selecting into which table to add the record.
+        type (TransactionType): Enum parameter for selecting into which table to add the record.
     """
     with sqlite3.connect(dbPath) as conn:
         c = conn.cursor()
 
-        if type == "planning":
+        if type == TransactionType.MAIN:
+            if recordDict["personBank"] != "":
+                c.execute(
+                    "SELECT 1 FROM Init_PB WHERE person_bank = ? AND currency = ?",
+                    (recordDict["personBank"], recordDict["currency"]),
+                )
+                exists = c.fetchone()
+                if exists is None:
+                    raise Exception("Person_bank-currency pair does not exist!")
+
+            recordDict["sum"] = round(float(recordDict["sum"]), 2)
+
+            c.execute(
+                "INSERT INTO main VALUES (NULL, ?, ?, ?, ?, ?, ?, ?)",
+                (
+                    recordDict["date"],
+                    recordDict["category"],
+                    recordDict.get("subCategory", ""),
+                    recordDict["personBank"],
+                    recordDict["sum"],
+                    recordDict["currency"],
+                    recordDict.get("comment", ""),
+                ),
+            )
+            
+        elif type == TransactionType.TRANSFER:
+            if recordDict["Sender"] != "":
+                c.execute(
+                    "SELECT 1 FROM Init_PB WHERE person_bank = ? AND currency = ?",
+                    (recordDict["Sender"], recordDict["Currency"]),
+                )
+                exists = c.fetchone()
+                if exists is None:
+                    raise Exception("Person_bank-currency pair does not exist!")
+
+            if recordDict["Receiver"] != "":
+                c.execute(
+                    "SELECT 1 FROM Init_PB WHERE person_bank = ? AND currency = ?",
+                    (recordDict["Receiver"], recordDict["Currency"]),
+                )
+                exists = c.fetchone()
+                if exists is None:
+                    raise Exception("Person_bank-currency pair does not exist!")
+
+            recordDict["Sum"] = round(float(recordDict["Sum"]), 2)
+
+            c.execute(
+                "INSERT INTO transfer VALUES (NULL, ?, ?, ?, ?, ?, ?)",
+                (
+                    recordDict["Date"],
+                    recordDict["Sender"],
+                    recordDict["Receiver"],
+                    recordDict["Sum"],
+                    recordDict["Currency"],
+                    recordDict.get("Comment", ""),
+                ),
+            )
+            
+        elif type == TransactionType.ADVTRANSFER:
+            if recordDict["ADVSender"] != "":
+                c.execute(
+                    "SELECT 1 FROM Init_PB WHERE person_bank = ? AND currency = ?",
+                    (recordDict["ADVSender"], recordDict["SCurrency"]),
+                )
+                exists = c.fetchone()
+                if exists is None:
+                    raise Exception("Person_bank-currency pair does not exist!")
+
+            if recordDict["ADVReceiver"] != "":
+                c.execute(
+                    "SELECT 1 FROM Init_PB WHERE person_bank = ? AND currency = ?",
+                    (recordDict["ADVReceiver"], recordDict["RCurrency"]),
+                )
+                exists = c.fetchone()
+                if exists is None:
+                    raise Exception("Person_bank-currency pair does not exist!")
+
+            recordDict["SSum"] = round(float(recordDict["SSum"]), 2)
+            recordDict["RSum"] = round(float(recordDict["RSum"]), 2)
+            if recordDict["CurrencyRate"] != '':
+                recordDict["CurrencyRate"] = round(float(recordDict["CurrencyRate"]), 4)
+
+            c.execute(
+                "INSERT INTO advtransfer VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (
+                    recordDict["ADVDate"],
+                    recordDict["ADVSender"],
+                    recordDict["SSum"],
+                    recordDict["SCurrency"],
+                    recordDict["ADVReceiver"],
+                    recordDict["RSum"],
+                    recordDict["RCurrency"],
+                    recordDict["CurrencyRate"],
+                    recordDict.get("ADVComment", ""),
+                ),
+            )
+            
+        elif type == TransactionType.DEPOSIT:
+            if recordDict["Owner"] != "":
+                c.execute(
+                    "SELECT 1 FROM Init_PB WHERE person_bank = ? AND currency = ?",
+                    (recordDict["Owner"], recordDict["Currency"]),
+                )
+                exists = c.fetchone()
+                if exists is None:
+                    raise Exception("Person_bank-currency pair does not exist!")
+
+            recordDict["Sum"] = round(float(recordDict["Sum"]), 2)
+            if recordDict["Months"] == "":
+                recordDict["Months"] = 0
+            else:
+                recordDict["Months"] = int(recordDict["Months"])
+            recordDict["Percent"] = float(recordDict["Percent"])
+            if recordDict["CurrencyRate"] == "":
+                recordDict["CurrencyRate"] = 0
+            else:
+                recordDict["CurrencyRate"] = float(recordDict["CurrencyRate"])
+
+            if recordDict["Months"] == 0 or recordDict["DateOut"] == "":
+                recordDict["Expect"] = 0
+                recordDict["IsOpen"] = 0
+            else:
+                # Provided formula to calculate deposit return
+                percent = recordDict["Percent"] / 100
+                expSum = recordDict["Sum"] + (
+                    recordDict["Sum"] * (percent / 12) * recordDict["Months"]
+                )
+                recordDict["Expect"] = round(expSum, 2)
+                recordDict["IsOpen"] = 1
+
+            c.execute(
+                "INSERT INTO deposit VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (
+                    recordDict["DateIn"],
+                    recordDict["Name"],
+                    recordDict["Owner"],
+                    recordDict["Sum"],
+                    recordDict["Currency"],
+                    recordDict["Months"],
+                    recordDict["DateOut"],
+                    recordDict["Percent"],
+                    recordDict["CurrencyRate"],
+                    recordDict["Expect"],
+                    recordDict.get("Comment", ""),
+                    recordDict["IsOpen"],
+                ),)
+            
+            c.execute("INSERT INTO Marker_type VALUES(?, ?)", (recordDict["Name"], "deposit"))
+            
+        elif type == TransactionType.CURRRATE:
+            recordDict["rate"] = round(float(recordDict["rate"]), 4)
+            
+            if recordDict["isReverse"] == True:
+                reverseRate = round(1 / float(recordDict["rate"]), 4)
+
+                reverseValues = {
+                    "date": recordDict["date"],
+                    "currency_M": recordDict["currency_S"],
+                    "currency_S": recordDict["currency_M"],
+                    "rate": reverseRate
+                }
+                
+            c.execute(
+                "INSERT INTO exc_rate VALUES (NULL, ?, ?, ?, ?)",
+                (
+                    recordDict["date"],
+                    recordDict["currency_M"],
+                    recordDict["currency_S"],
+                    recordDict["rate"],
+                ),
+            )
+            
+            if recordDict["isReverse"] == True:
+                            c.execute(
+                                "INSERT INTO exc_rate VALUES (NULL, ?, ?, ?, ?)",
+                                (reverseValues["date"], reverseValues["currency_M"], reverseValues["currency_S"], reverseValues["rate"]),
+                            )
+        
+        elif type == TransactionType.PLANNING:
             if recordDict["personBank"] != "":
                 c.execute(
                     "SELECT 1 FROM Init_PB WHERE person_bank = ? AND currency = ?",
@@ -230,6 +217,44 @@ def NewAdd(recordDict, type):
             )
 
         conn.commit()
+        
+        Re_Calculate_deposit()
+        
+def ReadNew(x, year=None, skipArchivedPBs=True):
+    """Upgraded version of Read(x, year=None).
+    
+        Args:
+            x ReadType (enum): Type of data to read
+            year (int, optional): Year to filter by
+            skipArchivedPBs (bool): Whether to skip archived person banks
+        """
+    data = []
+    with sqlite3.connect(dbPath) as conn:
+        c = conn.cursor()
+
+        if x == ReadType.INITPB:
+            c.execute("SELECT * FROM Init_PB ORDER BY person_bank DESC")
+            data = c.fetchall()
+        elif x == ReadType.DINITPB:
+            c.execute("SELECT DISTINCT person_bank FROM Init_PB ORDER BY person_bank DESC")
+            if skipArchivedPBs:
+                for row in c.fetchall():
+                    if row[0] not in consts.archivedPBs:
+                        data.append(row[0])
+            else:
+                data = [row[0] for row in c.fetchall()]
+        elif x == ReadType.CAT:
+            c.execute("SELECT DISTINCT category FROM main ORDER BY category DESC")
+            data = [row[0] for row in c.fetchall()]
+        elif x == ReadType.CATINC:
+            c.execute("SELECT DISTINCT category FROM main WHERE sum > 0 ORDER BY category DESC")
+            data = [row[0] for row in c.fetchall()]
+        elif x == ReadType.CATEXP:
+            c.execute("SELECT DISTINCT category FROM main WHERE sum < 0 ORDER BY category DESC")
+            data = [row[0] for row in c.fetchall()]
+        
+            
+    return data
 
 
 def Read(x, year=None):
@@ -253,13 +278,9 @@ def Read(x, year=None):
             )
             return c.fetchall()
         elif x == "initpb":
-            c.execute("SELECT * FROM Init_PB ORDER BY person_bank DESC")
-            return c.fetchall()
+            raise Exception("Obsolete query. Use ReadNew().")
         elif x == "initpbnames":
-            c.execute(
-                "SELECT DISTINCT person_bank FROM Init_PB ORDER BY person_bank DESC"
-            )
-            return c.fetchall()
+            raise Exception("Obsolete query. Use ReadNew().")
         elif x == "allacc":
             c.execute("""
                     SELECT person_bank, currency, SUM(sum) 
@@ -625,11 +646,7 @@ def Read(x, year=None):
             return c.fetchall()
 
         elif x == "retacc":  # Return list of all accounts
-            c.execute(
-                "SELECT DISTINCT person_bank FROM Init_PB ORDER BY person_bank ASC"
-            )
-            result = [row[0] for row in c.fetchall()]
-            return result
+            raise Exception("Obsolete query. Use ReadNew().")
 
         elif x == "retmowner":  # Return list of all owners
             c.execute("SELECT DISTINCT owner FROM Marker_owner")
@@ -674,26 +691,16 @@ def Read(x, year=None):
             return [row[0] for row in c.fetchall()]
 
         elif x == "retcat":
-            c.execute("SELECT DISTINCT category FROM main ORDER BY category DESC")
-            result = [row[0] for row in c.fetchall()]
-            return result
+            raise Exception("Obsolete query. Use ReadNew().")
 
         elif x == "retcat+":
-            c.execute(
-                "SELECT DISTINCT category FROM main WHERE sum > 0 ORDER BY category DESC"
-            )
-            result = [row[0] for row in c.fetchall()]
-            return result
+            raise Exception("Obsolete query. Use ReadNew().")
 
         elif x == "retcat-":
-            c.execute(
-                "SELECT DISTINCT category FROM main WHERE sum < 0 ORDER BY category DESC"
-            )
-            result = [row[0] for row in c.fetchall()]
-            return result
+            raise Exception("Obsolete query. Use ReadNew().")
 
 
-def MarkerRead(mode, markers=None):
+def MarkerRead(mode, markers=None, showArchived=False):
     # Function for returning markers sums for type/owner/both markers
     with sqlite3.connect(dbPath) as conn:
         c = conn.cursor()
@@ -713,7 +720,7 @@ def MarkerRead(mode, markers=None):
                     """,
                 (markers,),
             )
-            person_banks = c.fetchall()
+            person_banks = [row[0] for row in c.fetchall()]
 
         elif mode == "bytype":
             c.execute(
@@ -727,7 +734,7 @@ def MarkerRead(mode, markers=None):
                     """,
                 (markers,),
             )
-            person_banks = c.fetchall()
+            person_banks = [row[0] for row in c.fetchall()]
 
         elif mode == "byall":
             values = markers.split(",")
@@ -746,15 +753,13 @@ def MarkerRead(mode, markers=None):
                     """,
                 (values[0], values[1]),
             )
-            person_banks = c.fetchall()
-
+            person_banks = [row[0] for row in c.fetchall()]
+            
         elif mode == "none":
             # If no markers are provided, return all person banks
-            c.execute("SELECT DISTINCT person_bank FROM Init_PB")
-            person_banks = c.fetchall()
+            person_banks = ReadNew(ReadType.DINITPB, skipArchivedPBs=not showArchived)
 
         if person_banks:
-            person_banks = [pb[0] for pb in person_banks]
             # Prepare dynamic query to calculate balances using person_banks
             seq = ",".join(["?"] * len(person_banks))
 
@@ -794,7 +799,11 @@ def MarkerRead(mode, markers=None):
             )
 
             results = c.fetchall()
-            return results
+            
+            if showArchived:
+                return results
+            else:
+                return [row for row in results if row[0] not in consts.archivedPBs]
         else:
             return []
 
