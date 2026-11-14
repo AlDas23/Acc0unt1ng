@@ -700,7 +700,7 @@ def Read(x, year=None):
             raise Exception("Obsolete query. Use ReadNew().")
 
 
-def MarkerRead(mode, markers=None):
+def MarkerRead(mode, markers=None, showArchived=False):
     # Function for returning markers sums for type/owner/both markers
     with sqlite3.connect(dbPath) as conn:
         c = conn.cursor()
@@ -757,7 +757,7 @@ def MarkerRead(mode, markers=None):
             
         elif mode == "none":
             # If no markers are provided, return all person banks
-            person_banks = ReadNew(ReadType.DINITPB, skipArchivedPBs=False)
+            person_banks = ReadNew(ReadType.DINITPB, skipArchivedPBs=not showArchived)
 
         if person_banks:
             # Prepare dynamic query to calculate balances using person_banks
@@ -799,7 +799,11 @@ def MarkerRead(mode, markers=None):
             )
 
             results = c.fetchall()
-            return results
+            
+            if showArchived:
+                return results
+            else:
+                return [row for row in results if row[0] not in consts.archivedPBs]
         else:
             return []
 

@@ -472,19 +472,20 @@ def Balance(source):
             if isinstance(content, dict):
                 owner = content.get("owner", "None")
                 type_val = content.get("type", "None")
+                showArchived = content.get("showArchived", False)
             else:
                 # Handle case where content might be sent as a string
                 owner = "None"
                 type_val = "None"
 
             if owner == "None" and type_val == "None":
-                data = MarkerRead("none")
+                data = MarkerRead("none", showArchived=showArchived)
             elif owner != "None" and type_val == "None":
-                data = MarkerRead("byowner", owner)
+                data = MarkerRead("byowner", owner, showArchived=showArchived)
             elif owner == "None" and type_val != "None":
-                data = MarkerRead("bytype", type_val)
+                data = MarkerRead("bytype", type_val, showArchived=showArchived)
             elif owner != "None" and type_val != "None":
-                data = MarkerRead("byall", owner + "," + type_val)
+                data = MarkerRead("byall", owner + "," + type_val, showArchived=showArchived)
 
             payload = jsonify(
                 {
